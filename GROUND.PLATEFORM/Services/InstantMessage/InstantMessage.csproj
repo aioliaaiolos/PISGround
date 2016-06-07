@@ -1,0 +1,168 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{072E2FE3-4295-4825-8F59-800362364E12}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PIS.Ground.InstantMessage</RootNamespace>
+    <AssemblyName>InstantMessage</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LuaInterface, Version=2.0.0.16708, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\LuaInterface\LuaInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="InstantMessageService.svc" />
+    <Content Include="T2GNotificationService.asmx" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Clients\InstantMessageTrainClient.cs" />
+    <Compile Include="InstantMessageService.svc.cs">
+      <DependentUpon>InstantMessageService.svc</DependentUpon>
+    </Compile>
+    <Compile Include="IInstantMessageService.cs" />
+    <Compile Include="Logs.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Logs.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Stubs\TemplateListAccessorLua100TStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLua150TStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaAVStreamMgrStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaConstantsStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaDecisionMatrixStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaDictionaryStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaDm400TStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaDmPldStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaDmVVStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaEventMgrStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaEventSchedulerStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaLmtDbStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaMACStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaMissionDataClientStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaMp3PlayerStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaPredefMgrStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaReportStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaSonoDbStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaTaskSchedulerStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaTimerStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaUtilStubs.cs" />
+    <Compile Include="Stubs\TemplateListAccessorLuaWavPlayerStubs.cs" />
+    <Compile Include="TemplateDataTypes.cs" />
+    <Compile Include="TemplateListAccessor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\GroundCore\GroundCore.csproj">
+      <Project>{0FEB267E-0426-4C90-9882-DB46F62E9297}</Project>
+      <Name>GroundCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Common\LuaPluginLoader\LuaPluginLoader.csproj">
+      <Project>{CDD09993-B402-4070-844F-D9C5AD089E84}</Project>
+      <Name>LuaPluginLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteDataStore\RemoteDataStore.csproj">
+      <Project>{EF3E033D-53DE-42FC-AD4A-4AEC2191826C}</Project>
+      <Name>RemoteDataStore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Logs.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Logs.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1062</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost/InstantMessage</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost/InstantMessage</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PreBuildEvent>call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Train.InstantMessage InstantMessageTrainClient.cs InstantMessageTrainClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Train\InstantMessageTrain.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\InstantMessageCommon.xsd
+
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Ground.InstantMessage.AppGround AppGroundClient.cs AppGroundClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd 
+</PreBuildEvent>
+  </PropertyGroup>
+</Project>

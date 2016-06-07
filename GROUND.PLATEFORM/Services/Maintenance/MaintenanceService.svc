@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="false" Service="PIS.Ground.Maintenance.MaintenanceService" CodeBehind="MaintenanceService.svc.cs" %>

@@ -1,0 +1,111 @@
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="RemoteFileClassTest.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Moq;
+using NUnit.Framework;
+using PIS.Ground.Core;
+using PIS.Ground.Core.SessionMgmt;
+using PIS.Ground.Core.T2G;
+using System.Reflection;
+using System.Diagnostics;
+using PIS.Ground.Core.Data;
+using System.Configuration;
+
+namespace GroundCoreTests
+{
+    /// <summary>RemoteFileClassTest test class.</summary>
+    [TestFixture]
+    public class RemoteFileClassTest
+    {
+        #region attributes
+
+        /// <summary>
+        /// Path of a local file
+        /// </summary>
+        private string pathString = "c:\\lmt-Testfile.txt";
+
+        #endregion
+
+        #region Tests managment
+
+        /// <summary>Initializes a new instance of the LocalDataStorageTests class.</summary>
+        public RemoteFileClassTest()
+        {
+        }
+
+        /// <summary>Setups called before each test to initialize variables.</summary>
+        [SetUp]
+        public void Setup()
+        {
+            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = "c:/RemoteDataStore";
+
+
+            if (!System.IO.File.Exists(pathString))
+            {
+                using (System.IO.FileStream fs = System.IO.File.Create(pathString))
+                {
+                    fs.WriteByte(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("File \"{0}\" already exists.", pathString);
+            }
+            
+        }
+
+        /// <summary>Tear down called after each test to clean.</summary>
+        [TearDown]
+        public void TearDown()
+        {
+            // Do something after each tests
+        }
+
+        #endregion
+
+        /// <summary>Test check url function</summary>
+        [Test]
+        public void CheckUrlTests()
+        {
+            //Test with local file
+            Assert.True(RemoteFileClass.checkUrl(pathString));
+            //Test HTTP url
+            Assert.True(RemoteFileClass.checkUrl("http://www.google.com"));
+            //Test FTP url
+            Assert.True(RemoteFileClass.checkUrl("ftp://10.95.38.17:2121/Dev/PISGROUND/Tmp/pisbase-testfile.txt"));
+            //Test no valid URL
+            Assert.False(RemoteFileClass.checkUrl("Hello world"));
+        }
+
+        /// <summary>Test constructor function</summary>
+        [Test]
+        public void ContructorTestsAndCrcCalculation()
+        {
+            System.IO.FileStream lStream;
+            PIS.Ground.Core.Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
+
+            //Check constructor with local file
+            RemoteFileClass rFile1 = new RemoteFileClass(pathString, true);
+
+            try
+            {
+                lStream = new System.IO.FileStream(pathString, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+                Assert.AreEqual(lCrcCalculator.CalculateChecksum(lStream), rFile1.CRC);
+            }
+            catch (Exception ex)
+            {
+                PIS.Ground.Core.LogMgmt.LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Data.RemoteFileClass", ex, EventIdEnum.GroundCore);
+                lStream = null;
+            }
+            Assert.True(rFile1.Exists);
+        }
+    }
+}

@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PredefLuaScriptChecker", "PredefLuaScriptChecker\PredefLuaScriptChecker.csproj", "{0647EE15-8996-43B5-9846-660050EFE461}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuaPluginLoader", "..\..\Common\LuaPluginLoader\LuaPluginLoader.csproj", "{CDD09993-B402-4070-844F-D9C5AD089E84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroundCore", "..\..\Common\GroundCore\GroundCore.csproj", "{0FEB267E-0426-4C90-9882-DB46F62E9297}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0647EE15-8996-43B5-9846-660050EFE461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0647EE15-8996-43B5-9846-660050EFE461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0647EE15-8996-43B5-9846-660050EFE461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0647EE15-8996-43B5-9846-660050EFE461}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD09993-B402-4070-844F-D9C5AD089E84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD09993-B402-4070-844F-D9C5AD089E84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD09993-B402-4070-844F-D9C5AD089E84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD09993-B402-4070-844F-D9C5AD089E84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FEB267E-0426-4C90-9882-DB46F62E9297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FEB267E-0426-4C90-9882-DB46F62E9297}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FEB267E-0426-4C90-9882-DB46F62E9297}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FEB267E-0426-4C90-9882-DB46F62E9297}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

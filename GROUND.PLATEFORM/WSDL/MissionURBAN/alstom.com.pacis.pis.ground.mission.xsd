@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/mission/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/mission/" minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="q1:MissionAvailableElementListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MissionAvailableElementListResult">
+    <xs:sequence>
+      <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" />
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/mission/" name="ResultCode" type="q3:MissionServiceErrorCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/mission/" name="MissionAvailableElementListResult" nillable="true" type="q4:MissionAvailableElementListResult" />
+  <xs:simpleType name="MissionServiceErrorCodeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="ERROR_INVALID_SESSION_ID" />
+      <xs:enumeration value="ERROR_REMOTE_DATASTORE_UNAVAILABLE" />
+      <xs:enumeration value="ERROR_INVALID_ELEMENT_ID" />
+      <xs:enumeration value="ERROR_INVALID_STATION_ID" />
+      <xs:enumeration value="ERROR_INVALID_MISSION_CODE" />
+      <xs:enumeration value="ERROR_UNKNOWN_LMT_DB" />
+      <xs:enumeration value="ERROR_OPENING_LMT_DB" />
+      <xs:enumeration value="ERROR_ELEMENT_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="ERROR_INVALID_REQUEST_TIMEOUT" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/mission/" name="MissionServiceErrorCodeEnum" nillable="true" type="q5:MissionServiceErrorCodeEnum" />
+  <xs:element name="InitializeMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="missionCode" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="elementId" nillable="true" type="xs:string" />
+        <xs:element xmlns:q6="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="stationList" nillable="true" type="q6:ArrayOfstring" />
+        <xs:element minOccurs="0" name="timeOut" nillable="true" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="InitializeMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://alstom.com/pacis/pis/ground/mission/" minOccurs="0" name="InitializeMissionResult" nillable="true" type="q7:MissionInitializeMissionResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MissionInitializeMissionResult">
+    <xs:sequence>
+      <xs:element xmlns:q8="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="InvalidStationList" nillable="true" type="q8:ArrayOfstring" />
+      <xs:element name="MissionCode" nillable="true" type="xs:string" />
+      <xs:element name="RequestId" type="ser:guid" />
+      <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/mission/" name="ResultCode" type="q9:MissionServiceErrorCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q10="http://alstom.com/pacis/pis/ground/mission/" name="MissionInitializeMissionResult" nillable="true" type="q10:MissionInitializeMissionResult" />
+  <xs:element name="CancelMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="missionCode" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="elementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="timeOut" nillable="true" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancelMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q11="http://alstom.com/pacis/pis/ground/mission/" minOccurs="0" name="CancelMissionResult" nillable="true" type="q11:MissionCancelMissionResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MissionCancelMissionResult">
+    <xs:sequence>
+      <xs:element name="MissionCode" nillable="true" type="xs:string" />
+      <xs:element name="RequestId" type="ser:guid" />
+      <xs:element xmlns:q12="http://alstom.com/pacis/pis/ground/mission/" name="ResultCode" type="q12:MissionServiceErrorCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q13="http://alstom.com/pacis/pis/ground/mission/" name="MissionCancelMissionResult" nillable="true" type="q13:MissionCancelMissionResult" />
+</xs:schema>

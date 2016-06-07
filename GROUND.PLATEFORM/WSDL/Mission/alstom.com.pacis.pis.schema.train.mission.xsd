@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/schema/train/mission/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/train/mission/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="StationInsertion">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="StationId" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Type" type="xs:unsignedInt" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationInsertion" nillable="true" type="tns:StationInsertion" />
+  <xs:complexType name="ArrayOfStationServiceHours">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="StationServiceHours" nillable="true" type="tns:StationServiceHours" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfStationServiceHours" nillable="true" type="tns:ArrayOfStationServiceHours" />
+  <xs:complexType name="StationServiceHours">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArrivalTime" nillable="true" type="xs:time" />
+      <xs:element minOccurs="0" name="DepartureTime" nillable="true" type="xs:time" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationServiceHours" nillable="true" type="tns:StationServiceHours" />
+  <xs:complexType name="ArrayOfStationList">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="StationList" nillable="true" type="tns:StationList" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfStationList" nillable="true" type="tns:ArrayOfStationList" />
+  <xs:complexType name="StationList">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Id" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationList" nillable="true" type="tns:StationList" />
+</xs:schema>

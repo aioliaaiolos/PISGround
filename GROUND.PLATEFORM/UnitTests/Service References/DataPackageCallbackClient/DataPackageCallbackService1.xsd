@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd0" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd1" namespace="http://alstom.com/pacis/pis/schema/notification/" />
+  <xs:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:element name="updateBaselineDefinitionStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="pReqID" type="q1:guid" />
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string" />
+        <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/notification/" minOccurs="0" name="pStatus" type="q2:NotificationIdEnum" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="missingDataPackageNotification">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="pReqID" type="q3:guid" />
+        <xs:element xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="pDPCharsList" nillable="true" type="q4:ArrayOfKeyValueOfstringstring" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="updatePackageUploadStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="pReqID" type="q5:guid" />
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/schema/notification/" minOccurs="0" name="pStatus" type="q6:NotificationIdEnum" />
+        <xs:element xmlns:q7="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="pDPCharsList" nillable="true" type="q7:ArrayOfKeyValueOfstringstring" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="updateBaselineAssignmentStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="pReqID" type="q8:guid" />
+        <xs:element xmlns:q9="http://alstom.com/pacis/pis/schema/notification/" minOccurs="0" name="pStatus" type="q9:NotificationIdEnum" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

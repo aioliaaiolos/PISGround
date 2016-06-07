@@ -1,0 +1,1 @@
+﻿<%@ WebService Language="C#" CodeBehind="NotificationService.asmx.cs" Class="PIS.Ground.Core.T2G.WebServices.Notification.NotificationService" %>

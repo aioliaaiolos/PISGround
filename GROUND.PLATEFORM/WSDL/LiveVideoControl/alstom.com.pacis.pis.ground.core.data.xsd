@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/ground/core/data/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/core/data/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="MissionStateEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MI" />
+      <xs:enumeration value="ME" />
+      <xs:enumeration value="NI" />
+      <xs:enumeration value="MIE" />
+      <xs:enumeration value="DEG" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="MissionStateEnum" nillable="true" type="tns:MissionStateEnum" />
+</xs:schema>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="a278d398-084e-4381-b1ed-1db87c251aca" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/Maintenance/MaintenanceService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="MaintenanceService.wsdl" MetadataType="Wsdl" ID="12224b0a-b245-4d7b-9abb-99826b57e5e9" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?wsdl" />
+    <MetadataFile FileName="MaintenanceService.xsd" MetadataType="Schema" ID="54ba2f7f-8496-4829-ba54-81011ee0e635" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd0" />
+    <MetadataFile FileName="MaintenanceService1.xsd" MetadataType="Schema" ID="52d85518-7125-4253-b129-7af106cb264a" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd1" />
+    <MetadataFile FileName="MaintenanceService2.xsd" MetadataType="Schema" ID="50b346e7-1eb9-412e-84cf-0c5021575d61" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd2" />
+    <MetadataFile FileName="MaintenanceService3.xsd" MetadataType="Schema" ID="facc4593-040d-4b44-952e-c051bd43c564" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd3" />
+    <MetadataFile FileName="MaintenanceService.disco" MetadataType="Disco" ID="89ae231f-e953-4f0e-97ee-395bc3e0e99c" SourceId="1" SourceUrl="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?disco" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

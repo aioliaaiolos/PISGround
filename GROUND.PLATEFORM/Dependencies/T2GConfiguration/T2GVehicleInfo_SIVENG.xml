@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<T2GVehicleInfoConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="T2GVehicleInfo.xsd">
+	<TriggerList>
+		<Trigger id="triggerLoc" type="onEventAndPeriod" periodVariable="T2G-MSG-LOC-SPEED" activationVariable="T2G-MSG-LOC-ACTIF">
+			<OnPeriodInterval minValue="0" maxValue="255" periodInSeconds="60"/>
+			<SendOnVariableChanged id="T2G-MSG-LOC-ACTIF" value="true"/>
+		</Trigger>	
+		<Trigger id="triggerMission" type="onEvent" activationVariable="T2G-MSG-MISSION-ACTIF">
+			<SendOnVariableChanged id="T2G-MSG-MISSION-ACTIF" value="true"/>
+			<SendOnVariableChanged id="LMT.State" value="MI"/>
+			<SendOnVariableChanged id="LMT.State" value="MMI"/>
+			<SendOnVariableChanged id="LMT.State" value="DEG"/>
+			<SendOnVariableChanged id="LMT.State" value="ME"/>
+			<SendOnVariableChanged id="LMT.State" value="MME"/>
+			<SendOnVariableChanged id="LMT.State" value="NI"/>			
+			<SendOnVariableChanged id="Mission.State" value="SA"/>
+			<SendOnVariableChanged id="Mission.State" value="SR"/>
+			<SendOnVariableChanged id="Mission.State" value="SS"/>
+			<SendOnVariableChanged id="Mission.State" value="SD"/>
+			<SendOnVariableChanged id="Mission.State" value="SAL"/>
+			<SendOnVariableChanged id="Mission.State" value="SRL"/>
+			<SendOnVariableChanged id="Mission.State" value="SSL"/>			
+		</Trigger>
+		<Trigger id="triggerBaseline" type="onEvent" activationVariable="T2G-MSG-BASELINE-ACTIF">
+			<SendOnVariableChanged id="T2G-MSG-BASELINE-ACTIF" value="true"/>
+			<SendOnVariableChanged id="Baseline.IsChanged.Out" value="true"/>
+			<SendOnVariableChanged id="Baseline.IsChanged.Out" value="false"/>
+		</Trigger>
+	</TriggerList>
+	<MessageList>
+		<Message id="SIVNG.LOC" trigger="triggerLoc" inhibitionStateVariable="T2G-MSG-LOC-INHIBITION-STATE">
+			<Field id="Timestamp" variableId="DateTime.UTC"/>
+			<Field id="GPSTimestamp" variableId="LMT.Output.GPSDateTime"/>
+			<Field id="Longitude" variableId="LMT.Input.GPSLongitude"/>
+			<Field id="Latitude" variableId="LMT.Input.GPSLatitude"/>
+			<Field id="Altitude" variableId="LMT.Input.GPSAltitude"/>
+			<Field id="LockStatus" variableId="LMT.Input.GPSLockStatus"/>
+			<Field id="Speed" variableId="LMT.Input.GPSSpeed"/>
+			<Field id="Heading" variableId="LMT.Input.GPSHeading"/>
+			<Field id="MissionId" variableId="Mission.ID"/>
+			<Field id="LastStopStationId" variableId="Mission.PreviousStation.IUICCode"/>
+			<Field id="NextStopStationId" variableId="Mission.NextStation.IUICCode"/>
+			<Field id="LastStopDistance" variableId="Mission.SegmentDistanceTraveled"/>
+			<Field id="NextStopDistance" variableId="Mission.SegmentRemainingDistance"/>
+			<Field id="EnteringStation" variableId="Mission.EnteringStation"/>
+			<Field id="LeavingStation" variableId="Mission.LeavingStation"/>
+			<Field id="CommercialNumber" variableId="Mission.SegmentCommercialNumber"/>
+		</Message>	
+		<Message id="SIVNG.MISSION" trigger="triggerMission" inhibitionStateVariable="T2G-MSG-MISSION-INHIBITION-STATE">
+			<Field id="Type" variableId="Mission.Type"/>
+			<Field id="Number" variableId="Mission.TrainNumber"/>
+			<Field id="OperatorCode" variableId="Mission.OperatorID"/>
+			<Field id="CommercialNumber" variableId="Mission.SegmentCommercialNumber"/>
+			<Field id="Date" variableId="Mission.Date"/>
+			<Field id="ElementOffsetNumbering" variableId="Train.OffsetCarNumber"/>
+			<Field id="FirstStation" variableId="Mission.FirstStation.IUICCode"/>
+			<Field id="LastStation" variableId="Mission.LastStation.IUICCode"/>
+			<Field id="Languages" variableId="Mission.LanguageList"/>
+			<Field id="Services" variableId="Mission.Services.Names[fra]"/>
+			<Field id="Stations" variableId="Mission.StationList.IUICCodes"/>
+			<Field id="Departures" variableId="Mission.StationList.DepartureTime"/>
+			<Field id="Arrivals" variableId="Mission.StationList.ArrivalTime"/>
+			<Field id="Delay" variableId="Mission.Delay"/>
+			<Field id="State" variableId="LMT.State"/>
+		</Message>
+		<Message id="PIS.BASELINE" trigger="triggerBaseline">
+			<Field id="Archived Valid Out" variableId="Baseline.Archived.Valid.Out"/>
+			<Field id="Archived Version Out" variableId="Baseline.Archived.Version.Out"/>
+			<Field id="Archived Version PisBase Out" variableId="Baseline.Archived.Version.PisBase.Out"/>
+			<Field id="Archived Version PisMission Out" variableId="Baseline.Archived.Version.PisMission.Out"/>
+			<Field id="Archived Version PisInfotainment Out" variableId="Baseline.Archived.Version.PisInfotainment.Out"/>
+			<Field id="Archived Version Lmt Out" variableId="Baseline.Archived.Version.Lmt.Out"/>
+			<Field id="Current Forced Out" variableId="Baseline.Current.Forced.Out"/>
+			<Field id="Current Valid Out" variableId="Baseline.Current.Valid.Out"/>
+			<Field id="Current Version Out" variableId="Baseline.Current.Version.Out"/>
+			<Field id="Current Version PisBase Out" variableId="Baseline.Current.Version.PisBase.Out"/>
+			<Field id="Current Version PisMission Out" variableId="Baseline.Current.Version.PisMission.Out"/>
+			<Field id="Current Version PisInfotainment Out" variableId="Baseline.Current.Version.PisInfotainment.Out"/>
+			<Field id="Current Version Lmt Out" variableId="Baseline.Current.Version.Lmt.Out"/>
+			<Field id="Current ExpirationDate Out" variableId="Baseline.Current.ExpirationDate.Out"/>
+			<Field id="Future Valid Out" variableId="Baseline.Future.Valid.Out"/>
+			<Field id="Future Version Out" variableId="Baseline.Future.Version.Out"/>
+			<Field id="Future Version PisBase Out" variableId="Baseline.Future.Version.PisBase.Out"/>
+			<Field id="Future Version PisMission Out" variableId="Baseline.Future.Version.PisMission.Out"/>
+			<Field id="Future Version PisInfotainment Out" variableId="Baseline.Future.Version.PisInfotainment.Out"/>
+			<Field id="Future Version Lmt Out" variableId="Baseline.Future.Version.Lmt.Out"/>
+			<Field id="Future ActivationDate Out" variableId="Baseline.Future.ActivationDate.Out"/>
+			<Field id="Future ExpirationDate Out" variableId="Baseline.Future.ExpirationDate.Out"/>
+			<Field id="Lmt Sync Command Out" variableId="Baseline.Lmt.Sync.Command.Out"/>
+			<Field id="Lmt Sync Response In" variableId="Baseline.Lmt.Sync.Response.In"/>
+			<Field id="Force Command In" variableId="Baseline.Force.Command.In"/>
+			<Field id="Force Response Out" variableId="Baseline.Force.Response.Out"/>
+			<Field id="Force State Out" variableId="Baseline.Force.State.Out"/>
+			<Field id="Usb Deploy Command In" variableId="Baseline.Usb.Deploy.Command.In"/>
+			<Field id="Usb Deploy Response Out" variableId="Baseline.Usb.Deploy.Response.Out"/>
+		</Message>
+	</MessageList>
+	<ServiceList>			
+		<Service id="1317" description="PIS Web Server"/>		
+		<Service id="1900" description="PIS SIF DataPackage Server"/>
+		<Service id="1901" description="PIS SIF InstantMessage Server"/>
+		<Service id="1902" description="PIS SIF ReportExchange Server"/>
+		<Service id="1903" description="PIS SIF Maintenance Server"/>
+		<Service id="1904" description="PIS SIF Mission Server"/>
+		<Service id="1907" description="PIS SIF LiveVideoControl Server"/>
+		<Service id="1908" description="PIS SIF RealTime Server"/>
+	</ServiceList>
+</T2GVehicleInfoConfig>

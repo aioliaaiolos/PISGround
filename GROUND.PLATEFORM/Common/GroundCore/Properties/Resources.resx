@@ -1,0 +1,411 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ExConnectionStringNotFound" xml:space="preserve">
+    <value>SQL Lite DataBase path could not be found in the configuration file.</value>
+  </data>
+  <data name="ExFtpError" xml:space="preserve">
+    <value>Failed to upload file {0}</value>
+  </data>
+  <data name="ExInsertLogin" xml:space="preserve">
+    <value>Error Occured while Inserting the LoginDetails of User : {0} to DataBase : Details:{1}</value>
+  </data>
+  <data name="ExInsertLoginValidation" xml:space="preserve">
+    <value>Error UserName/Pwd empty while Inserting the LoginDetails to DataBase</value>
+  </data>
+  <data name="ExInsertNotificationURL" xml:space="preserve">
+    <value>Error Occured while Inserting the NavigationURL for the SessionID :{0} to the DataBase : Details:{1}</value>
+  </data>
+  <data name="ExInsertNotificationUrlValidation" xml:space="preserve">
+    <value>Error NotificationUrl empty while Adding the NotificationURL to DataBase</value>
+  </data>
+  <data name="ExLogFilePathNotFound" xml:space="preserve">
+    <value>Log file path string could not be found in the configuration file.</value>
+  </data>
+  <data name="ExLogT2GIdetificationService" xml:space="preserve">
+    <value>Problem in logging In to T2G Identification Service</value>
+  </data>
+  <data name="ExRemoveSession" xml:space="preserve">
+    <value>Error Occured while Removing the Session for the SessionID :{0} from the DataBase :  Details:{1}</value>
+  </data>
+  <data name="ExRequestIDInsert" xml:space="preserve">
+    <value>Error Occured while Inserting the RequestID To Session for SessionID :{0} to DataBase : Details :{1}</value>
+  </data>
+  <data name="ExRequestIDNotFound" xml:space="preserve">
+    <value>Request ID does not Exist {0}</value>
+  </data>
+  <data name="ExRequestID_StatusUpdate" xml:space="preserve">
+    <value>Error Occured while Updating the Status of  RequestID :{0} to DataBase : Details :{1}</value>
+  </data>
+  <data name="ExSelectNotificationUrl" xml:space="preserve">
+    <value>Error Occured while Selecting the NotificationUrl for the RequestID:{0} from the DataBase: Details:{1}</value>
+  </data>
+  <data name="ExSelectNotificationUrlBySessionID" xml:space="preserve">
+    <value>Error Occured while Selecting the NotificationUrl for the SessionID:{0} from the DataBase: Details:{1}</value>
+  </data>
+  <data name="ExSelectNotificationUrls" xml:space="preserve">
+    <value>Error Occured while getting all the NotificationUrls from the DataBase: Details:{0}</value>
+  </data>
+  <data name="ExSelectSessionDetails" xml:space="preserve">
+    <value>Error Occured while Selecting the SessionDetails for the SessionID :{0} from the DataBase: Details:{1}</value>
+  </data>
+  <data name="ExSessionDBNotFound" xml:space="preserve">
+    <value>Session DataBase not found</value>
+  </data>
+  <data name="ExSessionNotFound" xml:space="preserve">
+    <value>Session ID does not Exist while Removing the Session information for the SessionID : {0}</value>
+  </data>
+  <data name="ExSessionTimeOutNotFound" xml:space="preserve">
+    <value>Session Time Out could not be found in the configuration file.</value>
+  </data>
+  <data name="ExSessionTimeOutNotValid" xml:space="preserve">
+    <value>Session Time Out value not correct in the configuration file.</value>
+  </data>
+  <data name="ExSessionTimerCheckError" xml:space="preserve">
+    <value>Error Occured while checking the unused Session from the DataBase : Details:{0}</value>
+  </data>
+  <data name="ExSessionTimerCheckNotFound" xml:space="preserve">
+    <value>Session Timer Check could not be found in the configuration file.</value>
+  </data>
+  <data name="ExSessionTimerCheckNotValid" xml:space="preserve">
+    <value>Session Timer Check Out value not correct in the configuration file.</value>
+  </data>
+  <data name="ExValidateSessionDetails" xml:space="preserve">
+    <value>Error Occured while Validating the Session for the SessionID :{0} from the DataBase : Details:{1}</value>
+  </data>
+  <data name="LogDownloadExpirationDateError" xml:space="preserve">
+    <value>Download Expiration Date not valid.</value>
+  </data>
+  <data name="LogDownloadFileListError" xml:space="preserve">
+    <value>Download file list is empty.</value>
+  </data>
+  <data name="LogDownloadFolderEmpty" xml:space="preserve">
+    <value>Download folder name is empty</value>
+  </data>
+  <data name="LogDownloadFtpServerDirectoryInvalid" xml:space="preserve">
+    <value>FtpServer directory name is invalid</value>
+  </data>
+  <data name="LogDownloadFtpServerIpInvalid" xml:space="preserve">
+    <value>FtpServer Ip value is invalid</value>
+  </data>
+  <data name="LogDownloadFtpServerPortInvalid" xml:space="preserve">
+    <value>FtpServer port value is invalid</value>
+  </data>
+  <data name="LogDownloadFtpServerPwdInvalid" xml:space="preserve">
+    <value>FtpServer password value is invalid</value>
+  </data>
+  <data name="LogDownloadFtpServerUserNameInvalid" xml:space="preserve">
+    <value>FtpServer User name is invalid</value>
+  </data>
+  <data name="LogExceptionContext" xml:space="preserve">
+    <value>Exception Context</value>
+  </data>
+  <data name="LogExceptionDateTimeLocal" xml:space="preserve">
+    <value>Local DateTime</value>
+  </data>
+  <data name="LogExceptionDateTimeUtc" xml:space="preserve">
+    <value>UTC DateTime</value>
+  </data>
+  <data name="LogExceptionDebugMessage" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="LogExceptionErrorMessage" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="LogExceptionExceptionType" xml:space="preserve">
+    <value>Exception Type</value>
+  </data>
+  <data name="LogExceptionInfoMessage" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="LogExceptionInnerExceptionMessage" xml:space="preserve">
+    <value>Inner Exception</value>
+  </data>
+  <data name="LogExceptionInnerExceptionType" xml:space="preserve">
+    <value>Inner Exception</value>
+  </data>
+  <data name="LogExceptionMainExceptionMessage" xml:space="preserve">
+    <value>Exception</value>
+  </data>
+  <data name="LogExceptionStackTrace" xml:space="preserve">
+    <value>Stack Trace</value>
+  </data>
+  <data name="LogExceptionT2GApplicationIdNotFound" xml:space="preserve">
+    <value>T2G Application Id could not be found in the configuration file.</value>
+  </data>
+  <data name="LogExceptionT2G_NotificationUrlNotFound" xml:space="preserve">
+    <value>T2G Navigation Url could not be found in the configuration file.</value>
+  </data>
+  <data name="LogExceptionT2G_PwdNotFound" xml:space="preserve">
+    <value>T2G Password could not be found in the configuration file.</value>
+  </data>
+  <data name="LogExceptionT2G_UserNameNotFound" xml:space="preserve">
+    <value>T2G UserName could not be found in the configuration file.</value>
+  </data>
+  <data name="LogExceptionThreadId" xml:space="preserve">
+    <value>Thread ID</value>
+  </data>
+  <data name="LogExceptionThreadName" xml:space="preserve">
+    <value>Current Thread Name</value>
+  </data>
+  <data name="LogExceptionWarningrMessage" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="LogNotificationServiceOnMessageParameterNotValid" xml:space="preserve">
+    <value>Input parameter for the OnMessageNotification service is not valid</value>
+  </data>
+  <data name="LogNotificationServiceOnServiceParameterNotValid" xml:space="preserve">
+    <value>Input parameter for the OnServiceNotificationservice is not valid</value>
+  </data>
+  <data name="LogonFilePublicationNotificationParameterNotValid" xml:space="preserve">
+    <value>Input parameter for the OnFilePublicationNotification is not valid</value>
+  </data>
+  <data name="LogonFilesPublishedNotificationParametrNotValid" xml:space="preserve">
+    <value>Input parameter for the OnFilesPublishedNotificationis not valid</value>
+  </data>
+  <data name="LogonFilesReceivedNotificationParameterNotValid" xml:space="preserve">
+    <value>Input parameter for the OnFilesReceivedNotification is not valid</value>
+  </data>
+  <data name="LogonFileTransferNotificationParameterNotValid" xml:space="preserve">
+    <value>Input parameter for the OnFileTransferNotification is not valid</value>
+  </data>
+  <data name="LogRequestIdNotExist" xml:space="preserve">
+    <value>Request Id does not exist</value>
+  </data>
+  <data name="LogUploadExpirationDateError" xml:space="preserve">
+    <value>Upload Expiration Date not valid.</value>
+  </data>
+  <data name="LogUploadFileEmpty" xml:space="preserve">
+    <value>File: {0} is empty</value>
+  </data>
+  <data name="LogUploadFileListError" xml:space="preserve">
+    <value>Upload file list is empty.</value>
+  </data>
+  <data name="LogUploadFileNotExists" xml:space="preserve">
+    <value>File: {0} does not exist</value>
+  </data>
+  <data name="LogUploadPriorityError" xml:space="preserve">
+    <value>Range for Priority is between 0 to 32</value>
+  </data>
+  <data name="LogUploadRequestIDError" xml:space="preserve">
+    <value>Request Id not valid</value>
+  </data>
+  <data name="LogUploadStartDateError" xml:space="preserve">
+    <value>Upload Start Date not valid.</value>
+  </data>
+  <data name="LogUploadStartDateExpirationDateError" xml:space="preserve">
+    <value>Expiration date cannot be less than Start Date</value>
+  </data>
+  <data name="LogUserTimeOutValueInvalid" xml:space="preserve">
+    <value>TimeOut value is not valid.</value>
+  </data>
+  <data name="ExFtpLogin" xml:space="preserve">
+    <value>Security Exception raised for uploading File {0}</value>
+  </data>
+  <data name="ExFtpLoginArgument" xml:space="preserve">
+    <value>Argument exception is raised for uploading File {0}</value>
+  </data>
+  <data name="ExFtpLoginException" xml:space="preserve">
+    <value>Unhandled exception raised for uploading File {0}</value>
+  </data>
+  <data name="LogUploadRecpientCountError" xml:space="preserve">
+    <value>Recpient List cannot be empty</value>
+  </data>
+  <data name="LogUploadRecpientSystemIDError" xml:space="preserve">
+    <value>Recpient systemId and MissionId cannot be empty</value>
+  </data>
+  <data name="ErrorSessionNotFound" xml:space="preserve">
+    <value>Session ID does not Exist for the SessionID : {0}</value>
+  </data>
+  <data name="LogDownloadFolderPath" xml:space="preserve">
+    <value>Invalid Download FolderPath</value>
+  </data>
+  <data name="LogSqlServerDataDirectoryError" xml:space="preserve">
+    <value>SqlServerDataDirectory is empty</value>
+  </data>
+  <data name="DataBaseStructureVersion" xml:space="preserve">
+    <value>DataBase Structure Version is not valid</value>
+  </data>
+  <data name="LogMaxMessageCountNotValid" xml:space="preserve">
+    <value>Maximum message count is not valid</value>
+  </data>
+  <data name="LogMaxMessageSizeNotValid" xml:space="preserve">
+    <value>Maximum message size is not valid</value>
+  </data>
+  <data name="LogDataBaseConfigFile" xml:space="preserve">
+    <value>Database file config is notr valid</value>
+  </data>
+  <data name="LogPercentageOfLogToCleanUpInLogDatabase" xml:space="preserve">
+    <value>PercentageOfMaxNumberOfScheduledMessageToCleanUpInLogDatabase parameter is invalid</value>
+  </data>
+  <data name="EventLogLevelValueInvalid" xml:space="preserve">
+    <value>Event Log Level set in configuration file is not valid</value>
+  </data>
+  <data name="ExInternalError" xml:space="preserve">
+    <value>Internal Error Occured. Details: {0}</value>
+  </data>
+  <data name="FTPUploadDoneCreateTransferTask" xml:space="preserve">
+    <value>FTP upload is done, create transfer task.</value>
+  </data>
+  <data name="InUploadFile" xml:space="preserve">
+    <value>In UploadFile function.</value>
+  </data>
+  <data name="RequestAndTaskInfo" xml:space="preserve">
+    <value>RequestID = {0}, CRCGuid = {1}, Folder ID = {2}, Task ID = {3}</value>
+  </data>
+  <data name="RequestFolderExpirationDateNotValid" xml:space="preserve">
+    <value>Request's folder expiration date is too soon. </value>
+  </data>
+  <data name="RequestFolderExpirationDateValid" xml:space="preserve">
+    <value>Request's folder expiration date is far enough to use its folder.</value>
+  </data>
+  <data name="RequestFolderUploadFailed" xml:space="preserve">
+    <value>Request's folder had problems during data uploading.</value>
+  </data>
+  <data name="RequestInfo" xml:space="preserve">
+    <value>RequestID = {0}, CRCGuid = {1}, Folder ID = {2}</value>
+  </data>
+  <data name="SearchingCurrentRequestList" xml:space="preserve">
+    <value>Searching in currents requests list.</value>
+  </data>
+  <data name="SearchingT2GServer" xml:space="preserve">
+    <value>Searching directly on T2G Server.</value>
+  </data>
+  <data name="UploadFolderCreationFailed" xml:space="preserve">
+    <value>Upload folder creation failed.</value>
+  </data>
+  <data name="ExceptionUpdateFileCallback" xml:space="preserve">
+    <value>UploadFile: exception when executing the registered callback _updateFileCompletionCallBack</value>
+  </data>
+  <data name="FolderNotUploaded" xml:space="preserve">
+    <value>Folder is not uploaded yet</value>
+  </data>
+  <data name="InvalidInputParameter" xml:space="preserve">
+    <value>Invalid input parameter (null).</value>
+  </data>
+  <data name="InvalidUploadFileRequest" xml:space="preserve">
+    <value>Invalid upload file request.</value>
+  </data>
+  <data name="RemoteFileClassArgumentOutOfRangeException" xml:space="preserve">
+    <value>ArgumentOutOfRangeException with FilePath : {0}</value>
+  </data>
+  <data name="T2GConverterMissingItemsInNotificationMessageError" xml:space="preserve">
+    <value>The following items of the T2G notification message of type {0} are missing or misconfigured: {1}. Please verify the configuration in the T2GVehicleInfo.xml file on the T2G server.</value>
+  </data>
+</root>

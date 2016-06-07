@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/ground/core/data/" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/core/data/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:simpleType name="MissionStateEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MI" />
+      <xs:enumeration value="ME" />
+      <xs:enumeration value="NI" />
+      <xs:enumeration value="MIE" />
+      <xs:enumeration value="DEG" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="MissionStateEnum" nillable="true" type="tns:MissionStateEnum" />
+  <xs:simpleType name="ResultCodeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="INVALID_SESSION_ID" />
+      <xs:enumeration value="INVALID_REQUEST_TIMEOUT" />
+      <xs:enumeration value="UNKNOWN_ELEMENT_ID" />
+      <xs:enumeration value="UNKNOWN_MISSION_ID" />
+      <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="INTERNAL_ERROR" />
+      <xs:enumeration value="SQL_ERROR" />
+      <xs:enumeration value="INVALID_COMMAND_TYPE" />
+      <xs:enumeration value="INVALID_END_DATE" />
+      <xs:enumeration value="INVALID_START_DATE" />
+      <xs:enumeration value="INVALID_CONTEXT" />
+      <xs:enumeration value="INVALID_REQUEST_ID" />
+      <xs:enumeration value="INVALID_TRAIN_ID" />
+      <xs:enumeration value="INVALID_STATUS" />
+      <xs:enumeration value="T2G_SERVER_OFFLINE" />
+      <xs:enumeration value="OUTPUT_LIMIT_EXCEEDED" />
+      <xs:enumeration value="EMPTY_RESULT" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="ResultCodeEnum" nillable="true" type="tns:ResultCodeEnum" />
+  <xs:complexType name="MaintenanceOutput">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="RequestId" type="ser:guid" />
+      <xs:element minOccurs="0" name="ResultCode" type="tns:ResultCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MaintenanceOutput" nillable="true" type="tns:MaintenanceOutput" />
+  <xs:complexType name="ArrayOfCommandType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CommandType" type="tns:CommandType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfCommandType" nillable="true" type="tns:ArrayOfCommandType" />
+  <xs:simpleType name="CommandType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ALL_LOGS" />
+      <xs:enumeration value="SEND_SCHEDULE_MESSAGE" />
+      <xs:enumeration value="CANCEL_SCHEDULE_MESSAGE" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="CommandType" nillable="true" type="tns:CommandType" />
+  <xs:complexType name="HistoryLogOutput">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MaintenanceOutput">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="LogResponse" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="HistoryLogOutput" nillable="true" type="tns:HistoryLogOutput" />
+  <xs:simpleType name="BaselineProgressStatusEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UPDATED" />
+      <xs:enumeration value="DEPLOYED" />
+      <xs:enumeration value="TRANSFER_COMPLETED" />
+      <xs:enumeration value="TRANSFER_IN_PROGRESS" />
+      <xs:enumeration value="TRANSFER_PAUSED" />
+      <xs:enumeration value="TRANSFER_PLANNED" />
+      <xs:enumeration value="UNKNOWN" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="BaselineProgressStatusEnum" nillable="true" type="tns:BaselineProgressStatusEnum" />
+</xs:schema>

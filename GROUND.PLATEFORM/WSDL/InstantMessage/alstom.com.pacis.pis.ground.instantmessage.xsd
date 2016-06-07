@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/instantmessage/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="q1:InstantMessageElementListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InstantMessageElementListResult">
+    <xs:sequence>
+      <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" />
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/instantmessage/" name="ResultCode" type="q3:InstantMessageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageElementListResult" nillable="true" type="q4:InstantMessageElementListResult" />
+  <xs:simpleType name="InstantMessageErrorEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="INVALID_SESSION_ID" />
+      <xs:enumeration value="INVALID_REQUEST_TIMEOUT" />
+      <xs:enumeration value="UNKNOWN_ELEMENT_ID" />
+      <xs:enumeration value="UNKNOWN_MISSION_ID" />
+      <xs:enumeration value="MESSAGE_TEMPLATE_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="STATION_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="PIS_DATASTORE_NOT_ACCESSIBLE" />
+      <xs:enumeration value="T2G_SERVER_OFFLINE" />
+      <xs:enumeration value="TEMPLATE_FILE_NOT_FOUND" />
+      <xs:enumeration value="TEMPLATE_FILE_NOT_VALID" />
+      <xs:enumeration value="SQL_ERROR" />
+      <xs:enumeration value="INVALID_COMMAND_TYPE" />
+      <xs:enumeration value="INVALID_END_DATE" />
+      <xs:enumeration value="INVALID_START_DATE" />
+      <xs:enumeration value="INVALID_CONTEXT" />
+      <xs:enumeration value="INVALID_REQUEST_ID" />
+      <xs:enumeration value="INVALID_TRAIN_ID" />
+      <xs:enumeration value="INVALID_STATUS" />
+      <xs:enumeration value="INTERNAL_ERROR" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageErrorEnum" nillable="true" type="q5:InstantMessageErrorEnum" />
+  <xs:element name="RetrieveMessageTemplateList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q6:TargetAddressType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RetrieveMessageTemplateListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="RetrieveMessageTemplateListResult" nillable="true" type="q7:InstantMessageTemplateListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InstantMessageTemplateListResult">
+    <xs:sequence>
+      <xs:element xmlns:q8="http://alstom.com/pacis/pis/ground/instantmessage/" name="MessageTemplateList" nillable="true" type="q8:MessageTemplateList" />
+      <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/instantmessage/" name="ResultCode" type="q9:InstantMessageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q10="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageTemplateListResult" nillable="true" type="q10:InstantMessageTemplateListResult" />
+  <xs:complexType name="MessageTemplateList">
+    <xs:sequence>
+      <xs:element xmlns:q11="http://alstom.com/pacis/pis/ground/instantmessage/" name="FreeTextMessageTemplateList" nillable="true" type="q11:ArrayOfFreeTextMessageTemplate" />
+      <xs:element xmlns:q12="http://alstom.com/pacis/pis/ground/instantmessage/" name="PredefinedMessageTemplateList" nillable="true" type="q12:ArrayOfPredefinedMessageTemplate" />
+      <xs:element xmlns:q13="http://alstom.com/pacis/pis/ground/instantmessage/" name="ScheduledMessageTemplateList" nillable="true" type="q13:ArrayOfScheduledMessageTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q14="http://alstom.com/pacis/pis/ground/instantmessage/" name="MessageTemplateList" nillable="true" type="q14:MessageTemplateList" />
+  <xs:complexType name="ArrayOfFreeTextMessageTemplate">
+    <xs:sequence>
+      <xs:element xmlns:q15="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="FreeTextMessageTemplate" nillable="true" type="q15:FreeTextMessageTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q16="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfFreeTextMessageTemplate" nillable="true" type="q16:ArrayOfFreeTextMessageTemplate" />
+  <xs:complexType name="FreeTextMessageTemplate">
+    <xs:sequence>
+      <xs:element name="Category" nillable="true" type="xs:string" />
+      <xs:element name="Class" nillable="true" type="xs:string" />
+      <xs:element xmlns:q17="http://alstom.com/pacis/pis/ground/instantmessage/" name="DescriptionList" nillable="true" type="q17:ArrayOfDescription" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q18="http://alstom.com/pacis/pis/ground/instantmessage/" name="FreeTextMessageTemplate" nillable="true" type="q18:FreeTextMessageTemplate" />
+  <xs:complexType name="ArrayOfDescription">
+    <xs:sequence>
+      <xs:element xmlns:q19="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="Description" nillable="true" type="q19:Description" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q20="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfDescription" nillable="true" type="q20:ArrayOfDescription" />
+  <xs:complexType name="Description">
+    <xs:sequence>
+      <xs:element name="Language" nillable="true" type="xs:string" />
+      <xs:element name="Text" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q21="http://alstom.com/pacis/pis/ground/instantmessage/" name="Description" nillable="true" type="q21:Description" />
+  <xs:complexType name="ArrayOfPredefinedMessageTemplate">
+    <xs:sequence>
+      <xs:element xmlns:q22="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="PredefinedMessageTemplate" nillable="true" type="q22:PredefinedMessageTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q23="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfPredefinedMessageTemplate" nillable="true" type="q23:ArrayOfPredefinedMessageTemplate" />
+  <xs:complexType name="PredefinedMessageTemplate">
+    <xs:sequence>
+      <xs:element name="Category" nillable="true" type="xs:string" />
+      <xs:element name="Class" nillable="true" type="xs:string" />
+      <xs:element xmlns:q24="http://alstom.com/pacis/pis/ground/instantmessage/" name="DescriptionList" nillable="true" type="q24:ArrayOfDescription" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+      <xs:element xmlns:q25="http://alstom.com/pacis/pis/ground/instantmessage/" name="ParameterList" nillable="true" type="q25:ArrayOfParameter" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q26="http://alstom.com/pacis/pis/ground/instantmessage/" name="PredefinedMessageTemplate" nillable="true" type="q26:PredefinedMessageTemplate" />
+  <xs:complexType name="ArrayOfParameter">
+    <xs:sequence>
+      <xs:element xmlns:q27="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="Parameter" type="q27:Parameter" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q28="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfParameter" nillable="true" type="q28:ArrayOfParameter" />
+  <xs:simpleType name="Parameter">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Class" />
+      <xs:enumeration value="StationId" />
+      <xs:enumeration value="CarId" />
+      <xs:enumeration value="Delay" />
+      <xs:enumeration value="DelayReason" />
+      <xs:enumeration value="Hour" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q29="http://alstom.com/pacis/pis/ground/instantmessage/" name="Parameter" nillable="true" type="q29:Parameter" />
+  <xs:complexType name="ArrayOfScheduledMessageTemplate">
+    <xs:sequence>
+      <xs:element xmlns:q30="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="ScheduledMessageTemplate" nillable="true" type="q30:ScheduledMessageTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q31="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfScheduledMessageTemplate" nillable="true" type="q31:ArrayOfScheduledMessageTemplate" />
+  <xs:complexType name="ScheduledMessageTemplate">
+    <xs:sequence>
+      <xs:element name="Category" nillable="true" type="xs:string" />
+      <xs:element name="Class" nillable="true" type="xs:string" />
+      <xs:element xmlns:q32="http://alstom.com/pacis/pis/ground/instantmessage/" name="DescriptionList" nillable="true" type="q32:ArrayOfDescription" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q33="http://alstom.com/pacis/pis/ground/instantmessage/" name="ScheduledMessageTemplate" nillable="true" type="q33:ScheduledMessageTemplate" />
+  <xs:element name="RetrieveStationList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q34="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q34:TargetAddressType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RetrieveStationListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q35="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="RetrieveStationListResult" nillable="true" type="q35:InstantMessageStationListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InstantMessageStationListResult">
+    <xs:sequence>
+      <xs:element xmlns:q36="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageStationList" nillable="true" type="q36:ArrayOfStation" />
+      <xs:element xmlns:q37="http://alstom.com/pacis/pis/ground/instantmessage/" name="ResultCode" type="q37:InstantMessageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q38="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageStationListResult" nillable="true" type="q38:InstantMessageStationListResult" />
+  <xs:complexType name="ArrayOfStation">
+    <xs:sequence>
+      <xs:element xmlns:q39="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="Station" nillable="true" type="q39:Station" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q40="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfStation" nillable="true" type="q40:ArrayOfStation" />
+  <xs:complexType name="Station">
+    <xs:sequence>
+      <xs:element xmlns:q41="http://alstom.com/pacis/pis/ground/instantmessage/" name="NameList" nillable="true" type="q41:ArrayOfStationName" />
+      <xs:element name="OperatorCode" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q42="http://alstom.com/pacis/pis/ground/instantmessage/" name="Station" nillable="true" type="q42:Station" />
+  <xs:complexType name="ArrayOfStationName">
+    <xs:sequence>
+      <xs:element xmlns:q43="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="StationName" nillable="true" type="q43:StationName" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q44="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfStationName" nillable="true" type="q44:ArrayOfStationName" />
+  <xs:complexType name="StationName">
+    <xs:sequence>
+      <xs:element name="Language" nillable="true" type="xs:string" />
+      <xs:element name="Name" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q45="http://alstom.com/pacis/pis/ground/instantmessage/" name="StationName" nillable="true" type="q45:StationName" />
+  <xs:element name="SendPredefinedMessages">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q46="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q46:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" nillable="true" type="xs:unsignedInt" />
+        <xs:element xmlns:q47="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="Messages" nillable="true" type="q47:ArrayOfPredefinedMessageType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfPredefinedMessageType">
+    <xs:sequence>
+      <xs:element xmlns:q48="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" maxOccurs="unbounded" name="PredefinedMessageType" nillable="true" type="q48:PredefinedMessageType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q49="http://alstom.com/pacis/pis/ground/instantmessage/" name="ArrayOfPredefinedMessageType" nillable="true" type="q49:ArrayOfPredefinedMessageType" />
+  <xs:complexType name="PredefinedMessageType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CarId" nillable="true" type="xs:unsignedInt" />
+      <xs:element minOccurs="0" name="Delay" nillable="true" type="xs:unsignedInt" />
+      <xs:element minOccurs="0" name="DelayReason" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Hour" nillable="true" type="xs:dateTime" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="StationId" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q50="http://alstom.com/pacis/pis/ground/instantmessage/" name="PredefinedMessageType" nillable="true" type="q50:PredefinedMessageType" />
+  <xs:element name="SendPredefinedMessagesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q51="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="SendPredefinedMessagesResult" nillable="true" type="q51:InstantMessageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InstantMessageResult">
+    <xs:sequence>
+      <xs:element name="RequestId" type="ser:guid" />
+      <xs:element xmlns:q52="http://alstom.com/pacis/pis/ground/instantmessage/" name="ResultCode" type="q52:InstantMessageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q53="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageResult" nillable="true" type="q53:InstantMessageResult" />
+  <xs:element name="SendFreeTextMessage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q54="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q54:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" nillable="true" type="xs:unsignedInt" />
+        <xs:element xmlns:q55="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="Message" nillable="true" type="q55:FreeTextMessageType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="FreeTextMessageType">
+    <xs:sequence>
+      <xs:element name="AttentionGetter" type="xs:boolean" />
+      <xs:element name="DelayBetweenRepetitions" type="xs:unsignedInt" />
+      <xs:element name="DisplayDuration" type="xs:unsignedInt" />
+      <xs:element name="FreeText" nillable="true" type="xs:string" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+      <xs:element name="NumberOfRepetitions" type="xs:unsignedInt" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q56="http://alstom.com/pacis/pis/ground/instantmessage/" name="FreeTextMessageType" nillable="true" type="q56:FreeTextMessageType" />
+  <xs:element name="SendFreeTextMessageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q57="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="SendFreeTextMessageResult" nillable="true" type="q57:InstantMessageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendScheduledMessage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q58="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q58:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" nillable="true" type="xs:unsignedInt" />
+        <xs:element xmlns:q59="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="Message" nillable="true" type="q59:ScheduledMessageType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ScheduledMessageType">
+    <xs:sequence>
+      <xs:element name="FreeText" nillable="true" type="xs:string" />
+      <xs:element name="Identifier" nillable="true" type="xs:string" />
+      <xs:element xmlns:q60="http://alstom.com/pacis/pis/ground/instantmessage/" name="Period" nillable="true" type="q60:ScheduledPeriod" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q61="http://alstom.com/pacis/pis/ground/instantmessage/" name="ScheduledMessageType" nillable="true" type="q61:ScheduledMessageType" />
+  <xs:complexType name="ScheduledPeriod">
+    <xs:sequence>
+      <xs:element name="EndDateTime" type="xs:dateTime" />
+      <xs:element name="StartDateTime" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q62="http://alstom.com/pacis/pis/ground/instantmessage/" name="ScheduledPeriod" nillable="true" type="q62:ScheduledPeriod" />
+  <xs:element name="SendScheduledMessageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q63="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="SendScheduledMessageResult" nillable="true" type="q63:InstantMessageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancelAllMessages">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q64="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q64:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" nillable="true" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancelAllMessagesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q65="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="CancelAllMessagesResult" nillable="true" type="q65:InstantMessageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancelScheduledMessage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="requestId" type="ser:guid" />
+        <xs:element xmlns:q66="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q66:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" nillable="true" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancelScheduledMessageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q67="http://alstom.com/pacis/pis/ground/instantmessage/" minOccurs="0" name="CancelScheduledMessageResult" nillable="true" type="q67:InstantMessageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

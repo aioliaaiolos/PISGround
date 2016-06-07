@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/schema/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="ElementAvailableElementDataList">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="Element{0}List" Namespace="http://alstom.com/pacis/pis/schema/" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="AvailableElementData" Namespace="http://alstom.com/pacis/pis/schema/" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AvailableElementData" nillable="true" type="tns:AvailableElementData" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementAvailableElementDataList" nillable="true" type="tns:ElementAvailableElementDataList" />
+  <xs:complexType name="AvailableElementData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LmtPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MissionCommercialNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="OnlineStatus" type="xs:boolean" />
+      <xs:element minOccurs="0" name="PisBaselineData" nillable="true" type="tns:PisBaseline" />
+      <xs:element minOccurs="0" name="PisBasicPackageVersion" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AvailableElementData" nillable="true" type="tns:AvailableElementData" />
+  <xs:complexType name="PisBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArchivedValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisMissionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentExpirationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentForcedOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisMissionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureActivationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureExpirationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisMissionOut" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PisBaseline" nillable="true" type="tns:PisBaseline" />
+  <xs:complexType name="TargetAddressType">
+    <xs:sequence>
+      <xs:element name="Id" nillable="true" type="xs:string" />
+      <xs:element name="Type" type="tns:AddressTypeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="TargetAddressType" nillable="true" type="tns:TargetAddressType" />
+  <xs:simpleType name="AddressTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Element" />
+      <xs:enumeration value="MissionOperatorCode" />
+      <xs:enumeration value="MissionCode" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="AddressTypeEnum" nillable="true" type="tns:AddressTypeEnum" />
+</xs:schema>

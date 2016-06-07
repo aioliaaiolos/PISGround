@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0FEB267E-0426-4C90-9882-DB46F62E9297}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PIS.Ground.Core</RootNamespace>
+    <AssemblyName>PIS.Ground.Core</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerSDK\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.Sdk.Sfc, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerSDK\Microsoft.SqlServer.Management.Sdk.Sfc.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Smo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerSDK\Microsoft.SqlServer.Smo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SmoExtended, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerSDK\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlEnum, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\SqlServerSDK\Microsoft.SqlServer.SqlEnum.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Clients\AppGroundClient.cs" />
+    <Compile Include="Common\AlstomGlobalDefines.cs" />
+    <Compile Include="CommonConfiguration\CommonConfiguration.cs" />
+    <Compile Include="Common\CreateOnDispatchServiceAttribute.cs" />
+    <Compile Include="Common\INotificationSender.cs" />
+    <Compile Include="Common\NotificationSender.cs" />
+    <Compile Include="Data\AutomaticModeRequest.cs" />
+    <Compile Include="Data\DownloadFolderRequest.cs" />
+    <Compile Include="Data\FileReceivedArgs.cs" />
+    <Compile Include="Data\FolderInfo.cs" />
+    <Compile Include="Data\HistoryLogResponse.cs" />
+    <Compile Include="Data\IFolderInfo.cs" />
+    <Compile Include="Data\IRemoteFileClass.cs" />
+    <Compile Include="Data\IRemoteFolderClass.cs" />
+    <Compile Include="Data\IRequestContext.cs" />
+    <Compile Include="Data\IRequestContextProcessor.cs" />
+    <Compile Include="Data\ListWithChangedEvent.cs" />
+    <Compile Include="Data\ManualModeRequest.cs" />
+    <Compile Include="Data\MissionInitializeCommonRequest.cs" />
+    <Compile Include="Data\ModifiedModeRequest.cs" />
+    <Compile Include="Data\PisMission.cs" />
+    <Compile Include="Data\PisVersion.cs" />
+    <Compile Include="Data\RemoteFileClass.cs" />
+    <Compile Include="Data\RemoteFolderClass.cs" />
+    <Compile Include="Data\ServiceInfoList.cs" />
+    <Compile Include="Data\SystemChangedNotificationArgs.cs" />
+    <Compile Include="Data\SystemDeletedNotificationArgs.cs" />
+    <Compile Include="Data\T2GOnlineStatusNotificationArgs.cs" />
+    <Compile Include="Data\TrainBaselineStatusData.cs" />
+    <Compile Include="Data\UploadFileDistributionRequest.cs" />
+    <Compile Include="LogMgmt\HistoryLogger.cs" />
+    <Compile Include="LogMgmt\HistoryLoggerConfiguration.cs" />
+    <Compile Include="LogMgmt\ILogManager.cs" />
+    <Compile Include="PackageAccess\DatabaseQueries.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DatabaseQueries.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PackageAccess\SpecificLmtDatabaseAccessor.cs" />
+    <Compile Include="PackageAccess\LmtDatabaseAccessor.cs" />
+    <Compile Include="PackageAccess\LmtDatabaseStation.cs" />
+    <Compile Include="PackageAccess\SIVENGLmtDatabaseAccessor.cs" />
+    <Compile Include="PackageAccess\URBANLmtDatabaseAccessor.cs" />
+    <Compile Include="SessionMgmt\ISessionManager.cs" />
+    <Compile Include="SessionMgmt\ISessionManagerExtended.cs" />
+    <Compile Include="SqlServerAccess\BackupHelper.cs" />
+    <Compile Include="SqlServerAccess\DataCopyHelper.cs" />
+    <Compile Include="SqlServerAccess\RestoreHelper.cs" />
+    <Compile Include="SqlServerAccess\SqlHelper.cs" />
+    <Compile Include="SqlServerAccess\SqlHelperParameterCache.cs" />
+    <Compile Include="T2G\generated\NotificationServiceInterfaces.cs" />
+    <Compile Include="T2G\interfaces\IT2GConnectionManager.cs" />
+    <Compile Include="T2G\interfaces\IT2GFileDistributionManager.cs" />
+    <Compile Include="T2G\interfaces\IT2GConnectionListener.cs" />
+    <Compile Include="T2G\interfaces\IT2GManager.cs" />
+    <Compile Include="T2G\interfaces\IT2GNotificationProcessor.cs" />
+    <Compile Include="T2G\interfaces\IT2GNotifierTarget.cs" />
+    <Compile Include="T2G\T2GNotificationService.asmx.cs" />
+    <Compile Include="T2G\T2GConnectionManager.cs" />
+    <Compile Include="T2G\T2GDataConverter.cs" />
+    <Compile Include="T2G\T2GFileDistributionManager.cs" />
+    <Compile Include="T2G\T2GManager.cs" />
+    <Compile Include="T2G\T2GManagerContainer.cs" />
+    <Compile Include="T2G\T2GSessionData.cs" />
+    <Compile Include="Utility\AXORCryptClass.cs" />
+    <Compile Include="Utility\CRC32Calculation.cs" />
+    <Compile Include="Data\AvailableElementData.cs" />
+    <Compile Include="Data\AddressElementData.cs" />
+    <Compile Include="Data\FilePublishedNotificationArgs.cs" />
+    <Compile Include="Data\FilePublicationNotificationArgs.cs" />
+    <Compile Include="Data\FtpState.cs" />
+    <Compile Include="Data\FtpStatus.cs" />
+    <Compile Include="Data\PisBaseline.cs" />
+    <Compile Include="Data\RequestData.cs" />
+    <Compile Include="Data\DownloadFileDistributionRequest.cs" />
+    <Compile Include="Data\ElementInfoEventArgs.cs" />
+    <Compile Include="Data\EnumTypes.cs" />
+    <Compile Include="Data\FileDistributionRequest.cs" />
+    <Compile Include="Data\FileDistributionStatusArgs.cs" />
+    <Compile Include="Data\Recipient.cs" />
+    <Compile Include="Data\ServiceInfoData.cs" />
+    <Compile Include="Data\StationData.cs" />
+    <Compile Include="Data\SystemInfoData.cs" />
+    <Compile Include="Data\TransferTaskData.cs" />
+    <Compile Include="LogMgmt\LogManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Data\SessionData.cs" />
+    <Compile Include="SessionMgmt\SessionManager.cs" />
+    <Compile Include="SQLite\SQLiteWrapper.cs" />
+    <Compile Include="T2G\generated\FileTransferClient.cs" />
+    <Compile Include="T2G\generated\IdentificationClient.cs" />
+    <Compile Include="T2G\generated\MaintenanceClient.cs" />
+    <Compile Include="T2G\generated\VehiculeInfoClient.cs" />
+    <Compile Include="T2G\T2GLocalDataStorage.cs" />
+    <Compile Include="T2G\T2GNotificationProcessor.cs" />
+    <Compile Include="Utility\DateTimeHelpers.cs" />
+    <Compile Include="Utility\FtpUploader.cs" />
+    <Compile Include="Utility\ServiceConfiguration.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PackageAccess\DatabaseQueries.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DatabaseQueries.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SQLite\System.Data.SQLite.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>call "$(ProjectDir)T2G\GenerateWebServicesProxy.bat"  $(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL
+
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Ground.GroundCore.AppGround AppGroundClient.cs AppGroundClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd 
+</PreBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://alstom.com/pacis/pis/ground/mission/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" name="MissionService" targetNamespace="http://alstom.com/pacis/pis/ground/mission/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://alstom.com/pacis/pis/ground/mission/Imports">
+      <xsd:import schemaLocation="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd0" namespace="http://alstom.com/pacis/pis/ground/mission/" />
+      <xsd:import schemaLocation="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd2" namespace="http://alstom.com/pacis/pis/schema/" />
+      <xsd:import schemaLocation="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd4" namespace="http://alstom.com/pacis/pis/schema/train/mission/" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IMissionService_RetrieveElementList_InputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveElementList" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_RetrieveElementList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveElementListResponse" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeAutomaticMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeAutomaticMission" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeAutomaticMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeAutomaticMissionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeModifiedMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeModifiedMission" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeModifiedMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeModifiedMissionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeManualMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeManualMission" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeManualMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeManualMissionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_StopMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:StopMission" />
+  </wsdl:message>
+  <wsdl:message name="IMissionService_StopMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:StopMissionResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IMissionService">
+    <wsdl:operation name="RetrieveElementList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/RetrieveElementList" message="tns:IMissionService_RetrieveElementList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/RetrieveElementListResponse" message="tns:IMissionService_RetrieveElementList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="InitializeAutomaticMission">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeAutomaticMission" message="tns:IMissionService_InitializeAutomaticMission_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeAutomaticMissionResponse" message="tns:IMissionService_InitializeAutomaticMission_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="InitializeModifiedMission">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeModifiedMission" message="tns:IMissionService_InitializeModifiedMission_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeModifiedMissionResponse" message="tns:IMissionService_InitializeModifiedMission_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="InitializeManualMission">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeManualMission" message="tns:IMissionService_InitializeManualMission_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeManualMissionResponse" message="tns:IMissionService_InitializeManualMission_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="StopMission">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/StopMission" message="tns:IMissionService_StopMission_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/mission/IMissionService/StopMissionResponse" message="tns:IMissionService_StopMission_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IMissionService" type="tns:IMissionService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="RetrieveElementList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/mission/IMissionService/RetrieveElementList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeAutomaticMission">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeAutomaticMission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeModifiedMission">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeModifiedMission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeManualMission">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/mission/IMissionService/InitializeManualMission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StopMission">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/mission/IMissionService/StopMission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MissionService">
+    <wsdl:port name="BasicHttpBinding_IMissionService" binding="tns:BasicHttpBinding_IMissionService">
+      <soap:address location="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

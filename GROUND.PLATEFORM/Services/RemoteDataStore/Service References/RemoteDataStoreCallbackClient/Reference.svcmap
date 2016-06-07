@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="50a356da-2870-489f-ba65-8c2d69b191e8" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:4917/RemoteDataStoreCallbackService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="RemoteDataStoreCallbackService.wsdl" MetadataType="Wsdl" ID="8f4a7c43-4960-45a1-8386-94baf46a6290" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?wsdl" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService1.wsdl" MetadataType="Wsdl" ID="7c33163f-8f61-4b9d-93ad-d7029f9c14a1" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService.disco" MetadataType="Disco" ID="a7a44a5c-3b40-4af1-bece-6af0570c2fd2" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?disco" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService.xsd" MetadataType="Schema" ID="8ea50883-1a27-4620-9b7d-260f187acf79" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?xsd=xsd0" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService1.xsd" MetadataType="Schema" ID="c7864ef1-a257-4d9a-928c-be16b595c47c" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?xsd=xsd1" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService2.xsd" MetadataType="Schema" ID="fbf64d38-7fa1-4d0e-b494-a5375a77aaea" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?xsd=xsd2" />
+    <MetadataFile FileName="RemoteDataStoreCallbackService3.xsd" MetadataType="Schema" ID="9d17fc53-1feb-4f39-9529-2d385e099c99" SourceId="1" SourceUrl="http://localhost:4917/RemoteDataStoreCallbackService.svc?xsd=xsd3" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

@@ -1,0 +1,20 @@
+<!-- 
+<copyright file="RemoveObsoleteMaintenanceMethods.wsf" company="Adetel SIE.">
+Copyright by Adetel SIE 2015.  All rights reserved.
+
+The information contained herein is confidential property of Adetel SIE.
+The use, copy, transfer or disclosure of such
+information is prohibited except by express written agreement with Adetel SIE.
+</copyright>
+-->
+
+<job id="RemoveObsoleteMaintenanceMethods">
+	<script language="JScript" src="..\RemoveObsoleteMethods.js"/>
+	
+	<script language="JScript">
+		// This script file is used to remove obsolete methods from the wsdl file definition.
+		RemoveMethodFromWsdlFile("alstom.com.pacis.pis.ground.maintenance.wsdl", "IMaintenanceService", "GetTrainBaselineStatus");
+		RemoveElementFromXsdFile("alstom.com.pacis.pis.ground.maintenance.xsd", "http://alstom.com/pacis/pis/ground/maintenance/", "GetTrainBaselineStatus")
+		RemoveElementFromXsdFile("alstom.com.pacis.pis.ground.maintenance.xsd", "http://alstom.com/pacis/pis/ground/maintenance/", "GetTrainBaselineStatusResponse")
+	</script>
+</job>

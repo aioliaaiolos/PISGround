@@ -1,0 +1,346 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" name="DataPackageService" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/Imports">
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage/" />
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.core.data.xsd" namespace="http://alstom.com/pacis/pis/ground/core/data/" />
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage1.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="DataPackageService_uploadDataPackages_InputMessage">
+    <wsdl:part name="parameters" element="tns:uploadDataPackages" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_uploadDataPackages_OutputMessage">
+    <wsdl:part name="parameters" element="tns:uploadDataPackagesResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_defineNewBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:defineNewBaseline" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_defineNewBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:defineNewBaselineResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteBaselineDefinition_InputMessage">
+    <wsdl:part name="parameters" element="tns:deleteBaselineDefinition" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteBaselineDefinition_OutputMessage">
+    <wsdl:part name="parameters" element="tns:deleteBaselineDefinitionResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_GetAvailableElementDataList_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementDataList" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_GetAvailableElementDataList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementDataListResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignCurrentBaselineFromElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:unassignCurrentBaselineFromElement" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignCurrentBaselineFromElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:unassignCurrentBaselineFromElementResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignFutureBaselineFromElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:unassignFutureBaselineFromElement" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignFutureBaselineFromElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:unassignFutureBaselineFromElementResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getDataPackagesVersionsList_InputMessage">
+    <wsdl:part name="parameters" element="tns:getDataPackagesVersionsList" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getDataPackagesVersionsList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getDataPackagesVersionsListResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteDataPackage_InputMessage">
+    <wsdl:part name="parameters" element="tns:deleteDataPackage" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteDataPackage_OutputMessage">
+    <wsdl:part name="parameters" element="tns:deleteDataPackageResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_removeBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:removeBaseline" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_removeBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:removeBaselineResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getBaselinesList_InputMessage">
+    <wsdl:part name="parameters" element="tns:getBaselinesList" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getBaselinesList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getBaselinesListResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getAddresseesDataPackagesBaselines_InputMessage">
+    <wsdl:part name="parameters" element="tns:getAddresseesDataPackagesBaselines" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getAddresseesDataPackagesBaselines_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getAddresseesDataPackagesBaselinesResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignFutureBaselineToElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:assignFutureBaselineToElement" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignFutureBaselineToElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:assignFutureBaselineToElementResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignCurrentBaselineToElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:assignCurrentBaselineToElement" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignCurrentBaselineToElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:assignCurrentBaselineToElementResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesFutureBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesFutureBaseline" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesFutureBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesFutureBaselineResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesArchivedBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesArchivedBaseline" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesArchivedBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesArchivedBaselineResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_clearAddreeseesForcingStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:clearAddreeseesForcingStatus" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_clearAddreeseesForcingStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:clearAddreeseesForcingStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_distributeBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:distributeBaseline" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_distributeBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:distributeBaselineResponse" />
+  </wsdl:message>
+  <wsdl:portType name="DataPackageService">
+    <wsdl:operation name="uploadDataPackages">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages" message="tns:DataPackageService_uploadDataPackages_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackagesResponse" message="tns:DataPackageService_uploadDataPackages_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="defineNewBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline" message="tns:DataPackageService_defineNewBaseline_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaselineResponse" message="tns:DataPackageService_defineNewBaseline_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="deleteBaselineDefinition">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition" message="tns:DataPackageService_deleteBaselineDefinition_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinitionResponse" message="tns:DataPackageService_deleteBaselineDefinition_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetAvailableElementDataList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList" message="tns:DataPackageService_GetAvailableElementDataList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataListResponse" message="tns:DataPackageService_GetAvailableElementDataList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="unassignCurrentBaselineFromElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement" message="tns:DataPackageService_unassignCurrentBaselineFromElement_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElementResponse" message="tns:DataPackageService_unassignCurrentBaselineFromElement_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="unassignFutureBaselineFromElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement" message="tns:DataPackageService_unassignFutureBaselineFromElement_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElementResponse" message="tns:DataPackageService_unassignFutureBaselineFromElement_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="getDataPackagesVersionsList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList" message="tns:DataPackageService_getDataPackagesVersionsList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsListResponse" message="tns:DataPackageService_getDataPackagesVersionsList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="deleteDataPackage">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage" message="tns:DataPackageService_deleteDataPackage_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackageResponse" message="tns:DataPackageService_deleteDataPackage_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="removeBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline" message="tns:DataPackageService_removeBaseline_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaselineResponse" message="tns:DataPackageService_removeBaseline_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="getBaselinesList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList" message="tns:DataPackageService_getBaselinesList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesListResponse" message="tns:DataPackageService_getBaselinesList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="getAddresseesDataPackagesBaselines">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines" message="tns:DataPackageService_getAddresseesDataPackagesBaselines_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselinesResponse" message="tns:DataPackageService_getAddresseesDataPackagesBaselines_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="assignFutureBaselineToElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement" message="tns:DataPackageService_assignFutureBaselineToElement_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElementResponse" message="tns:DataPackageService_assignFutureBaselineToElement_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="assignCurrentBaselineToElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement" message="tns:DataPackageService_assignCurrentBaselineToElement_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElementResponse" message="tns:DataPackageService_assignCurrentBaselineToElement_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesFutureBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline" message="tns:DataPackageService_forceAddresseesFutureBaseline_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaselineResponse" message="tns:DataPackageService_forceAddresseesFutureBaseline_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesArchivedBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline" message="tns:DataPackageService_forceAddresseesArchivedBaseline_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaselineResponse" message="tns:DataPackageService_forceAddresseesArchivedBaseline_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="clearAddreeseesForcingStatus">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus" message="tns:DataPackageService_clearAddreeseesForcingStatus_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatusResponse" message="tns:DataPackageService_clearAddreeseesForcingStatus_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="distributeBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline" message="tns:DataPackageService_distributeBaseline_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaselineResponse" message="tns:DataPackageService_distributeBaseline_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_DataPackageService" type="tns:DataPackageService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="uploadDataPackages">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="defineNewBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBaselineDefinition">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAvailableElementDataList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unassignCurrentBaselineFromElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unassignFutureBaselineFromElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDataPackagesVersionsList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteDataPackage">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="removeBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getBaselinesList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAddresseesDataPackagesBaselines">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="assignFutureBaselineToElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="assignCurrentBaselineToElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesFutureBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesArchivedBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="clearAddreeseesForcingStatus">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="distributeBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DataPackageService">
+    <wsdl:port name="BasicHttpBinding_DataPackageService" binding="tns:BasicHttpBinding_DataPackageService">
+      <soap:address location="http://alstom-ground-pis-server/DataPackage/DataPackageService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

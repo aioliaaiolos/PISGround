@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/livevideocontrol/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/livevideocontrol/" minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="q1:LiveVideoControlElementListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="LiveVideoControlElementListResult">
+    <xs:sequence>
+      <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" />
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/livevideocontrol/" name="ResultCode" type="q3:LiveVideoControlErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/livevideocontrol/" name="LiveVideoControlElementListResult" nillable="true" type="q4:LiveVideoControlElementListResult" />
+  <xs:simpleType name="LiveVideoControlErrorEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="INVALID_SESSION_ID" />
+      <xs:enumeration value="UNKNOWN_ELEMENT_ID" />
+      <xs:enumeration value="UNKNOWN_MISSION_ID" />
+      <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="T2G_SERVER_OFFLINE" />
+      <xs:enumeration value="INVALID_REQUEST_ID" />
+      <xs:enumeration value="INTERNAL_ERROR" />
+      <xs:enumeration value="AUTOMATIC_MODE_ACTIVATED" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/livevideocontrol/" name="LiveVideoControlErrorEnum" nillable="true" type="q5:LiveVideoControlErrorEnum" />
+  <xs:element name="StartVideoStreamingCommand">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q6:TargetAddressType" />
+        <xs:element minOccurs="0" name="url" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StartVideoStreamingCommandResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://alstom.com/pacis/pis/ground/livevideocontrol/" minOccurs="0" name="StartVideoStreamingCommandResult" nillable="true" type="q7:LiveVideoControlResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="LiveVideoControlResult">
+    <xs:sequence>
+      <xs:element name="RequestId" type="ser:guid" />
+      <xs:element xmlns:q8="http://alstom.com/pacis/pis/ground/livevideocontrol/" name="ResultCode" type="q8:LiveVideoControlErrorEnum" />
+      <xs:element name="Url" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/livevideocontrol/" name="LiveVideoControlResult" nillable="true" type="q9:LiveVideoControlResult" />
+  <xs:element name="StopVideoStreamingCommand">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element xmlns:q10="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q10:TargetAddressType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StopVideoStreamingCommandResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q11="http://alstom.com/pacis/pis/ground/livevideocontrol/" minOccurs="0" name="StopVideoStreamingCommandResult" nillable="true" type="q11:LiveVideoControlResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ChangeCommandMode">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="url" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ChangeCommandModeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q12="http://alstom.com/pacis/pis/ground/livevideocontrol/" minOccurs="0" name="ChangeCommandModeResult" nillable="true" type="q12:LiveVideoControlResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetCommandMode">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetCommandModeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q13="http://alstom.com/pacis/pis/ground/livevideocontrol/" minOccurs="0" name="GetCommandModeResult" nillable="true" type="q13:LiveVideoControlResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

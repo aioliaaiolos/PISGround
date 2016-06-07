@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DEBUG_ASSIGN_CURRENT_BASELINE" xml:space="preserve">
+    <value>Assign baseline {0} as current to element {1}.</value>
+    <comment>{0} : Baseline version
+{1} : Element number</comment>
+  </data>
+  <data name="DEBUG_ASSIGN_FUTURE_BASELINE" xml:space="preserve">
+    <value>Assign baseline {0} as future to element {1}.</value>
+    <comment>{0} : Baseline version
+{1} : Element number</comment>
+  </data>
+  <data name="DEBUG_ENTERING_FUNCTION" xml:space="preserve">
+    <value>Entering function {0}.</value>
+    <comment>_</comment>
+  </data>
+  <data name="ERROR_ASSIGN_BASELINE_FAILED" xml:space="preserve">
+    <value>Failed to assign {0} baseline {1} for element {2}.</value>
+    <comment>{0} : Current or Future baseline
+{1} : Baseline version
+{2} : Element number</comment>
+  </data>
+  <data name="ERROR_BASELINE_IS_ASSIGNED" xml:space="preserve">
+    <value>Baseline {0} is assigned to an element</value>
+  </data>
+  <data name="ERROR_BASELINE_NOT_FOUND" xml:space="preserve">
+    <value>There is no baselines with version provided</value>
+  </data>
+  <data name="ERROR_CREATE_DISTRIBUTION_REQUEST" xml:space="preserve">
+    <value>Cannot create a baseline distribution request to element '{0}' for baseline '{1}'.</value>
+    <comment>{0} = element id, {1} = baseline version</comment>
+  </data>
+  <data name="ERROR_DATAPACKAGE_ISNT_FOUND" xml:space="preserve">
+    <value>Data package wasn't found : type - {0}; version - {1}</value>
+  </data>
+  <data name="ERROR_DATAPACKAGE_IS_ASSIGNED" xml:space="preserve">
+    <value>Data package is assigned and deleting isn't forced: type - {0}; version - {1}</value>
+  </data>
+  <data name="ERROR_DATAPACKAGE_IS_USED" xml:space="preserve">
+    <value>Data package is used : type - {0}; version - {1}</value>
+  </data>
+  <data name="ERROR_DISTRIBUTE_BASELINE_FAILED" xml:space="preserve">
+    <value>Error while distributing baseline '{0}' to element '{1}': '{2}'.</value>
+    <comment>{0} = baseline version, {1} = element id, {2} = error description</comment>
+  </data>
+  <data name="ERROR_DISTRIBUTE_BASELINE_FAILED_UNKNOW_BASELINE_VERSION" xml:space="preserve">
+    <value>Error while distributing baseline to element '{0}': baseline version is unknown.</value>
+    <comment>{0} = element id</comment>
+  </data>
+  <data name="ERROR_ELEMENT_INFO" xml:space="preserve">
+    <value>Cannot get information for element with ID: {0}.</value>
+  </data>
+  <data name="ERROR_ELEMENT_IS_OFFLINE" xml:space="preserve">
+    <value>The element is offline.</value>
+  </data>
+  <data name="ERROR_ELEMENT_NOT_FOUND" xml:space="preserve">
+    <value>Element {0} not found in local data store.</value>
+    <comment>{0} : Element Id or Mission Id or Operator Code</comment>
+  </data>
+  <data name="ERROR_GETTING_URL_LIST" xml:space="preserve">
+    <value>Getting URLs list error</value>
+  </data>
+  <data name="ERROR_INVALID_ACTIVATION_DATE" xml:space="preserve">
+    <value>Input activation date is newer than expiration date ({0} &lt; {1}).</value>
+    <comment>{0} : Activation date
+{1} : Expiration date</comment>
+  </data>
+  <data name="ERROR_INVALID_BASELINE_DISTRIBUTE_REQUEST_CONTEXT" xml:space="preserve">
+    <value>Can't process distributing baseline with an invalid request context.</value>
+  </data>
+  <data name="ERROR_INVALID_BASELINE_VERSION" xml:space="preserve">
+    <value>Provided baseline version is not valid : {0}.</value>
+    <comment>{0} : Baseline version</comment>
+  </data>
+  <data name="ERROR_INVALID_DATAPACKAGE_VERSION" xml:space="preserve">
+    <value>Provided data package version is not valid : {0}.</value>
+  </data>
+  <data name="ERROR_INVALID_EXPIRATION_DATE" xml:space="preserve">
+    <value>Input expiration date is older than current date ({0} &lt; {1}).</value>
+    <comment>{0} : Expiration date
+{1} : Current date</comment>
+  </data>
+  <data name="ERROR_INVALID_REQUEST_ID" xml:space="preserve">
+    <value>Failed to generate a valid request id.</value>
+  </data>
+  <data name="ERROR_INVALID_SESSION_ID" xml:space="preserve">
+    <value>SessionId {0} is not valid.</value>
+    <comment>{0} : Provided session identifier</comment>
+  </data>
+  <data name="ERROR_REMOTEDATASTORE_FAULTED" xml:space="preserve">
+    <value>RemoteDataStore is in faulted state.</value>
+    <comment>.</comment>
+  </data>
+  <data name="ERROR_REMOTEDATASTORE_NOT_ACCESSIBLE" xml:space="preserve">
+    <value>Failed to send request to RemoteDataStore, check if it's running and accessible!</value>
+  </data>
+  <data name="ERROR_REQUEST_PROCESSING" xml:space="preserve">
+    <value>Processing request ... context is null</value>
+  </data>
+  <data name="ERROR_SERVICE_INFO_NOT_FOUND" xml:space="preserve">
+    <value>The service info wasn't found.</value>
+  </data>
+  <data name="ERROR_SOME_BASELINE_ARE_ASSIGNED" xml:space="preserve">
+    <value>Some baselines are assigned to the elements.</value>
+  </data>
+  <data name="ERROR_T2G_SERVER_OFFLINE" xml:space="preserve">
+    <value>T2G Ground server is not responding.</value>
+  </data>
+  <data name="ERROR_TRANSFER_TASKS_CANCELING" xml:space="preserve">
+    <value>Failure to cancel transfer tasks: {0}.</value>
+  </data>
+  <data name="ERROR_UNDEFINED_NOTIFICATION_SENDER" xml:space="preserve">
+    <value>Cannot send notification to ground applications: the notification sender object is undefined</value>
+  </data>
+  <data name="ERROR_UNKNOWN_BASELINE_VERSION" xml:space="preserve">
+    <value>Unknown baseline version for element {0}</value>
+  </data>
+  <data name="INFO_BASELINE_DISTRIBUTING" xml:space="preserve">
+    <value>Distributing baseline on element {0}.</value>
+  </data>
+  <data name="INFO_FUNCTION_CALLED" xml:space="preserve">
+    <value>{0}  called</value>
+  </data>
+  <data name="INFO_FUNCTION_EXCEPTION" xml:space="preserve">
+    <value>{0} exception</value>
+  </data>
+  <data name="INFO_FUNCTION_EXCEPTION_MESSAGE" xml:space="preserve">
+    <value>{0} exception : {1}</value>
+  </data>
+  <data name="INFO_FUTURE_BASELINE" xml:space="preserve">
+    <value>Future baseline for element {0}  is {1}.</value>
+  </data>
+  <data name="INFO_LIST_OF_TRANSFER_TASKS" xml:space="preserve">
+    <value>List of transfer tasks from T2G = {0}.</value>
+  </data>
+  <data name="INFO_NEW_EVENTS_TO_PROCESS" xml:space="preserve">
+    <value>Woke up. New events to process...</value>
+  </data>
+  <data name="INFO_NOTIFICATIONTOAPPGROUND" xml:space="preserve">
+    <value>sendNotificationToGroundApp : ReqID = {0}; pStatus = {1}.</value>
+  </data>
+  <data name="INFO_NO_EVENTS_TO_PROCESS" xml:space="preserve">
+    <value>No events to process. Sleeping...</value>
+  </data>
+  <data name="INFO_PENDING_TRANSFERS_LIST" xml:space="preserve">
+    <value>List of pending cancellable transfers : {0}.</value>
+  </data>
+  <data name="INFO_REQUEST_IS_EXPIRED" xml:space="preserve">
+    <value>Request is expired.</value>
+  </data>
+  <data name="INFO_REQUEST_PROCESSING" xml:space="preserve">
+    <value>Processing request...</value>
+  </data>
+  <data name="INFO_RETRIEVE_TRANSFER_TASK_ID" xml:space="preserve">
+    <value>Retrieving information for tranfer task id {0} from T2G.</value>
+  </data>
+  <data name="INFO_TASK_IS_CANCELED" xml:space="preserve">
+    <value>Success cancelling previous task(s): {0}.</value>
+  </data>
+  <data name="INFO_TRANSFER_TASK_PARAMS" xml:space="preserve">
+    <value>Found task id {0} from local distribution list. Recipient(s) info: {1}.</value>
+  </data>
+  <data name="INFO_TRANSFER_TASK_PARAMS_FROM_T2G" xml:space="preserve">
+    <value>Information for tranfer task id {0} from T2G. Recipient(s) info: {1}.</value>
+  </data>
+  <data name="WARNING_CANT_RETRIVE_TRANSFER_TASK_INFO" xml:space="preserve">
+    <value>Failure to retrieve information for tranfer task id {0} from T2G.</value>
+  </data>
+  <data name="WARNING_INCOMPLETE_TRANSFER_TASKS_LIST" xml:space="preserve">
+    <value>Got an incomplete tranfer task list from T2G.</value>
+  </data>
+  <data name="WARNING_NO_BASELINE_VERSION_FOUND" xml:space="preserve">
+    <value>Cannot find baseline version associated to request '{0}' for element '{1}'.</value>
+    <comment>{0} = request id, {1} = element id</comment>
+  </data>
+  <data name="WARNING_PENDING_TRANSFERS_LIST" xml:space="preserve">
+    <value>Problem getting the list of pending transfers.</value>
+  </data>
+  <data name="WARNING_TASK_CANCELING_PROBLEM" xml:space="preserve">
+    <value>Problem cancelling previous task(s): {0}.</value>
+  </data>
+</root>

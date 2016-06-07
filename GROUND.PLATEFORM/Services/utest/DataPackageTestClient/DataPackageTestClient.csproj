@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BBD7DC97-AFC8-4BFD-889D-ED898090C38A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DataPackageTestClient</RootNamespace>
+    <AssemblyName>DataPackageTest</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <StartupObject>DataPackageTestClient.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssignCurrentBaselineForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssignCurrentBaselineForm.Designer.cs">
+      <DependentUpon>AssignCurrentBaselineForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssignFutureBaselineForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssignFutureBaselineForm.Designer.cs">
+      <DependentUpon>AssignFutureBaselineForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BaselineDefinitionBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BaselineDefinitionBox.Designer.cs">
+      <DependentUpon>BaselineDefinitionBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataPackageTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataPackageTestForm.Designer.cs">
+      <DependentUpon>DataPackageTestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DistributeBaselineForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DistributeBaselineForm.Designer.cs">
+      <DependentUpon>DistributeBaselineForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ForceAdressees.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ForceAdressees.Designer.cs">
+      <DependentUpon>ForceAdressees.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AssignCurrentBaselineForm.resx">
+      <DependentUpon>AssignCurrentBaselineForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssignFutureBaselineForm.resx">
+      <DependentUpon>AssignFutureBaselineForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BaselineDefinitionBox.resx">
+      <DependentUpon>BaselineDefinitionBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataPackageTestForm.resx">
+      <DependentUpon>DataPackageTestForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DistributeBaselineForm.resx">
+      <DependentUpon>DistributeBaselineForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ForceAdressees.resx">
+      <DependentUpon>ForceAdressees.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TargetAdressTypeSelector.resx">
+      <DependentUpon>TargetAdressTypeSelector.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UploadPackagesExplorer.resx">
+      <DependentUpon>UploadPackagesExplorer.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\DataPackageServiceClient\DataPackageService.xsd" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService1.xsd" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService2.xsd" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService3.xsd" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService4.xsd" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Service References\DataPackageServiceClient\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SessionServiceClient\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="TargetAdressTypeSelector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TargetAdressTypeSelector.Designer.cs">
+      <DependentUpon>TargetAdressTypeSelector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UploadPackagesExplorer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UploadPackagesExplorer.Designer.cs">
+      <DependentUpon>UploadPackagesExplorer.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\DataPackageServiceClient\" />
+    <WCFMetadataStorage Include="Service References\SessionServiceClient\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageServiceClient\DataPackageService.disco" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService.wsdl" />
+    <None Include="Service References\DataPackageServiceClient\DataPackageService5.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageServiceClient\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageServiceClient\DataPackageTestClient.DataPackageServiceClient.DataPackageResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\DataPackageServiceClient\DataPackageTestClient.DataPackageServiceClient.ElementAvailableElementDataList.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\DataPackageServiceClient\DataPackageTestClient.DataPackageServiceClient.GetAdresseesDataPackageBaselinesResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\DataPackageServiceClient\DataPackageTestClient.DataPackageServiceClient.GetBaselineListResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\DataPackageServiceClient\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\SessionServiceClient\SessionService.wsdl" />
+    <None Include="Service References\SessionServiceClient\SessionService.xsd" />
+    <None Include="Service References\SessionServiceClient\SessionService1.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionServiceClient\SessionService.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionServiceClient\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionServiceClient\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

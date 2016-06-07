@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+	<DatabaseConfig>			
+		<DatabaseVersion>1.2.4.0</DatabaseVersion>
+		<MessageRequestTable>
+			<MessageRequestID>1</MessageRequestID>
+			<MessageContextID>1</MessageContextID>
+			<trainID>1</trainID>
+			<DateTime>1</DateTime>
+			<CommandID>1</CommandID>
+			<MessageRequestID>1</MessageRequestID>
+			<RequestID>1</RequestID>
+		</MessageRequestTable>
+		<MessageRequestTable>
+			<RequestID>1</RequestID>
+			<MessageContextID>1</MessageContextID>
+			<Context>1</Context>
+		</MessageRequestTable>
+		<MessageStatusTable>
+			<MessageRequestID>1</MessageRequestID>
+			<CommandStatusID>1</CommandStatusID>
+			<DateTime>1</DateTime>
+		</MessageStatusTable>
+		<CommandStatusTable>
+			<CommandStatusID></CommandStatusID>
+			<CommandID>1</CommandID>
+			<StatusID>1</StatusID>
+		</CommandStatusTable>
+		<CommandTypeTable>
+			<CommandID>1</CommandID>
+			<Command>1</Command>
+		</CommandTypeTable>
+		<StatusTypeTable>
+			<StatusID>12</StatusID>
+			<Status>1</Status>
+		</StatusTypeTable>
+	</DatabaseConfig>
+	<DatabaseCleanupConfig>
+		<MaxNumberOfScheduledMessageInLogDatabase>5000</MaxNumberOfScheduledMessageInLogDatabase>
+		<PercentageOfMaxNumberOfScheduledMessageToCleanUpInLogDatabase>25</PercentageOfMaxNumberOfScheduledMessageToCleanUpInLogDatabase>
+	</DatabaseCleanupConfig>
+	<GetLogConfig>
+		<MaxNumberOfScheduledMessageInGetLog>1000</MaxNumberOfScheduledMessageInGetLog>
+	</GetLogConfig>
+</Config>

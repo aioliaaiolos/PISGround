@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/Imports">
+      <xsd:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd2" namespace="http://alstom.com/pacis/pis/ground/datapackage/" />
+      <xsd:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd0" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd1" namespace="http://alstom.com/pacis/pis/schema/notification/" />
+      <xsd:import schemaLocation="http://localhost:47762/DataPackageCallbackService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="DataPackageCallbackService_updateBaselineDefinitionStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:updateBaselineDefinitionStatus" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageCallbackService_missingDataPackageNotification_InputMessage">
+    <wsdl:part name="parameters" element="tns:missingDataPackageNotification" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageCallbackService_updatePackageUploadStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:updatePackageUploadStatus" />
+  </wsdl:message>
+  <wsdl:message name="DataPackageCallbackService_updateBaselineAssignmentStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:updateBaselineAssignmentStatus" />
+  </wsdl:message>
+  <wsdl:portType name="DataPackageCallbackService">
+    <wsdl:operation name="updateBaselineDefinitionStatus">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updateBaselineDefinitionStatus" message="tns:DataPackageCallbackService_updateBaselineDefinitionStatus_InputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="missingDataPackageNotification">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/missingDataPackageNotification" message="tns:DataPackageCallbackService_missingDataPackageNotification_InputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="updatePackageUploadStatus">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updatePackageUploadStatus" message="tns:DataPackageCallbackService_updatePackageUploadStatus_InputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="updateBaselineAssignmentStatus">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updateBaselineAssignmentStatus" message="tns:DataPackageCallbackService_updateBaselineAssignmentStatus_InputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_DataPackageCallbackService" type="tns:DataPackageCallbackService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="updateBaselineDefinitionStatus">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updateBaselineDefinitionStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="missingDataPackageNotification">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/missingDataPackageNotification" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="updatePackageUploadStatus">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updatePackageUploadStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="updateBaselineAssignmentStatus">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageCallbackService/updateBaselineAssignmentStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>

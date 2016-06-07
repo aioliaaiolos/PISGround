@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/ground/maintenance/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/maintenance/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd2" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:import schemaLocation="http://cnblr12909.dom4.ad.sys/Maintenance/MaintenanceService.svc?xsd=xsd3" namespace="http://alstom.com/pacis/pis/ground/core/data/" />
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q1:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="tns:MaintenanceElementListOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MaintenanceElementListOutput">
+    <xs:sequence>
+      <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" />
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="ResultCode" type="q3:ResultCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MaintenanceElementListOutput" nillable="true" type="tns:MaintenanceElementListOutput" />
+  <xs:element name="GetSystemMessagesFiles">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q4:guid" />
+        <xs:element xmlns:q5="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q5:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetSystemMessagesFilesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="GetSystemMessagesFilesResult" nillable="true" type="q6:MaintenanceOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetVersionsFile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q7:guid" />
+        <xs:element xmlns:q8="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="targetAddress" nillable="true" type="q8:TargetAddressType" />
+        <xs:element minOccurs="0" name="requestTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetVersionsFileResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="GetVersionsFileResult" nillable="true" type="q9:MaintenanceOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetLogs">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q10="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q10:guid" />
+        <xs:element xmlns:q11="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="commandList" nillable="true" type="q11:ArrayOfCommandType" />
+        <xs:element minOccurs="0" name="startDateTime" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="endDateTime" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="language" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetLogsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q12="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="GetLogsResult" nillable="true" type="q12:HistoryLogOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetOldestLogDateTime">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q13="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q13:guid" />
+        <xs:element xmlns:q14="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="commandList" nillable="true" type="q14:ArrayOfCommandType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetOldestLogDateTimeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q15="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="GetOldestLogDateTimeResult" nillable="true" type="q15:HistoryLogOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetLatestLogDateTime">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q16="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q16:guid" />
+        <xs:element xmlns:q17="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="commandList" nillable="true" type="q17:ArrayOfCommandType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetLatestLogDateTimeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q18="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="GetLatestLogDateTimeResult" nillable="true" type="q18:HistoryLogOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CleanLog">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q19="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q19:guid" />
+        <xs:element xmlns:q20="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="commandList" nillable="true" type="q20:ArrayOfCommandType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CleanLogResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q21="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="CleanLogResult" nillable="true" type="q21:MaintenanceOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

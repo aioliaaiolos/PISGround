@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="PIS.Ground.DataPackage.Notification.NotificationGroundService" CodeBehind="NotificationGroundService.svc.cs" %>

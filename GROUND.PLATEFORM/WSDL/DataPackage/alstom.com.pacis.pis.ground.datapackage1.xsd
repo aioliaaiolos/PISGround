@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage/" />
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:complexType name="DataPackagesVersionsList">
+    <xs:sequence>
+      <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="DataPackageType" type="q1:DataPackageType" />
+      <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="VersionsList" nillable="true" type="q2:ArrayOfstring" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DataPackagesVersionsList" nillable="true" type="tns:DataPackagesVersionsList" />
+  <xs:complexType name="GetBaselineListResult">
+    <xs:sequence>
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="baselineDef" nillable="true" type="q3:ArrayOfBaselineDefinition" />
+      <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="error_code" type="q4:DataPackageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GetBaselineListResult" nillable="true" type="tns:GetBaselineListResult" />
+</xs:schema>

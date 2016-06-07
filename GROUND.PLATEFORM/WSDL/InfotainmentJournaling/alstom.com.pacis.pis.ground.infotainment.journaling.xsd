@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/infotainment/journaling/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/infotainment/journaling/" minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="q1:InfotainmentJournalingElementListResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InfotainmentJournalingElementListResponse">
+    <xs:sequence>
+      <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" />
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/infotainment/journaling/" minOccurs="0" name="ResultCode" type="q3:ResultCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/infotainment/journaling/" name="InfotainmentJournalingElementListResponse" nillable="true" type="q4:InfotainmentJournalingElementListResponse" />
+  <xs:simpleType name="ResultCodeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="INTERNAL_ERROR" />
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="INVALID_SESSION_ID" />
+      <xs:enumeration value="INVALID_REQUEST_TIMEOUT" />
+      <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE" />
+      <xs:enumeration value="UNKNOWN_ELEMENT_ID" />
+      <xs:enumeration value="UNKNOWN_MISSION_ID" />
+      <xs:enumeration value="T2G_SERVER_OFFLINE" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/infotainment/journaling/" name="ResultCodeEnum" nillable="true" type="q5:ResultCodeEnum" />
+  <xs:element name="GetReport">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="SessionId" type="ser:guid" />
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="TargetAddress" nillable="true" type="q6:TargetAddressType" />
+        <xs:element minOccurs="0" name="RequestTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetReportResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://alstom.com/pacis/pis/ground/infotainment/journaling/" minOccurs="0" name="GetReportResult" nillable="true" type="q7:InfotainmentJournalingGetReportResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="InfotainmentJournalingGetReportResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="RequestId" type="ser:guid" />
+      <xs:element xmlns:q8="http://alstom.com/pacis/pis/ground/infotainment/journaling/" minOccurs="0" name="ResultCode" type="q8:ResultCodeEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/infotainment/journaling/" name="InfotainmentJournalingGetReportResponse" nillable="true" type="q9:InfotainmentJournalingGetReportResponse" />
+</xs:schema>

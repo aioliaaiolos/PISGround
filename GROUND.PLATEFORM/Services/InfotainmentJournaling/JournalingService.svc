@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="PIS.Ground.Infotainment.Journaling.JournalingService" CodeBehind="JournalingService.svc.cs" %>

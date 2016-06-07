@@ -1,0 +1,2 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="PIS.Ground.DataPackage.DataPackageSync.DataPackageSyncGroundService" CodeBehind="DataPackageSyncGroundService.svc.cs" %>
+

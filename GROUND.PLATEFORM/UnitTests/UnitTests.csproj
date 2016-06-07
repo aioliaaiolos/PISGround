@@ -1,0 +1,255 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4CAEE5B1-B657-4C65-8D06-3ED99E9F5C8A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UnitTests</RootNamespace>
+    <AssemblyName>UnitTests</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\GroundCore\SQLite\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="vjslib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="GroundCoreTest\FtpUtilityTest.cs" />
+    <Compile Include="GroundCoreTest\Crc32Test.cs" />
+    <Compile Include="GroundCoreTest\HistoryLoggerTest.cs" />
+    <Compile Include="GroundCoreTest\LocalDataStorageTest.cs" />
+    <Compile Include="GroundCoreTest\LogManagerTest.cs" />
+    <Compile Include="MaintenanceServiceTest\MaintenanceServiceTest.cs" />
+    <Compile Include="MissionServiceTest\MissionServiceTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemoteDataStoreServiceTest.cs" />
+    <Compile Include="GroundCoreTest\SessionContextAttributeTest.cs" />
+    <Compile Include="GroundCoreTest\SessionManagerTest.cs" />
+    <Compile Include="GroundCoreTest\T2GClientTest.cs" />
+    <Compile Include="GroundCoreTest\T2GContextAttributeTest.cs" />
+    <Compile Include="GroundCoreTest\T2GNotifierTest.cs" />
+    <Compile Include="Service References\DataPackageCallbackClient\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\MaintenanceService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\MissionService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\SessionService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="SessionServiceTest\SessionServiceTest.cs" />
+    <Compile Include="TemplateListAccessorClassUnitTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\GroundCore\GroundCore.csproj">
+      <Project>{0FEB267E-0426-4C90-9882-DB46F62E9297}</Project>
+      <Name>GroundCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services\InstantMessage\InstantMessage.csproj">
+      <Project>{072E2FE3-4295-4825-8F59-800362364E12}</Project>
+      <Name>InstantMessage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services\Maintenance\Maintenance.csproj">
+      <Project>{54C6E72C-A8A6-490F-8518-2210D184C2E0}</Project>
+      <Name>Maintenance</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services\Mission\Mission.csproj">
+      <Project>{BEB19ECB-89F8-423D-8F15-C855DBE0C53C}</Project>
+      <Name>Mission</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services\RemoteDataStore\RemoteDataStore.csproj">
+      <Project>{EF3E033D-53DE-42FC-AD4A-4AEC2191826C}</Project>
+      <Name>RemoteDataStore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services\Session\Session.csproj">
+      <Project>{28F3C516-732F-4814-976E-34DBA8DD135E}</Project>
+      <Name>Session</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Shadow Include="Test References\RemoteDataStore.accessor" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\DataPackageCallbackClient\" />
+    <WCFMetadataStorage Include="Service References\MaintenanceService\" />
+    <WCFMetadataStorage Include="Service References\MissionService\" />
+    <WCFMetadataStorage Include="Service References\SessionService\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Shadow Include="Test References\PIS.Ground.Core.accessor" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionService\SessionService.disco" />
+    <None Include="Service References\SessionService\SessionService.xsd" />
+    <None Include="Service References\SessionService\SessionService1.wsdl" />
+    <None Include="Service References\SessionService\SessionService1.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\SessionService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MissionService\MissionService.wsdl" />
+    <None Include="Service References\SessionService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MissionService\MissionService.disco" />
+    <None Include="Service References\MissionService\MissionService.xsd" />
+    <None Include="Service References\MissionService\MissionService1.xsd" />
+    <None Include="Service References\MissionService\MissionService2.xsd" />
+    <None Include="Service References\MissionService\MissionService3.xsd" />
+    <None Include="Service References\MissionService\MissionService4.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MissionService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MissionService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\DataSources\PIS.Ground.Mission.MissionServiceResult.datasource" />
+    <None Include="Service References\MaintenanceService\MaintenanceService.xsd" />
+    <None Include="Service References\MaintenanceService\MaintenanceService1.xsd" />
+    <None Include="Service References\MaintenanceService\MaintenanceService2.xsd" />
+    <None Include="Service References\MaintenanceService\MaintenanceService3.xsd" />
+    <None Include="Service References\MissionService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\MissionService\UnitTests.MissionService.ElementAvailableElementDataList.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MaintenanceService\MaintenanceService.disco" />
+    <None Include="Service References\MaintenanceService\MaintenanceService.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MaintenanceService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\MaintenanceService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\DataSources\PIS.Ground.Core.Data.HistoryLogResponse.datasource" />
+    <None Include="Properties\DataSources\PIS.Ground.Core.Data.MaintenanceResponse.datasource" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService.wsdl" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService.xsd" />
+    <None Include="Service References\MaintenanceService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\MaintenanceService\UnitTests.MaintenanceService.MaintenanceElementListOutput.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService.disco" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService1.wsdl" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService1.xsd" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService2.xsd" />
+    <None Include="Service References\DataPackageCallbackClient\DataPackageCallbackService3.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageCallbackClient\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageCallbackClient\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\DataPackageCallbackClient\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\CrcTest\" />
+    <Folder Include="Resources\RemoteDataStore\UnitTestFolder\" />
+    <Folder Include="Resources\RemoteDataStore\UnitTestResources\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

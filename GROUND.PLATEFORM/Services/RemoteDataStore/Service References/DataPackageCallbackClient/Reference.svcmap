@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="4c4821de-20aa-42db-b321-a3084798d674" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/DataPackage/DataPackageCallbackService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="DataPackageCallbackService.wsdl" MetadataType="Wsdl" ID="a80b7f8e-7d83-459c-9386-9f291da6c9e3" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="DataPackageCallbackService.disco" MetadataType="Disco" ID="0de82dcd-9e11-451e-b937-50690b3f7650" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?disco" />
+    <MetadataFile FileName="DataPackageCallbackService1.wsdl" MetadataType="Wsdl" ID="76b46b03-7fdf-437a-acdc-0481e530eeda" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?wsdl" />
+    <MetadataFile FileName="DataPackageCallbackService.xsd" MetadataType="Schema" ID="d15ada95-a6aa-4bd0-89c6-c5c28e4fb026" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?xsd=xsd2" />
+    <MetadataFile FileName="DataPackageCallbackService1.xsd" MetadataType="Schema" ID="efff6d25-0994-4e99-acce-67c0934bad37" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?xsd=xsd0" />
+    <MetadataFile FileName="DataPackageCallbackService2.xsd" MetadataType="Schema" ID="9601c262-c02e-4e06-8278-4ee0fcfcf481" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?xsd=xsd1" />
+    <MetadataFile FileName="DataPackageCallbackService3.xsd" MetadataType="Schema" ID="7e26bec6-8747-42db-b66b-466a9e6efc4e" SourceId="1" SourceUrl="http://cdsla1fvb0.dom3.ad.sys/DataPackage/DataPackageCallbackService.svc?xsd=xsd3" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://alstom.com/pacis/pis/ground/realtime/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" name="RealTimeService" targetNamespace="http://alstom.com/pacis/pis/ground/realtime/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://alstom.com/pacis/pis/ground/realtime/Imports">
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.realtime.xsd" namespace="http://alstom.com/pacis/pis/ground/realtime/" />
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.core.data.xsd" namespace="http://alstom.com/pacis/pis/ground/core/data/" />
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="RealTimeService_GetAvailableElementList_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementList" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_GetAvailableElementList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementListResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_RetrieveStationList_InputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveStationList" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_RetrieveStationList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveStationListResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_GetMissionRealTimeInformation_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMissionRealTimeInformation" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_GetMissionRealTimeInformation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMissionRealTimeInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_SetMissionRealTimeInformation_InputMessage">
+    <wsdl:part name="parameters" element="tns:SetMissionRealTimeInformation" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_SetMissionRealTimeInformation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SetMissionRealTimeInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_GetStationRealTimeInformation_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetStationRealTimeInformation" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_GetStationRealTimeInformation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetStationRealTimeInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_SetStationRealTimeInformation_InputMessage">
+    <wsdl:part name="parameters" element="tns:SetStationRealTimeInformation" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_SetStationRealTimeInformation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SetStationRealTimeInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_ClearRealTimeInformation_InputMessage">
+    <wsdl:part name="parameters" element="tns:ClearRealTimeInformation" />
+  </wsdl:message>
+  <wsdl:message name="RealTimeService_ClearRealTimeInformation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ClearRealTimeInformationResponse" />
+  </wsdl:message>
+  <wsdl:portType name="RealTimeService">
+    <wsdl:operation name="GetAvailableElementList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetAvailableElementList" message="tns:RealTimeService_GetAvailableElementList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetAvailableElementListResponse" message="tns:RealTimeService_GetAvailableElementList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveStationList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/RetrieveStationList" message="tns:RealTimeService_RetrieveStationList_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/RetrieveStationListResponse" message="tns:RealTimeService_RetrieveStationList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMissionRealTimeInformation">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetMissionRealTimeInformation" message="tns:RealTimeService_GetMissionRealTimeInformation_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetMissionRealTimeInformationResponse" message="tns:RealTimeService_GetMissionRealTimeInformation_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SetMissionRealTimeInformation">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetMissionRealTimeInformation" message="tns:RealTimeService_SetMissionRealTimeInformation_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetMissionRealTimeInformationResponse" message="tns:RealTimeService_SetMissionRealTimeInformation_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStationRealTimeInformation">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetStationRealTimeInformation" message="tns:RealTimeService_GetStationRealTimeInformation_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetStationRealTimeInformationResponse" message="tns:RealTimeService_GetStationRealTimeInformation_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SetStationRealTimeInformation">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetStationRealTimeInformation" message="tns:RealTimeService_SetStationRealTimeInformation_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetStationRealTimeInformationResponse" message="tns:RealTimeService_SetStationRealTimeInformation_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ClearRealTimeInformation">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/ClearRealTimeInformation" message="tns:RealTimeService_ClearRealTimeInformation_InputMessage" />
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/ClearRealTimeInformationResponse" message="tns:RealTimeService_ClearRealTimeInformation_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_RealTimeService" type="tns:RealTimeService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetAvailableElementList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetAvailableElementList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveStationList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/RetrieveStationList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMissionRealTimeInformation">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetMissionRealTimeInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetMissionRealTimeInformation">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetMissionRealTimeInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStationRealTimeInformation">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/GetStationRealTimeInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetStationRealTimeInformation">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/SetStationRealTimeInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ClearRealTimeInformation">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/realtime/RealTimeService/ClearRealTimeInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="RealTimeService">
+    <wsdl:port name="BasicHttpBinding_RealTimeService" binding="tns:BasicHttpBinding_RealTimeService">
+      <soap:address location="http://alstom-ground-pis-server/RealTime/RealTimeService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

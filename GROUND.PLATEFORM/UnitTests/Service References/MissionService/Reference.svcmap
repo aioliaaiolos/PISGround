@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="8b5e7155-c51c-4ca6-a308-ae21bd395ca9" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/Mission/MissionService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="MissionService.wsdl" MetadataType="Wsdl" ID="f7250090-d18b-4fca-bdcd-6fc5ac458d37" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?wsdl" />
+    <MetadataFile FileName="MissionService.disco" MetadataType="Disco" ID="8b84134e-8d6f-42f6-9ed2-d82a66345eb3" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?disco" />
+    <MetadataFile FileName="MissionService.xsd" MetadataType="Schema" ID="790c6ff8-cca4-42b8-b820-86f6a6cc7cdb" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd1" />
+    <MetadataFile FileName="MissionService1.xsd" MetadataType="Schema" ID="969be7a4-6e8b-411f-867b-084e1f8eafac" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd0" />
+    <MetadataFile FileName="MissionService2.xsd" MetadataType="Schema" ID="114cd9ea-e024-4e06-9043-efba6b8e2d9c" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd3" />
+    <MetadataFile FileName="MissionService3.xsd" MetadataType="Schema" ID="701f8e97-4d8f-4e66-89ee-32451d56fdf1" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd2" />
+    <MetadataFile FileName="MissionService4.xsd" MetadataType="Schema" ID="6f42bb2c-4602-4c67-8485-a16aa99949c0" SourceId="1" SourceUrl="http://cnblr10781.dom4.ad.sys/Mission/MissionService.svc?xsd=xsd4" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

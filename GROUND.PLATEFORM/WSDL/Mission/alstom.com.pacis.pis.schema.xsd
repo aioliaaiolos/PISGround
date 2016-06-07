@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://alstom.com/pacis/pis/schema/" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.core.data.xsd" namespace="http://alstom.com/pacis/pis/ground/core/data/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.train.mission.xsd" namespace="http://alstom.com/pacis/pis/schema/train/mission/" />
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="ElementAvailableElementDataList">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="Element{0}List" Namespace="http://alstom.com/pacis/pis/schema/" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="AvailableElementData" Namespace="http://alstom.com/pacis/pis/schema/" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AvailableElementData" nillable="true" type="tns:AvailableElementData" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementAvailableElementDataList" nillable="true" type="tns:ElementAvailableElementDataList" />
+  <xs:complexType name="AvailableElementData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LmtPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MissionCommercialNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string" />
+      <xs:element xmlns:q1="http://alstom.com/pacis/pis/ground/core/data/" minOccurs="0" name="MissionState" type="q1:MissionStateEnum" />
+      <xs:element minOccurs="0" name="OnlineStatus" type="xs:boolean" />
+      <xs:element minOccurs="0" name="PisBaselineData" nillable="true" type="tns:PisBaseline" />
+      <xs:element minOccurs="0" name="PisBasicPackageVersion" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AvailableElementData" nillable="true" type="tns:AvailableElementData" />
+  <xs:complexType name="PisBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArchivedValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ArchivedVersionPisMissionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentExpirationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentForcedOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CurrentVersionPisMissionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureActivationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureExpirationDateOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureValidOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionLmtOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisBaseOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisInfotainmentOut" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FutureVersionPisMissionOut" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PisBaseline" nillable="true" type="tns:PisBaseline" />
+  <xs:complexType name="AutomaticModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MissionInitializeCommonRequest">
+        <xs:sequence>
+          <xs:element xmlns:q2="http://alstom.com/pacis/pis/schema/train/mission/" minOccurs="0" name="StationInsertion" nillable="true" type="q2:StationInsertion" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AutomaticModeRequest" nillable="true" type="tns:AutomaticModeRequest" />
+  <xs:complexType name="MissionInitializeCommonRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CarNumberingOffsetCode" type="xs:unsignedInt" />
+      <xs:element minOccurs="0" name="ElementAlphaNumber" nillable="true" type="xs:string" />
+      <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="LanguageCodeList" nillable="true" type="q3:ArrayOfstring" />
+      <xs:element minOccurs="0" name="LmtDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="OnBoardValidationFlag" type="xs:boolean" />
+      <xs:element xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="OnboardServiceCodeList" nillable="true" type="q4:ArrayOfunsignedInt" />
+      <xs:element minOccurs="0" name="RequestTimeout" type="xs:unsignedInt" />
+      <xs:element minOccurs="0" name="SessionId" type="ser:guid" />
+      <xs:element minOccurs="0" name="StartDate" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissionInitializeCommonRequest" nillable="true" type="tns:MissionInitializeCommonRequest" />
+  <xs:complexType name="ModifiedModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ManualModeRequest">
+        <xs:sequence>
+          <xs:element xmlns:q5="http://alstom.com/pacis/pis/schema/train/mission/" minOccurs="0" name="StationInsertion" nillable="true" type="q5:StationInsertion" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ModifiedModeRequest" nillable="true" type="tns:ModifiedModeRequest" />
+  <xs:complexType name="ManualModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MissionInitializeCommonRequest">
+        <xs:sequence>
+          <xs:element xmlns:q6="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="CommercialNumberList" nillable="true" type="q6:ArrayOfstring" />
+          <xs:element minOccurs="0" name="MissionTypeCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="RegionCode" type="xs:unsignedInt" />
+          <xs:element xmlns:q7="http://alstom.com/pacis/pis/schema/train/mission/" minOccurs="0" name="ServiceHourList" nillable="true" type="q7:ArrayOfStationServiceHours" />
+          <xs:element xmlns:q8="http://alstom.com/pacis/pis/schema/train/mission/" minOccurs="0" name="ServicedStationList" nillable="true" type="q8:ArrayOfStationList" />
+          <xs:element minOccurs="0" name="TrainName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ManualModeRequest" nillable="true" type="tns:ManualModeRequest" />
+</xs:schema>
