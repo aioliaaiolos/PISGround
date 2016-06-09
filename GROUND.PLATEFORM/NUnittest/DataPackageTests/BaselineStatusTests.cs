@@ -1771,6 +1771,54 @@ namespace DataPackageTests
 				Times.Once());
 		}
 
+        [Test]
+        public void ProcessSystemChangedNotificationTest_UnknownTaskId()
+        {
+            string lOnBoardFutureBaseline = null;
+            TrainBaselineStatusData lUpdatedProgress;
+            List<Recipient> lRecipients = new List<Recipient>();
+            TransferTaskData lTask = BuildSampleTransferTask();
+            Mock<IT2GFileDistributionManager> lT2GMock;
+
+            /// SystemInfo = BuildSampleSystemInfo
+            /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
+            /// FutureBaseline = _latestKnownFutureBaselineVersion;
+            /// OnBoardFutureBaseline = null;
+            /// IsDeepUpdate = true;
+            /// CurrentProgress = BuildSampleTrainBaselineStatusData();
+
+            lT2GMock = new Mock<IT2GFileDistributionManager>();
+
+            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+
+            // If the provided task Id is unknown for T2G, GetTransferTask should return an error
+            // (it will be a string representation of the error)
+            lT2GMock.Setup(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error");
+
+            BaselineStatusInstrumented.ProcessSystemChangedNotification(
+                BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
+                ref lOnBoardFutureBaseline,
+                true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+
+            lT2GMock.Verify(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask),
+                Times.Once());
+
+            // If GetTransferTask returns an error - the request params should be reset            
+            Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
+            Assert.AreEqual(0, lUpdatedProgress.TaskId);
+            Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+
+            // Call ProcessSystemChangedNotification one more time in order to check
+            // that GetTransferTask won't be called (and thus no more errors will be logged )
+            // if the request Id is empty
+            BaselineStatusInstrumented.ProcessSystemChangedNotification(
+                BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
+                ref lOnBoardFutureBaseline,
+                true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+        }
+
 		#endregion
 
 
