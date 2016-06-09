@@ -228,21 +228,6 @@ namespace PIS.Ground.DataPackage
 						_baselineStatusSystemInformationQueue.Enqueue(lNewInfo);
 					}
 					_baselineStatusEvent.Set();
-
-					// Updating on the HistoryLogger the baseline deployments statuses based
-					// on that system changed notification
-
-					string lAssignedCurrentBaseline;
-					string lAssignedFutureBaseline;
-
-					DataPackageService.GetAssignedBaselines(lNewInfo.SystemId, out lAssignedCurrentBaseline, out lAssignedFutureBaseline);
-
-					BaselineStatusUpdater.ProcessSystemChangedNotification(
-						lNewInfo,
-						lAssignedCurrentBaseline,
-						lAssignedFutureBaseline);
-
-
 				}
 			}
 		}

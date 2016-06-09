@@ -672,7 +672,7 @@ namespace PIS.Ground.DataPackage
 							// 
 							if (lUpdatedProgress.Status.RequestId == requestId)
 							{
-								lUpdatedProgress.Status.TaskId = taskId;
+                                lUpdatedProgress.Status.TaskId = taskId;
 
 								// Write updated status to persistent storage
 								//
@@ -1710,6 +1710,10 @@ namespace PIS.Ground.DataPackage
 							LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - T2G Error - " + lT2GError,
 								"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 								null, EventIdEnum.DataPackage);
+
+                            updatedProgress.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            updatedProgress.RequestId = Guid.Empty;
+                            updatedProgress.TaskId = 0;
 						}
 					}
 				}
