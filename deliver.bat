@@ -3,7 +3,7 @@
 :: MakeFile name  : 
 :: Description    : 	   move the package folders to GROUND_DELIVERY
 :: Created        :						  2015-09-30
-:: Updated        :						  2016-05-20
+:: Updated        :						  2016-06-14
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -14,7 +14,11 @@ set ROOT_PATH=%~dp0
 SET SRC_GroundServer_RequisitesZip=%VOUTE_PATH%\PIS\GroundServer\%GroundServer_Requisites_ZIPFileName%.zip
 SET SRC_GroundServer_Requisites_x64Zip=%VOUTE_PATH%\PIS\GroundServer\%GroundServer_Requisites_x64_ZIPFileName%.zip
 SET SRC_GroundServer_Requisites_x86Zip=%VOUTE_PATH%\PIS\GroundServer\%GroundServer_Requisites_x86_ZIPFileName%.zip
-
+SET GROUND_TEST_RESULTS_PATH=%ROOT_PATH%GROUND_DELIVERY\UnitTests
+SET GROUND_TEST_RESULTS_FOLDER=%ROOT_PATH%GROUND_TEST_RESULTS
+SET T2GVEHICLEINFOSIVENG_AND_T2GVEHICLEINFOURBAN_PATH=%ROOT_PATH%GROUND_DELIVERY
+SET T2GVEHICLEINFOSIVENG_FILE=%ROOT_PATH%GROUND.PLATEFORM\Dependencies\T2GConfiguration\T2GVehicleInfo_SIVENG.xml
+SET T2GVEHICLEINFOURBAN_FILE=%ROOT_PATH%GROUND.PLATEFORM\Dependencies\T2GConfiguration\T2GVehicleInfo_URBAN.xml
 
 ::=====================================================================================
 :: CHECK REQUIREMENTS
@@ -123,6 +127,12 @@ if ERRORLEVEL 1 (
 	exit /B 2
 )
 
+mkdir "%GROUND_TEST_RESULTS_PATH%"
+if ERRORLEVEL 1 (
+	echo Cannot Create the directory "%TARGET_SOURCE_DIR%"
+	exit /B 2
+)
+
 ::=====================================================================================
 :: COPY REQUISITE FILES
 ::=====================================================================================
@@ -133,6 +143,12 @@ if ERRORLEVEL 1 SET EXIT_CODE=12
 xcopy "%SRC_GroundServer_Requisites_x64Zip%" "%BUILD_PATH%" /Y
 if ERRORLEVEL 1 SET EXIT_CODE=12 
 xcopy "%SRC_GroundServer_Requisites_x86Zip%" "%BUILD_PATH%" /Y
+if ERRORLEVEL 1 SET EXIT_CODE=12 
+xcopy "%GROUND_TEST_RESULTS_FOLDER%" "%GROUND_TEST_RESULTS_PATH%" /Y
+if ERRORLEVEL 1 SET EXIT_CODE=12 
+xcopy "%T2GVEHICLEINFOSIVENG_FILE%" "%T2GVEHICLEINFOSIVENG_AND_T2GVEHICLEINFOURBAN_PATH%" /Y
+if ERRORLEVEL 1 SET EXIT_CODE=12 
+xcopy "%T2GVEHICLEINFOURBAN_FILE%" "%T2GVEHICLEINFOSIVENG_AND_T2GVEHICLEINFOURBAN_PATH%" /Y
 if ERRORLEVEL 1 SET EXIT_CODE=12 
 
 if not "%EXIT_CODE%" == "0" goto :End
