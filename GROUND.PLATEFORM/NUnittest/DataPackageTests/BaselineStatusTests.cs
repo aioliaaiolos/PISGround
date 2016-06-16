@@ -79,7 +79,7 @@ namespace DataPackageTests
 				string assignedCurrentBaseline,
 				string assignedFutureBaseline,
 				ref string onBoardFutureBaseline,
-				bool isDeepUpdate,
+				ref bool isDeepUpdate,
 				TrainBaselineStatusData currentProgress,
 				out TrainBaselineStatusData updatedProgress)
 			{
@@ -480,6 +480,7 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
+            bool IsDeepUpdate = true;
 
 
 			/// SystemInfo = BuildSampleSystemInfo
@@ -499,7 +500,7 @@ namespace DataPackageTests
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -530,10 +531,12 @@ namespace DataPackageTests
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
 
+            IsDeepUpdate = false;
+
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				false, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -557,6 +560,7 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
+            bool IsDeepUpdate = true;
 
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -576,7 +580,7 @@ namespace DataPackageTests
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
 				ref lOnBoardFutureBaseline,
-				true, null, out lUpdatedProgress);
+                ref IsDeepUpdate, null, out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -607,10 +611,12 @@ namespace DataPackageTests
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
 
+            IsDeepUpdate = false;
+
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
 				ref lOnBoardFutureBaseline,
-				false, null, out lUpdatedProgress);
+                ref IsDeepUpdate, null, out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -644,10 +650,12 @@ namespace DataPackageTests
 
 			lOnBoardFutureBaseline = "5.12.5.9";
 
+            IsDeepUpdate = true;
+
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -678,10 +686,12 @@ namespace DataPackageTests
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
 
+            IsDeepUpdate = false;
+
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				false, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -705,6 +715,7 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
+            bool IsDeepUpdate = true;
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithVersions
 			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -723,7 +734,7 @@ namespace DataPackageTests
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -753,10 +764,12 @@ namespace DataPackageTests
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
 
+            IsDeepUpdate = false;
+
 			BaselineStatusInstrumented.ProcessSystemChangedNotification(
 				BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
 				ref lOnBoardFutureBaseline,
-				false, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
 			lT2GMock.Verify(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask),
@@ -1772,13 +1785,87 @@ namespace DataPackageTests
 		}
 
         [Test]
-        public void ProcessSystemChangedNotificationTest_UnknownTaskId()
+        public void ProcessSystemChangedNotificationTest_T2GBadTaskIdError()
+        {
+            // Preparing for the test
+            //
+            var lT2GMock = new Mock<IT2GFileDistributionManager>();
+            List<Recipient> lRecipients = new List<Recipient>();
+            TransferTaskData lTask = BuildSampleTransferTask();
+            var lBaselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
+            var lCallbackMock = new BaselineCallbackMock();
+            var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
+            var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
+
+            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+
+            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+
+            var lNotification = new SystemInfo(
+                "TRAIN-5",
+                "",
+                968,
+                0,
+                true,
+                CommunicationLink.WIFI,
+                new ServiceInfoList(),
+                new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                new PisMission(),
+                true);
+
+            lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+            lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+            lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
+
+            lCallbackMock.Reset();
+
+            // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
+            // (it will be a string that will contain 'F0308' code)
+            lT2GMock.Setup(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
+
+            // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
+            // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
+            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
+
+            BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
+
+            lT2GMock.Verify(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask),
+                Times.Once());
+
+            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                Times.Once());
+
+            Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+            Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+            Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+
+            if (lCallbackMock.UpdatedProgressInfo != null)
+            {
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                Assert.AreEqual(Guid.Empty, lCallbackMock.UpdatedProgressInfo.RequestId);
+                Assert.AreEqual(0, lCallbackMock.UpdatedProgressInfo.TaskId);
+                Assert.AreEqual(false, lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired);
+            }
+            else
+            {
+                Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+            }
+        }
+
+        [Test]
+        public void ProcessSystemChangedNotificationTest_T2GUnknownError()
         {
             string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
+            bool isDeepUpdate = true;
+            TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
+            SystemInfo systemInfo = BuildSampleSystemInfo();
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -1791,36 +1878,79 @@ namespace DataPackageTests
 
             BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
 
-            // If the provided task Id is unknown for T2G, GetTransferTask should return an error
-            // (it will be a string representation of the error)
+            // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
             lT2GMock.Setup(x => x.GetTransferTask(
                 It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error");
 
+            // If there is a T2G error other than "Bad Task Id" GetErrorCodeByDescription should return
+            // the T2GFileDistributionManagerErrorEnum.eT2GFD_Other error
+            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_Other);
+
             BaselineStatusInstrumented.ProcessSystemChangedNotification(
-                BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
+                systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
                 ref lOnBoardFutureBaseline,
-                true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
             lT2GMock.Verify(x => x.GetTransferTask(
                 It.IsAny<int>(), out lRecipients, out lTask),
                 Times.Once());
 
-            // If GetTransferTask returns an error - the request params should be reset            
-            Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
-            Assert.AreEqual(0, lUpdatedProgress.TaskId);
-            Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                Times.Once());
 
-            // Call ProcessSystemChangedNotification one more time in order to check
-            // that GetTransferTask won't be called (and thus no more errors will be logged )
-            // if the request Id is empty
+            // If GetTransferTask returns an error, other than "Bad Task Id" error - the request params shouldn't be changed          
+            Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
+            Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);            
+            Assert.AreEqual(true, isDeepUpdate);
+        }
+
+        [Test]
+        public void ProcessSystemChangedNotificationTest_T2GNoError()
+        {
+            string lOnBoardFutureBaseline = null;
+            TrainBaselineStatusData lUpdatedProgress;
+            List<Recipient> lRecipients = new List<Recipient>();
+            TransferTaskData lTask = BuildSampleTransferTask();
+            Mock<IT2GFileDistributionManager> lT2GMock;
+            bool isDeepUpdate = true;
+            TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
+            SystemInfo systemInfo = BuildSampleSystemInfo();
+
+            /// SystemInfo = BuildSampleSystemInfo
+            /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
+            /// FutureBaseline = _latestKnownFutureBaselineVersion;
+            /// OnBoardFutureBaseline = null;
+            /// IsDeepUpdate = true;
+            /// CurrentProgress = BuildSampleTrainBaselineStatusData();
+
+            lT2GMock = new Mock<IT2GFileDistributionManager>();
+
+            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+
+            // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
+            lT2GMock.Setup(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask)).Returns("");
+
             BaselineStatusInstrumented.ProcessSystemChangedNotification(
-                BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
+                systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
                 ref lOnBoardFutureBaseline,
-                true, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+
+            lT2GMock.Verify(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask),
+                Times.Once());
+
+            // If GetTransferTask doesn't return any error - 
+            // the GetErrorCodeByDescription() should never be called
+            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                Times.Never());
+
+            // If GetTransferTask doesn't return any error - the request params shouldn't be changed          
+            Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
+            Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
+            Assert.AreEqual(false, isDeepUpdate);
         }
 
 		#endregion
-
-
-	}
+    }
 }

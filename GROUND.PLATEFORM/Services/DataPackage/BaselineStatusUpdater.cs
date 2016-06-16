@@ -1711,9 +1711,13 @@ namespace PIS.Ground.DataPackage
 								"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 								null, EventIdEnum.DataPackage);
 
-                            updatedProgress.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-                            updatedProgress.RequestId = Guid.Empty;
-                            updatedProgress.TaskId = 0;
+                            if (_t2g.GetErrorCodeByDescription(lT2GError) == T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId)
+                            {
+                                updatedProgress.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                                updatedProgress.RequestId = Guid.Empty;
+                                updatedProgress.TaskId = 0;
+                                isDeepUpdate = false;
+                            }
 						}
 					}
 				}
