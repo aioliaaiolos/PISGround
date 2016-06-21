@@ -55,4 +55,7 @@ for /f %%f in ('dir "%WORKING_DIR%\AssemblyInfo.cs" /s/b') do (
 	)
 )
 
+if "%EXIT_CODE%" == "0" echo Success
+if not "%EXIT_CODE%" == "0" echo changeVersion fail with error: %EXIT_CODE%
+
 exit /B %ERROR_CODE%

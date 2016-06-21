@@ -9,6 +9,7 @@
 @echo off
 SETLOCAL
 
+SET EXIT_CODE=0
 if "%WORKING_DIR%" == "" SET WORKING_DIR=%~dp0..\..\
 	
 SetLocal EnableDelayedExpansion
@@ -99,10 +100,13 @@ echo -------------------------------------------- >> "%WORKING_DIR%GROUND_TEST_R
 echo %nFailed% test(s) FAILED >> "%WORKING_DIR%GROUND_TEST_RESULTS\summary_tests.log"
 echo %nPassed% test(s) PASSED >> "%WORKING_DIR%GROUND_TEST_RESULTS\summary_tests.log"
 
-SET EXIT_CODE=0
-if not "%nFailed%" == "0" SET EXIT_CODE=2
+
+if not "%nFailed%" == "0" SET EXIT_CODE=1
 goto End
 
 :End
+
+if "%EXIT_CODE%" == "0" echo Success
+if not "%EXIT_CODE%" == "0" echo UnitTest_GROUND fail with error: %EXIT_CODE%
 
 exit /B %EXIT_CODE%

@@ -14,7 +14,7 @@ if "%WORKING_DIR%" == "" call %~dp0\config.bat WORKING_DIR
 	
 if "%WORKING_DIR%" == "" (
 	echo WORKING_DIR variable not set.
-	SET EXIT_CODE=2
+	SET EXIT_CODE=1
 	goto :End
 )
 
@@ -22,14 +22,14 @@ if "%WORKING_DIR%" == "" (
 
 if EXIST "%WORKING_DIR%\GROUND_TEST_RESULTS" (
 	RMDIR /S /Q "%WORKING_DIR%\GROUND_TEST_RESULTS"
-	IF ERRORLEVEL 1 SET EXIT_CODE=3
+	IF ERRORLEVEL 1 SET EXIT_CODE=2
 )
 
 if not "%EXIT_CODE%"=="0" goto :End
 
 echo Create test result directory at this localtion "%WORKING_DIR%GROUND_TEST_RESULTS\%"
 mkdir %WORKING_DIR%GROUND_TEST_RESULTS\
-IF ERRORLEVEL 1 SET EXIT_CODE=1
+IF ERRORLEVEL 1 SET EXIT_CODE=3
 
 echo Execute unit tests
 SetLocal EnableDelayedExpansion		
@@ -45,5 +45,5 @@ type "%~dp0execute_testLog.txt"
 :End
 
 if "%EXIT_CODE%" == "0" echo Success
-if not "%EXIT_CODE%" == "0" echo Failed
+if not "%EXIT_CODE%" == "0" echo Execute_test fail with error: %EXIT_CODE%
 exit /B %EXIT_CODE%

@@ -13,7 +13,7 @@ REM This batch file generate one proxy client and the config file and ensure tha
 REM Parameters: directory namespace csfile configfile wsdlfiles
 REM  directory is the location where output file shall be 
 
-SET ERRORCODE=0
+SET EXIT_CODE=0
 
 SET /A ARGS_COUNT=0    
 FOR %%A in (%*) DO SET /A ARGS_COUNT+=1    
@@ -37,7 +37,7 @@ echo namespace The wsdl namespace to pass as argument to svcutil.exe method
 echo csfile The name of the destination source file (c# file)
 echo configfile The name of the destination config file (.config)
 echo wsdlfiles One or more filename that describe the wsdl.
-SET ERRORCODE=2
+SET EXIT_CODE=1
 goto :End
 
 :Ok
@@ -56,7 +56,7 @@ SHIFT
 IF NOT ERRORLEVEL 1  goto CopyStep
 @echo off
 echo Error while generating proxy
-SET ERRORCODE=1
+SET EXIT_CODE=2
 goto :End
 
 :CopyStep
@@ -76,7 +76,7 @@ COPY /V /Y %DIRECTORY%\%CSFILE%.temp.cs %DIRECTORY%\%CSFILE%
 IF NOT ERRORLEVEL 1 goto :Config
 
 echo Cannot copy %DIRECTORY%\%CSFILE%.temp.cs to %DIRECTORY%\%CSFILE%
-SET ERRORCODE=1
+SET EXIT_CODE=3
 
 goto :End
 
@@ -93,7 +93,7 @@ COPY /V /Y %DIRECTORY%\%CONFIGFILE%.temp.config %DIRECTORY%\%CONFIGFILE%
 IF NOT ERRORLEVEL 1 goto :End
 
 echo Cannot copy %DIRECTORY%\%CONFIGFILE%.temp.config to %DIRECTORY%\%CONFIGFILE%
-SET ERRORCODE=1
+SET EXIT_CODE=4
 goto :End
 
 :End
@@ -103,4 +103,7 @@ IF EXIST %DIRECTORY%\%CSFILE%.temp.cs DEL /F %DIRECTORY%\%CSFILE%.temp.cs
 IF EXIST %DIRECTORY%\%CSFILE%.temp.cs.2 DEL /F %DIRECTORY%\%CSFILE%.temp.cs.2
 IF EXIST %DIRECTORY%\%CSFILE%.2 DEL /F %DIRECTORY%\%CSFILE%.2
 
-EXIT /B %ERRORCODE%
+if "%EXIT_CODE%" == "0" echo Success
+if not "%EXIT_CODE%" == "0" echo GenerateOneProxy fail with error: %EXIT_CODE%
+
+EXIT /B %EXIT_CODE%
