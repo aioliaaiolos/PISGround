@@ -4,7 +4,7 @@
 :: Description    : 	copy all files from the voute into the source code
 ::				  : 				   copyVoute.bat				
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-06-06
+:: Updated        :						  2016-06-22
 ::=====================================================================================
 @echo off
 
@@ -15,7 +15,8 @@ if "%VOUTE_PATH%"=="" call "%~dp0..\..\config.bat" version_number
 							
 if "%VOUTE_PATH%"=="" (
 	echo Variable VOUTE_PATH not defined
-	exit /B 1
+	SET EXIT_CODE=1
+	goto :End
 )
 							
 SET EXIT_CODE=0

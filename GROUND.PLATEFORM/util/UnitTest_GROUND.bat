@@ -4,7 +4,7 @@
 :: Description    : Execute unit test for PIS-GROUND
 ::				  : 	
 :: Date           :			   2015-09-30
-:: Update         :			   2016-05-20			
+:: Update         :			   2016-06-22			
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -22,7 +22,8 @@ if exist "%WORKING_DIR%GROUND_TEST_RESULTS" (
 		del /F /S /Q "%WORKING_DIR%GROUND_TEST_RESULTS\*"
 		if ERRORLEVEL 1 (
 			echo "Failed to delete previous test results"
-			exit /B 3
+			SET EXIT_CODE=1
+			goto :End
 		)
 		goto :ExecuteTests
 	)
@@ -32,7 +33,8 @@ if not exist "%WORKING_DIR%GROUND_TEST_RESULTS" (
 	mkdir "%WORKING_DIR%GROUND_TEST_RESULTS"
 	if ERRORLEVEL 1 (
 		echo "Cannot create test result directory"
-		exit /B 2
+		SET EXIT_CODE=2
+		goto :End
 	)
 )
 
