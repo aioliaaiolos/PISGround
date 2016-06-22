@@ -4,7 +4,7 @@
 :: Description    : 	download all files necessary to build GROUND project
 ::				  : 				   copyVoute.bat
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-06-06
+:: Updated        :						  2016-06-21
 ::=====================================================================================
 @echo off
 
@@ -47,7 +47,8 @@ IF NOT EXIST "%ZIP_PATH%" set ZIP_PATH=C:\Program Files\7-Zip\7z.exe
 IF NOT EXIST "%ZIP_PATH%" set ZIP_PATH=%ProgramFiles%\7-Zip\7z.exe
 if NOT EXIST "%ZIP_PATH%" (	
 	echo 7-zip is not installed.
-	exit /B 20
+	SET EXIT_CODE=1
+	goto :End
 )
 
 set WORKING_DIR=%~dp0
@@ -65,7 +66,7 @@ ENDLOCAL
 echo execute script "%CURRENT_PATH%GROUND.PLATEFORM\util\copyVoute.bat"
 call %CURRENT_PATH%GROUND.PLATEFORM\util\copyVoute.bat >> "%CURRENT_PATH%configLog.txt" 2>&1
 IF ERRORLEVEL 1 (
-	SET EXIT_CODE=1
+	SET EXIT_CODE=2
 	goto :EndScripts
 )
 
@@ -76,7 +77,7 @@ ENDLOCAL
 type "%CURRENT_PATH%configLog.txt"
 
 if "%EXIT_CODE%"=="0" echo config Success
-if not "%EXIT_CODE%"=="0" echo config Failed
+if not "%EXIT_CODE%"=="0" echo config Failed with the EXIT_CODE : %EXIT_CODE% >> "%CURRENT_PATH%configLog.txt"
 
 pause
 

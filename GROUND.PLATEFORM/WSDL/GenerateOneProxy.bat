@@ -3,8 +3,7 @@
 :: MakeFile name  : 
 :: Description    : 	File specialized to generate WCF proxies files and ensure that file has been modified
 ::                       before replacing the previous files.			
-:: Created        :						  2015
-:: Updated        :						  2016-05-20
+:: Updated        :						  2016-06-22
 ::=====================================================================================
 
 @echo off
@@ -21,12 +20,14 @@ FOR %%A in (%*) DO SET /A ARGS_COUNT+=1
 SET SVCUTIL=%~dp0svcutil.exe
 if NOT EXIST "%SVCUTIL%" (
 	echo SVCUTIL executable does not exist at this location "%SVCUTIL%"
-	exit /B 9
+	SET EXIT_CODE=1
+	goto :End
 )
 
 if "%ARGS_COUNT%" GEQ 10 (
 	echo This scripts does not support %ARGS_COUNT% arguments and more. The maximum supported arguments is 9
-	exit /B 10
+	SET EXIT_CODE=2
+	goto :End
 )
 
 if %ARGS_COUNT% GEQ 5 goto :Ok
@@ -37,7 +38,7 @@ echo namespace The wsdl namespace to pass as argument to svcutil.exe method
 echo csfile The name of the destination source file (c# file)
 echo configfile The name of the destination config file (.config)
 echo wsdlfiles One or more filename that describe the wsdl.
-SET EXIT_CODE=1
+SET EXIT_CODE=3
 goto :End
 
 :Ok
@@ -56,7 +57,7 @@ SHIFT
 IF NOT ERRORLEVEL 1  goto CopyStep
 @echo off
 echo Error while generating proxy
-SET EXIT_CODE=2
+SET EXIT_CODE=4
 goto :End
 
 :CopyStep
@@ -76,7 +77,7 @@ COPY /V /Y %DIRECTORY%\%CSFILE%.temp.cs %DIRECTORY%\%CSFILE%
 IF NOT ERRORLEVEL 1 goto :Config
 
 echo Cannot copy %DIRECTORY%\%CSFILE%.temp.cs to %DIRECTORY%\%CSFILE%
-SET EXIT_CODE=3
+SET EXIT_CODE=5
 
 goto :End
 
@@ -93,7 +94,7 @@ COPY /V /Y %DIRECTORY%\%CONFIGFILE%.temp.config %DIRECTORY%\%CONFIGFILE%
 IF NOT ERRORLEVEL 1 goto :End
 
 echo Cannot copy %DIRECTORY%\%CONFIGFILE%.temp.config to %DIRECTORY%\%CONFIGFILE%
-SET EXIT_CODE=4
+SET EXIT_CODE=6
 goto :End
 
 :End

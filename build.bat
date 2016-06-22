@@ -4,7 +4,7 @@
 :: Description    : 			    build GROUND project
 ::				  : 			execute PISGround.sln project					
 :: Created        :						  2015-09-30
-:: Updated        :						  2016-05-20
+:: Updated        :						  2016-06-21
 ::
 :: Parameters     :   /quick  Do not force rebuild
 ::=====================================================================================
@@ -47,7 +47,10 @@ if ERRORLEVEL 1 (
 echo Build PIS-Ground project
 echo Command line: devenv "%PROJECT_FILE%" %BUILD_PARAM%
 devenv "%PROJECT_FILE%" %BUILD_PARAM% >> "%~dp0buildLog.txt" 2>&1
-if ERRORLEVEL 1 SET EXIT_CODE=2
+if ERRORLEVEL 1 (
+	SET EXIT_CODE=2 
+	goto :End
+)
 
 :EndRunScripts
 type "%~dp0buildLog.txt"
@@ -75,8 +78,7 @@ goto End
 	
 :End
 
-echo ""
-if not "%EXIT_CODE%" == "0" echo Build Failed with exit code %EXIT_CODE%
+if not "%EXIT_CODE%" == "0" echo Build Failed with exit code %EXIT_CODE% >> "%~dp0buildLog.txt" 2>&1
 if "%EXIT_CODE%" == "0" echo Build Succeeded
 pause
 EXIT /B %EXIT_CODE%
