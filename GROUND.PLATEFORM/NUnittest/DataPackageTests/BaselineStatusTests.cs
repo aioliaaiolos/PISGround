@@ -12,6 +12,7 @@ using System.Linq;
 using Moq;
 using NUnit.Framework;
 using PIS.Ground.Core.Data;
+using PIS.Ground.Core.LogMgmt;
 using PIS.Ground.Core.SessionMgmt;
 using PIS.Ground.Core.T2G;
 using PIS.Ground.DataPackage;
@@ -57,14 +58,50 @@ namespace DataPackageTests
 				BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
 				IT2GFileDistributionManager t2g)
 			{
-				MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
+                Mock<ILogManager> logManagerMock = new Mock<ILogManager>();
+                
+                MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
 					BindingFlags.NonPublic | BindingFlags.Static);
 
+
+
 				object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
-					baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g });
+					baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object });
 
 				return (bool)value;
 			}
+
+            public static bool Initialize(
+                Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
+                IT2GFileDistributionManager t2g,
+                ILogManager logManager)
+            {
+                MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
+                    BindingFlags.NonPublic | BindingFlags.Static);
+
+                MethodInfo lMethodInfo1 = typeof(BaselineStatusUpdater).GetMethod("UpdateProgressOnHistoryLogger",
+                    BindingFlags.NonPublic | BindingFlags.Static);
+
+                BaselineStatusUpdater.BaselineProgressUpdateProcedure baselineProgressUpdateProcedureDelegate =
+                    (BaselineStatusUpdater.BaselineProgressUpdateProcedure)Delegate.CreateDelegate(
+                        typeof(BaselineStatusUpdater.BaselineProgressUpdateProcedure),
+                        null,
+                        lMethodInfo1);
+
+                MethodInfo lMethodInfo2 = typeof(BaselineStatusUpdater).GetMethod("RemoveProgressFromHistoryLogger",
+                   BindingFlags.NonPublic | BindingFlags.Static);
+
+                BaselineStatusUpdater.BaselineProgressRemoveProcedure baselineProgressRemoveProcedureDelegate =
+                    (BaselineStatusUpdater.BaselineProgressRemoveProcedure)Delegate.CreateDelegate(
+                        typeof(BaselineStatusUpdater.BaselineProgressRemoveProcedure),
+                        null,
+                        lMethodInfo2);
+
+                object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
+					baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager });
+
+                return (bool)value;
+            }
 
 			delegate void ProcessSystemChangedNotificationDelegate(SystemInfo notification,
 				string assignedCurrentBaseline,
@@ -1790,16 +1827,14 @@ namespace DataPackageTests
             // Preparing for the test
             //
             var lT2GMock = new Mock<IT2GFileDistributionManager>();
+            var lLogManagerMock = new Mock<ILogManager>();
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             var lBaselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
-            var lCallbackMock = new BaselineCallbackMock();
-            var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
-            var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
             lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
 
-            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object);
 
             var lNotification = new SystemInfo(
                 "TRAIN-5",
@@ -1838,21 +1873,17 @@ namespace DataPackageTests
             lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
                 Times.Once());
 
-            Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-            Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-            Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-
-            if (lCallbackMock.UpdatedProgressInfo != null)
-            {
-                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-                Assert.AreEqual(Guid.Empty, lCallbackMock.UpdatedProgressInfo.RequestId);
-                Assert.AreEqual(0, lCallbackMock.UpdatedProgressInfo.TaskId);
-                Assert.AreEqual(false, lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired);
-            }
-            else
-            {
-                Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-            }
+            lLogManagerMock.Verify(x => x.UpdateTrainBaselineStatus(
+                "TRAIN-5",
+                Guid.Empty,
+                0,
+                "968",
+                true,
+                BaselineProgressStatusEnum.UNKNOWN,
+                "5.6.7.8",
+                "6.7.8.9",
+                "5.13.0.6"),
+                Times.Once());
         }
 
         [Test]
