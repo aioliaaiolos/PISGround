@@ -10,13 +10,24 @@ namespace PIS.Ground.Core.T2G
 {
     using System;
 
+    /// <summary>Values that represent T2GFileDistributionManagerErrorEnum.</summary>
+	public enum T2GFileDistributionManagerErrorEnum
+	{
+		/// <summary>An enum constant representing the success option.</summary>
+		eT2GFD_NoError,		
+		/// <summary>An enum constant representing the bad task Id error.</summary>
+		eT2GFD_BadTaskId,
+        /// <summary>An enum constant representing the any other error.</summary>
+		eT2GFD_Other,
+	}
+    
     /// <summary>
     /// Delegate to be called by UpdateFile at the end of its process. Useful when the method is
     /// called asynchronously.
     /// </summary>
     /// <param name="request">The request data.</param>
 	public delegate void UpdateFileCompletionCallBack(PIS.Ground.Core.Data.UploadFileDistributionRequest request);
-
+    
 	/// <summary>Interface for T2G file distribution manager.</summary>
 	public interface IT2GFileDistributionManager
 	{
@@ -65,7 +76,7 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="requestId">Identifier for the request.</param>
 		/// <param name="lstRecipient">[out] The list recipient.</param>
 		/// <param name="objTransferTaskData">[out] Information describing the object transfer task.</param>
-		/// <returns>The transfer task.</returns>
+        /// <returns>Message if any error.</returns>
 		string GetTransferTask(Guid requestId, out System.Collections.Generic.List<PIS.Ground.Core.Data.Recipient> lstRecipient, out PIS.Ground.Core.Data.TransferTaskData objTransferTaskData);
 
 		/// <summary>Get the transfer task.</summary>
@@ -114,5 +125,10 @@ namespace PIS.Ground.Core.T2G
         /// <summary>Adds an upload request.</summary>
         /// <param name="objFileDistributionRequest">Distribute file Request.</param>
         void AddUploadRequest(PIS.Ground.Core.Data.UploadFileDistributionRequest objFileDistributionRequest);
+
+        /// <summary>Returns the file distribution manager error code by its description.</summary>
+        /// <param name="errorDescription">Error description.</param>
+        /// <returns>Error code</returns>
+        T2GFileDistributionManagerErrorEnum GetErrorCodeByDescription(string errorDescription);
 	}
 }

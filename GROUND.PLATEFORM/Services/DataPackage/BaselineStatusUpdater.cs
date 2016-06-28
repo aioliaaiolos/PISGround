@@ -230,6 +230,9 @@ namespace PIS.Ground.DataPackage
 		/// <summary>The client providing access to the T2G server.</summary>
 		private static IT2GFileDistributionManager _t2g;
 
+        /// <summary>The ILogManager interface reference.</summary>
+        private static ILogManager _logManager;
+
 		/// <summary>List of baseline progresses loaded from persistent storage and extended with additional information.</summary>
 		private static Dictionary<string, TrainBaselineStatusExtendedData> _baselineProgresses;
 
@@ -248,6 +251,7 @@ namespace PIS.Ground.DataPackage
 			_isInitialized = false;
 			_isHistoryLoggerAvailable = true;
 			_t2g = null;
+            _logManager = new LogManager();
 			_baselineProgresses = null;
 			_baselineProgressUpdateProcedure = null;
 			_baselineProgressRemoveProcedure = null;
@@ -259,7 +263,7 @@ namespace PIS.Ground.DataPackage
 		/// <returns>true if it succeeds, false otherwise.</returns>		
 		public static bool Initialize(IT2GFileDistributionManager t2g)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"Initialize()",
 				"PIS.Ground.DataPackage.BaselineStatusUpdater.Initialize",
 				null,
@@ -286,18 +290,18 @@ namespace PIS.Ground.DataPackage
 					BaselineStatusResponse lResult = new BaselineStatusResponse();
 					Dictionary<string, TrainBaselineStatusData> lDictionaryResponse = null;
 
-					lResult.ResultCode = LogManager.GetTrainBaselineStatus(out lDictionaryResponse);
+					lResult.ResultCode = _logManager.GetTrainBaselineStatus(out lDictionaryResponse);
 
 					if (lResult.ResultCode != ResultCodeEnum.RequestAccepted)
 					{
-						throw (new HistoryLoggerFailureException("LogManager returned: " +
+						throw (new HistoryLoggerFailureException("_logManager returned: " +
 							Enum.GetName(typeof(ResultCodeEnum), lResult.ResultCode)));
 					}
 
 					if (lDictionaryResponse == null)
 					{
 						_isHistoryLoggerAvailable = false;
-						throw (new HistoryLoggerNotInstalledException("LogManager returned null: Is the HistoryLogger installed?"));
+						throw (new HistoryLoggerNotInstalledException("_logManager returned null: Is the HistoryLogger installed?"));
 					}
 
 					// Convert status to extended flavor 
@@ -337,30 +341,31 @@ namespace PIS.Ground.DataPackage
 					lSuccess = Initialize(lBaselineProgresses,
 						new BaselineProgressUpdateProcedure(UpdateProgressOnHistoryLogger),
 						new BaselineProgressRemoveProcedure(RemoveProgressFromHistoryLogger),
-						t2g);
+						t2g,
+                        _logManager);
 				}
 			}
 			catch (ArgumentNullException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "Initialize() - Argument Null Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "Initialize() - Argument Null Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.Initialize",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "Initialize() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "Initialize() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.Initialize",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "Initialize() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "Initialize() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.Initialize",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerNotInstalledException lException)
 			{
-				LogManager.WriteLog(TraceType.WARNING, "Initialize() - History Logger Exception : ",
+				_logManager.WriteLog(TraceType.WARNING, "Initialize() - History Logger Exception : ",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.Initialize",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -368,18 +373,20 @@ namespace PIS.Ground.DataPackage
 			return lSuccess;
 		}
 
-		/// <summary>Initializes BaselineStatusUpdater. Use this method directly if performing unit tests.
+    	/// <summary>Initializes BaselineStatusUpdater. Use this method directly if performing unit tests.
 		/// 		 Otherwise, use the public overload(s).</summary>
 		/// <param name="baselineProgresses">List of baseline progresses retrieved from persistent storage.</param>
 		/// <param name="baselineProgressUpdateProcedure">The baseline progress update procedure to persistent storage.</param>
 		/// <param name="baselineProgressRemoveProcedure">The baseline progress remove procedure from persistent storage.</param>///
 		/// <param name="t2g">The client providing access to the T2G server.</param>
+        /// <param name="logManager">The ILogManager interface reference. Added for unit test purposes.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>	
 		private static bool Initialize(
 			Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
 			BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
 			BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
-			IT2GFileDistributionManager t2g)
+			IT2GFileDistributionManager t2g,
+            ILogManager logManager)
 		{
 			// Save the method arguments to class fields
 			// 
@@ -387,6 +394,7 @@ namespace PIS.Ground.DataPackage
 			_baselineProgressUpdateProcedure = baselineProgressUpdateProcedure;
 			_baselineProgressRemoveProcedure = baselineProgressRemoveProcedure;
 			_t2g = t2g;
+            _logManager = logManager;
 
 			// Ok. From now one, other methods of this class may be called
 			// 
@@ -447,13 +455,13 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ResetStatusEntries() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ResetStatusEntries() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ResetStatusEntries",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ResetStatusEntries() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ResetStatusEntries() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ResetStatusEntries",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -523,7 +531,7 @@ namespace PIS.Ground.DataPackage
 			string futureBaseline,
 			string assignedFutureBaseline)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessDistributeBaselineRequest" + Environment.NewLine +
 				"(" + Environment.NewLine +
 				"  trainId                  : " + trainId + Environment.NewLine +
@@ -609,19 +617,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - Argument Null Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - Argument Null Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessDistributeBaselineRequest() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -636,7 +644,7 @@ namespace PIS.Ground.DataPackage
 			Guid requestId,
 			int taskId)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessTaskId" + Environment.NewLine +
 				"(" + Environment.NewLine +
 				"  trainId   : " + trainId + Environment.NewLine +
@@ -691,19 +699,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - Argument Null Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - Argument Null Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessTaskId",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessTaskId",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessTaskId() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessTaskId",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -717,7 +725,7 @@ namespace PIS.Ground.DataPackage
 		public static void ProcessFileTransferNotification(
 			FileDistributionStatusArgs notification)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessFileTransferNotification" + Environment.NewLine +
 				"(" + Environment.NewLine +
 				"  notification: " + Environment.NewLine +
@@ -778,19 +786,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentNullException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - Argument Null Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - Argument Null Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessFileTransferNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessFileTransferNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessFileTransferNotification() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessFileTransferNotification",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -805,7 +813,7 @@ namespace PIS.Ground.DataPackage
 			string lNotificationString =
 				Enum.GetName(typeof(PIS.Ground.GroundCore.AppGround.NotificationIdEnum), notification);
 
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessSIFNotification" + Environment.NewLine +
 				"(" + Environment.NewLine +
 				"  trainId      : " + trainId + Environment.NewLine +
@@ -855,19 +863,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - Argument Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - Argument Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSIFNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSIFNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSIFNotification() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSIFNotification",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -877,7 +885,7 @@ namespace PIS.Ground.DataPackage
 		/// <param name="trainId">Identifier for the train.</param>
 		public static void ProcessElementDeletedNotification(string trainId)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessElementDeletedNotification" + Environment.NewLine +
 				"(" + Environment.NewLine +
 				"  trainId      : " + trainId + Environment.NewLine +
@@ -923,19 +931,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Argument Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Argument Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -955,7 +963,7 @@ namespace PIS.Ground.DataPackage
 			string assignedCurrentBaseline,
 			string assignedFutureBaseline)
 		{
-			LogManager.WriteLog(TraceType.INFO,
+			_logManager.WriteLog(TraceType.INFO,
 				"ProcessSystemChangedNotification " + Environment.NewLine +
 				"( " + Environment.NewLine +
 				"  notification            : " + Environment.NewLine +
@@ -1056,19 +1064,19 @@ namespace PIS.Ground.DataPackage
 			}
 			catch (ArgumentException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - Argument Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - Argument Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (InvalidOperationException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - Invalid Operation Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - Invalid Operation Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
 			catch (HistoryLoggerFailureException lException)
 			{
-				LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - History Logger Exception :",
+				_logManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - History Logger Exception :",
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -1192,7 +1200,7 @@ namespace PIS.Ground.DataPackage
 
 							default:
 
-								LogManager.WriteLog(TraceType.ERROR,
+								_logManager.WriteLog(TraceType.ERROR,
 									"UpdateBaselineProgressFromFileTransferNotification() : Unexpected TaskState code: " + notification.TaskStatus,
 									"PIS.Ground.DataPackage.BaselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification",
 									null, EventIdEnum.DataPackage);
@@ -1350,7 +1358,7 @@ namespace PIS.Ground.DataPackage
 			if (trainId != null)
 			{
 
-				LogManager.WriteLog(TraceType.INFO,
+				_logManager.WriteLog(TraceType.INFO,
 					"RemoveProgressFromHistoryLogger" + Environment.NewLine +
 					"(" + Environment.NewLine +
 					"  TrainId : " + trainId + Environment.NewLine +
@@ -1360,7 +1368,7 @@ namespace PIS.Ground.DataPackage
 					EventIdEnum.DataPackage);
 
 				BaselineStatusResponse lResult = new BaselineStatusResponse();
-				lResult.ResultCode = LogManager.CleanTrainBaselineStatus(trainId);
+				lResult.ResultCode = _logManager.CleanTrainBaselineStatus(trainId);
 
 				if (lResult.ResultCode == ResultCodeEnum.RequestAccepted)
 				{
@@ -1383,7 +1391,7 @@ namespace PIS.Ground.DataPackage
 				string lProgressStatusString =
 					Enum.GetName(typeof(BaselineProgressStatusEnum), progressInfo.ProgressStatus);
 
-				LogManager.WriteLog(TraceType.INFO,
+				_logManager.WriteLog(TraceType.INFO,
 					"UpdateProgressOnHistoryLogger" + Environment.NewLine +
 					"(" + Environment.NewLine +
 					"  TrainId                  : " + trainId + Environment.NewLine +
@@ -1401,7 +1409,7 @@ namespace PIS.Ground.DataPackage
 					EventIdEnum.DataPackage);
 
 				BaselineStatusResponse lResult = new BaselineStatusResponse();
-				lResult.ResultCode = LogManager.UpdateTrainBaselineStatus(
+				lResult.ResultCode = _logManager.UpdateTrainBaselineStatus(
 					trainId, progressInfo.RequestId, progressInfo.TaskId, progressInfo.TrainNumber,
 					progressInfo.OnlineStatus, progressInfo.ProgressStatus,
 					progressInfo.CurrentBaselineVersion, progressInfo.FutureBaselineVersion,
@@ -1652,7 +1660,7 @@ namespace PIS.Ground.DataPackage
 					//
 					if (updatedProgress.RequestId != Guid.Empty)
 					{
-						LogManager.WriteLog(TraceType.INFO,
+						_logManager.WriteLog(TraceType.INFO,
 							"Calling GetTransferTask() with RequestId == " + updatedProgress.RequestId.ToString(),
 							"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
 							null,
@@ -1667,7 +1675,7 @@ namespace PIS.Ground.DataPackage
 							if (lTask != null)
 							{
 
-								LogManager.WriteLog(TraceType.INFO,
+								_logManager.WriteLog(TraceType.INFO,
 									"GetTransferTask" + Environment.NewLine +
 									"(" + Environment.NewLine +
 									"    TaskId                        : " + lTask.TaskId + Environment.NewLine +
@@ -1700,20 +1708,24 @@ namespace PIS.Ground.DataPackage
 							}
 							else
 							{
-								LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - T2G Error - lTask is null",
+								_logManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - T2G Error - lTask is null",
 									"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 									null, EventIdEnum.DataPackage);
 							}
 						}
 						else
 						{
-							LogManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - T2G Error - " + lT2GError,
+							_logManager.WriteLog(TraceType.ERROR, "ProcessSystemChangedNotification() - T2G Error - " + lT2GError,
 								"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
 								null, EventIdEnum.DataPackage);
 
-                            updatedProgress.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-                            updatedProgress.RequestId = Guid.Empty;
-                            updatedProgress.TaskId = 0;
+                            if (_t2g.GetErrorCodeByDescription(lT2GError) == T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId)
+                            {
+                                updatedProgress.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                                updatedProgress.RequestId = Guid.Empty;
+                                updatedProgress.TaskId = 0;
+                                isDeepUpdate = false;
+                            }
 						}
 					}
 				}

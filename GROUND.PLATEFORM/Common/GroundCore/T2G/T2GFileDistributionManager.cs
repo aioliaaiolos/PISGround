@@ -1731,6 +1731,41 @@ namespace PIS.Ground.Core.T2G
                 Thread.Sleep(PollingTime);
             }
         }
+
+        /// <summary>Returns the file distribution manager error code by its description.</summary>
+        /// <param name="errorDescription">Error description.</param>
+        /// <returns>Error code</returns>
+        public T2GFileDistributionManagerErrorEnum GetErrorCodeByDescription(string errorDescription)
+        {
+            T2GFileDistributionManagerErrorEnum errorCode = T2GFileDistributionManagerErrorEnum.eT2GFD_NoError;
+            
+            if (string.IsNullOrEmpty(errorDescription) != true)
+            {
+                int index = errorDescription.IndexOf("F0");
+
+                try
+                {
+                    string errorCodeString = errorDescription.Substring(index, 5);
+
+                    switch (errorCodeString)
+                    {
+                        case "F0308":
+                            errorCode = T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId;
+                            break;
+
+                        default:
+                            errorCode = T2GFileDistributionManagerErrorEnum.eT2GFD_Other;
+                            break;
+                    }
+                }                
+                catch
+                {
+                    errorCode = T2GFileDistributionManagerErrorEnum.eT2GFD_Other;   
+                }
+            }
+
+            return errorCode;
+        }   
         
         /// <summary>Build FileDistributionStatusArgs.</summary>
         /// <param name="taskId">The task id.</param>
