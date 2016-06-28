@@ -1822,7 +1822,7 @@ namespace DataPackageTests
 		}
 
         [Test]
-        public void ProcessSystemChangedNotificationTest_T2GBadTaskIdError()
+        public void ProcessSystemChangedNotificationTest_T2GBadTaskIdError1()
         {
             // Preparing for the test
             //
@@ -1835,6 +1835,73 @@ namespace DataPackageTests
             lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
 
             BaselineStatusInstrumented.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object);
+
+            var lNotification = new SystemInfo(
+                "TRAIN-5",
+                "",
+                968,
+                0,
+                true,
+                CommunicationLink.WIFI,
+                new ServiceInfoList(),
+                new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                new PisMission(),
+                true);
+
+            lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+            lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+            lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;            
+
+            // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
+            // (it will be a string that will contain 'F0308' code)
+            lT2GMock.Setup(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
+
+            // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
+            // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
+            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
+
+            BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
+
+            lT2GMock.Verify(x => x.GetTransferTask(
+                It.IsAny<int>(), out lRecipients, out lTask),
+                Times.Once());
+
+            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                Times.Once());
+
+            // Verify that the LogManager.UpdateTrainBaselineStatus() function is called
+            // in order to update baseline update state in persistent storage
+            lLogManagerMock.Verify(x => x.UpdateTrainBaselineStatus(
+                "TRAIN-5",
+                Guid.Empty,
+                0,
+                "968",
+                true,
+                BaselineProgressStatusEnum.UNKNOWN,
+                "5.6.7.8",
+                "6.7.8.9",
+                "5.13.0.6"),
+                Times.Once());
+        }
+
+        [Test]
+        public void ProcessSystemChangedNotificationTest_T2GBadTaskIdError2()
+        {
+            // Preparing for the test
+            //
+            var lT2GMock = new Mock<IT2GFileDistributionManager>();
+            List<Recipient> lRecipients = new List<Recipient>();
+            TransferTaskData lTask = BuildSampleTransferTask();
+            var lBaselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
+            var lCallbackMock = new BaselineCallbackMock();
+            var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
+            var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
+
+            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+
+            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
 
             var lNotification = new SystemInfo(
                 "TRAIN-5",
@@ -1873,17 +1940,24 @@ namespace DataPackageTests
             lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
                 Times.Once());
 
-            lLogManagerMock.Verify(x => x.UpdateTrainBaselineStatus(
-                "TRAIN-5",
-                Guid.Empty,
-                0,
-                "968",
-                true,
-                BaselineProgressStatusEnum.UNKNOWN,
-                "5.6.7.8",
-                "6.7.8.9",
-                "5.13.0.6"),
-                Times.Once());
+            // If baseline update status has changed - the BaselineProgressUpdateProcedure should be called
+            // with the appropriate parameters
+            // In the same time the BaselineProgressRemoveProcedure should not be called 
+            Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+            Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+            Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+            
+            if (lCallbackMock.UpdatedProgressInfo != null)
+            {
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                Assert.AreEqual(Guid.Empty, lCallbackMock.UpdatedProgressInfo.RequestId);
+                Assert.AreEqual(0, lCallbackMock.UpdatedProgressInfo.TaskId);
+                Assert.AreEqual(false, lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired);
+            }
+            else
+            {
+                Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+            }
         }
 
         [Test]

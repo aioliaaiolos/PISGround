@@ -251,7 +251,7 @@ namespace PIS.Ground.DataPackage
 			_isInitialized = false;
 			_isHistoryLoggerAvailable = true;
 			_t2g = null;
-            _logManager = null;
+            _logManager = new LogManager();
 			_baselineProgresses = null;
 			_baselineProgressUpdateProcedure = null;
 			_baselineProgressRemoveProcedure = null;
@@ -342,7 +342,7 @@ namespace PIS.Ground.DataPackage
 						new BaselineProgressUpdateProcedure(UpdateProgressOnHistoryLogger),
 						new BaselineProgressRemoveProcedure(RemoveProgressFromHistoryLogger),
 						t2g,
-                        new LogManager());
+                        _logManager);
 				}
 			}
 			catch (ArgumentNullException lException)
@@ -379,7 +379,7 @@ namespace PIS.Ground.DataPackage
 		/// <param name="baselineProgressUpdateProcedure">The baseline progress update procedure to persistent storage.</param>
 		/// <param name="baselineProgressRemoveProcedure">The baseline progress remove procedure from persistent storage.</param>///
 		/// <param name="t2g">The client providing access to the T2G server.</param>
-        /// <param name="logManager">The ILogManager interface reference.</param>
+        /// <param name="logManager">The ILogManager interface reference. Added for unit test purposes.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>	
 		private static bool Initialize(
 			Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
