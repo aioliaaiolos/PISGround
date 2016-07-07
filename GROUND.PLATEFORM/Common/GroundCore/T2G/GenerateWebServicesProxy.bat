@@ -1,5 +1,10 @@
 @echo off
 SETLOCAL
+
+SET OUTFILE=%~dp0generated\NotificationServiceInterfaces.cs
+SET TEMPOUTDIR=%~dp0generated\temp
+SET TEMPOUTFILE=%TEMPOUTDIR%\NotificationServiceInterfaces.cs
+
 IF "%1"=="" GOTO USE_ENV_VAR_PATH
 set T2G_WSDL_PATH=%1
 
@@ -20,5 +25,34 @@ CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.Identification "%T
 CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.Maintenance "%T2G_WSDL_PATH%\T2GMaintenance.wsdl" MaintenanceClient
 CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.VehicleInfo "%T2G_WSDL_PATH%\T2GVehicleInfo.wsdl" VehiculeInfoClient
 
+CALL "%VCVARSFILE%"
+cd %~dp0
 
-wsdl.exe "%T2G_WSDL_PATH%\T2GNotification.wsdl" /out:generated /l:cs /serverInterface /n:PIS.Ground.Core.T2G.WebServices.Notification
+echo "Generate T2GNotification"
+
+IF NOT EXIST "%TEMPOUTDIR%" MKDIR "%TEMPOUTDIR%"
+@echo ON
+call wsdl.exe "%T2G_WSDL_PATH%\T2GNotification.wsdl" /out:%TEMPOUTDIR% /l:cs /serverInterface /n:PIS.Ground.Core.T2G.WebServices.Notification
+@IF ERRORLEVEL 1 (
+		@echo off
+		echo Failed to generate T2GNotification proxy
+		goto :End
+	)
+
+@echo off
+	
+IF NOT EXIST "%OUTFILE%" goto :ReplaceFile
+	
+FC /B "%OUTFILE%" "%TEMPOUTFILE%" >NUL
+IF NOT ERRORLEVEL 1 GOTO :End
+
+:ReplaceFile
+IF EXIST "%OUTFILE%" echo File "%OUTFILE%" replaced
+IF NOT EXIST "%OUTFILE%" echo File "%OUTFILE%" created
+IF EXIST "%OUTFILE%" ATTRIB -R "%OUTFILE%"
+
+echo F | XCOPY /V /Y "%TEMPOUTFILE%" "%OUTFILE%"
+IF ERRORLEVEL 1 echo Cannot copy "%TEMPOUTFILE%" to "%OUTFILE%"
+
+:End
+if EXIST "%TEMPOUTDIR%" RMDIR /S /Q "%TEMPOUTDIR%"
