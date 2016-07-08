@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Diagnostics;
 using PIS.Ground.Core.Data;
 using System.Configuration;
+using System.IO;
 
 namespace GroundCoreTests
 {
@@ -30,7 +31,12 @@ namespace GroundCoreTests
         /// <summary>
         /// Path of a local file
         /// </summary>
-        private string pathString = "c:\\lmt-Testfile.txt";
+        private string pathString;
+
+        /// <summary>
+        /// Temporary path for remote data store.
+        /// </summary>
+        private string remoteDataStorePath;
 
         #endregion
 
@@ -39,13 +45,19 @@ namespace GroundCoreTests
         /// <summary>Initializes a new instance of the LocalDataStorageTests class.</summary>
         public RemoteFileClassTest()
         {
+            pathString = Path.Combine(Path.GetTempPath(), "lmt-Testfile.txt");
+            remoteDataStorePath = Path.Combine(Path.GetTempPath(), "RemoteDataStoreUnitTest");
         }
 
         /// <summary>Setups called before each test to initialize variables.</summary>
         [SetUp]
         public void Setup()
         {
-            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = "c:/RemoteDataStore";
+            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = remoteDataStorePath;
+            if (!Directory.Exists(remoteDataStorePath))
+            {
+                Directory.CreateDirectory(remoteDataStorePath);
+            }
 
 
             if (!System.IO.File.Exists(pathString))
@@ -67,6 +79,16 @@ namespace GroundCoreTests
         public void TearDown()
         {
             // Do something after each tests
+
+            if (File.Exists(pathString))
+            {
+                File.Delete(pathString);
+            }
+
+            if (Directory.Exists(remoteDataStorePath))
+            {
+                Directory.Delete(remoteDataStorePath, true);
+            }
         }
 
         #endregion

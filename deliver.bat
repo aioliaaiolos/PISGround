@@ -3,13 +3,15 @@
 :: MakeFile name  : 
 :: Description    : 	   move the package folders to GROUND_DELIVERY
 :: Created        :						  2015-09-30
-:: Updated        :						  2016-06-14
+:: Updated        :						  2016-07-08
 ::=====================================================================================
 @echo off
 SETLOCAL
 
 call %~dp0config.bat version_number 
 SET EXIT_CODE=0
+
+TYPE NUL > "%~dp0\deliverLog.txt"
 
 set ROOT_PATH=%~dp0
 SET SRC_GroundServer_RequisitesZip=%VOUTE_PATH%\PIS\GroundServer\%GroundServer_Requisites_ZIPFileName%.zip
@@ -239,10 +241,8 @@ if not "%EXIT_CODE%" == "0" goto :End
 
 :End
 
+if "%EXIT_CODE%" == "0" echo Deliver succeeded >> "%~dp0\deliverLog.txt"
+if not "%EXIT_CODE%" == "0" echo Deliver failed with error: %EXIT_CODE% >>"%~dp0\deliverLog.txt"
 if EXIST "%~dp0\deliverLog.txt" type "%~dp0\deliverLog.txt"
-if "%EXIT_CODE%" == "0" echo Deliver succeeded
-if not "%EXIT_CODE%" == "0" echo Deliver failed with error: %EXIT_CODE% >> "%~dp0\deliverLog.txt" 2>&1
 pause
-	
-:End
 exit /B "%EXIT_CODE%"

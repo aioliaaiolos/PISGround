@@ -52,7 +52,13 @@ namespace PIS.Ground.RealTimeTests.TrainServerSimulator
 			{
 				if (_host != null)
 				{
-					_host.Close();
+                    if (_host.State == CommunicationState.Faulted)
+                    {
+                        _host.Abort();
+                    }
+                    
+                    _host.Close();
+                    _host = null;
 				}
 
 				//Create a URI to serve as the base address
@@ -70,9 +76,17 @@ namespace PIS.Ground.RealTimeTests.TrainServerSimulator
 			}
 			catch (Exception ex)
 			{
-				_host.Close();
-				_host = null;
-				throw ex.InnerException;
+                if (_host != null)
+                {
+                    if (_host.State == CommunicationState.Faulted)
+                    {
+                        _host.Abort();
+                    }
+
+                    _host.Close();
+                    _host = null;
+                }
+				throw;
 			}
 		}
 

@@ -4,7 +4,7 @@
 :: Description    : 			    build GROUND project
 ::				  : 			execute PISGround.sln project					
 :: Created        :						  2015-09-30
-:: Updated        :						  2016-06-21
+:: Updated        :						  2016-07-08
 ::
 :: Parameters     :   /quick  Do not force rebuild
 ::=====================================================================================
@@ -17,6 +17,7 @@ call %~dp0config.bat version_number
 SET EXIT_CODE=0
 if "%VERSION_NUMBER%" == "" goto Skip
 
+TYPE NUL >"%~dp0buildLog.txt" 
 
 SET VCVARSFILE=%ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat
 
@@ -78,7 +79,8 @@ goto End
 	
 :End
 
-if not "%EXIT_CODE%" == "0" echo Build Failed with exit code %EXIT_CODE% >> "%~dp0buildLog.txt" 2>&1
-if "%EXIT_CODE%" == "0" echo Build Succeeded
+if not "%EXIT_CODE%" == "0" echo Build Failed with exit code %EXIT_CODE% >> "%~dp0buildLog.txt"
+if "%EXIT_CODE%" == "0" echo Build Succeeded >> "%~dp0buildLog.txt"
+if EXIST "%~dp0buildLog.txt" type "%~dp0buildLog.txt"
 pause
 EXIT /B %EXIT_CODE%
