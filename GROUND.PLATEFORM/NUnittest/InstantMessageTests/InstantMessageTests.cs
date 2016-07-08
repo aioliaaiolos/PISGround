@@ -531,27 +531,37 @@ namespace PIS.Ground.InstantMessageTests
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
-				Expect(sendFreeTextRequestContext.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
-				Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
-			}
+                    Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(sendFreeTextRequestContext.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion
@@ -599,29 +609,39 @@ namespace PIS.Ground.InstantMessageTests
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "PredefinedMessage not sent to the train after a period of 30 seconds");
-				host.Close();
+                    Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "PredefinedMessage not sent to the train after a period of 30 seconds");
+                    host.Close();
 
-				Expect(sendPredefinedRequestContext.State, Is.EqualTo(RequestState.Completed), "The state of the predefined request is not set to expected value after been sent.");
-				Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(1), "The predefined message has not been transmitted to the train as expected.");
-			}
+                    Expect(sendPredefinedRequestContext.State, Is.EqualTo(RequestState.Completed), "The state of the predefined request is not set to expected value after been sent.");
+                    Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(1), "The predefined message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion
@@ -666,30 +686,40 @@ namespace PIS.Ground.InstantMessageTests
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    host.Open();
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>Verify that method SendScheduleMessage send the message successfully to the train.</summary>
@@ -728,30 +758,40 @@ namespace PIS.Ground.InstantMessageTests
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    host.Open();
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>Verify a scenario with method SendScheduleMessage to ensure that train not responding is managed properly.</summary>
@@ -903,31 +943,41 @@ namespace PIS.Ground.InstantMessageTests
 			trainService.SendMessageReturnValue = embeddedError;
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    host.Open();
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext requestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => requestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Scheduled message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived),
 												HistoryLogger.GetMessageStatusString(expectedStatus)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(requestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 
@@ -1041,31 +1091,41 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				InstantMessageResult result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train has not been called");
+                    Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train has not been called");
 
-				// When there is no record for the canceled message into the history log database, it's not possible to log information for the cancelled message.
-				List<string> expectedStatuses = new List<string>();
+                    // When there is no record for the canceled message into the history log database, it's not possible to log information for the cancelled message.
+                    List<string> expectedStatuses = new List<string>();
 
-				Expect(() => GetHistoryLogStatusForRequest(cancelRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(cancelRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1111,60 +1171,69 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
 
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
 
-				result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
+                    result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "SendScheduledMessage as not been canceled in queue after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "The cancel request shall not be in final state because the request has not been send as expected");
+                    Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "SendScheduledMessage as not been canceled in queue after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "The cancel request shall not be in final state because the request has not been send as expected");
 
-				// Now, the train1 shall become online
+                    // Now, the train1 shall become online
 
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train has not been called as expected");
+                    Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train has not been called as expected");
 
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionWaitingToSend),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionCanceled)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
 
-				expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionWaitingToSend),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the CancelMessageRequest");
-
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the CancelMessageRequest");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1210,50 +1279,59 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
 
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
 
-				result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
+                    result = instantMessageServiceInterface.CancelScheduledMessage(sessionId, cancelRequestId, target, 2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
-				Expect(sendRequestContext.IsStateFinal, Is.True, "The SendScheduledMessage request in the queue wasn't canceled by the CancelSechduledMessage request");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "Cancel scheduled message request is not transmitted after a period of 30 seconds");
+                    Expect(sendRequestContext.IsStateFinal, Is.True, "The SendScheduledMessage request in the queue wasn't canceled by the CancelSechduledMessage request");
+                    host.Close();
 
-				Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train wasn't called as expected");
+                    Expect(trainService.CancelMessageCallCount, Is.EqualTo(1), "The CancelMessage on the train wasn't called as expected");
 
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
 
-				expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the CancelMessageRequest");
-
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId, CommandType.CancelScheduledMessage), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the CancelMessageRequest");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion
@@ -1301,26 +1379,36 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				InstantMessageResult result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#region Schedule Message request with Cancel all messages request
@@ -1366,61 +1454,71 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the ScheduledMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the ScheduledMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(0), "The scheduled message has been transmitted to the train even if it was canceled in memory.");
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(0), "The scheduled message has been transmitted to the train even if it was canceled in memory.");
 
-				// Check the status of the scheduled message into the history log
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    // Check the status of the scheduled message into the history log
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionWaitingToSend),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionCanceled)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1472,78 +1570,88 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-				result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext2 = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the ScheduledMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
-				Expect(sendRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the scheduled message added after the cancel request");
+                    Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the ScheduledMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(sendRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the scheduled message added after the cancel request");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second scheduled message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second scheduled message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(1), "The second scheduled message has not been transmitted to the train as expected.");
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(1), "The second scheduled message has not been transmitted to the train as expected.");
 
-				// Check the status of the scheduled message into the history log
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    // Check the status of the scheduled message into the history log
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionWaitingToSend),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionCanceled)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
 
-				expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionWaitingToSend),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext2.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the second SendScheduledMessageRequest");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext2.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the second SendScheduledMessageRequest");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1595,62 +1703,72 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendScheduledMessage(sessionId, target, 2, messageType2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendScheduledMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendRequestContext2 = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First scheduled message is not transmitted after a period of 30 seconds");
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second scheduled message is not transmitted after a period of 30 seconds");
+                    Expect(() => sendRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First scheduled message is not transmitted after a period of 30 seconds");
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second scheduled message is not transmitted after a period of 30 seconds");
 
-				host.Close();
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(2), "The scheduled messages has not been transmitted to the train as expected.");
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendScheduledMessageCallCount, Is.EqualTo(2), "The scheduled messages has not been transmitted to the train as expected.");
 
-				// Check the status of the scheduled message into the history log
-				List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    // Check the status of the scheduled message into the history log
+                    List<string> expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
 
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the SendScheduledMessageRequest");
 
-				expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
+                    expectedStatuses = new List<string>{ HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionProcessing),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionSent),
 												HistoryLogger.GetMessageStatusString(MessageStatusType.InstantMessageDistributionReceived)
 											};
-				Expect(() => GetHistoryLogStatusForRequest(sendRequestContext2.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the second SendScheduledMessageRequest");
-			}
+                    Expect(() => GetHistoryLogStatusForRequest(sendRequestContext2.RequestId), Is.EquivalentTo(expectedStatuses).After(5 * 1000, 250), "Statuses in history log database does not match expected values for the second SendScheduledMessageRequest");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion
@@ -1701,51 +1819,61 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the FreeTextMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the FreeTextMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(0), "The freetext message has been transmitted to the train even if it was canceled in memory.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(0), "The freetext message has been transmitted to the train even if it was canceled in memory.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1800,61 +1928,71 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the FreeTextMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
-				Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the free text message added after the cancel request");
+                    Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the FreeTextMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the free text message added after the cancel request");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(1), "The second free text message has not been transmitted to the train as expected.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(1), "The second free text message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -1910,48 +2048,58 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType2);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType2);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendScheduledMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First free text message is not transmitted after a period of 30 seconds");
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
+                    Expect(() => sendFreeTextRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First free text message is not transmitted after a period of 30 seconds");
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
 
-				host.Close();
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(2), "The free text messages has not been transmitted to the train as expected.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(2), "The free text messages has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion
@@ -2002,51 +2150,61 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the PredefinedMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the PredefinedMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(0), "The predefined message has been transmitted to the train even if it was canceled in memory.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(0), "The predefined message has been transmitted to the train even if it was canceled in memory.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -2101,61 +2259,71 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				// Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
-				instantMessageService.AddNewRequestToRequestListBlocked = true;
+                    // Block transmitting the new request to the worker threads to ensure that send request and cancel request are added atomically
+                    instantMessageService.AddNewRequestToRequestListBlocked = true;
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType2 });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType2 });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext2 = instantMessageService.LastAddedRequest;
 
-				// Transmit blocked request
-				instantMessageService.AddNewRequestToRequestListBlocked = false;
+                    // Transmit blocked request
+                    instantMessageService.AddNewRequestToRequestListBlocked = false;
 
-				Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the PredefinedMessage in memory after a period of 30 seconds");
-				Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
-				Expect(sendPredefinedRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the predefined message added after the cancel request");
+                    Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages didn't canceled the PredefinedMessage in memory after a period of 30 seconds");
+                    Expect(cancelRequestContext.IsStateFinal, Is.False, "CancelAllMessages request is not expected to be terminated");
+                    Expect(sendPredefinedRequestContext2.IsStateFinal, Is.False, "CancelAllMessages request canceled the predefined message added after the cancel request");
 
-				// The train now become online
-				train1.OnlineStatus = true;
-				isTrain1Online = true;
-				_train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+                    // The train now become online
+                    train1.OnlineStatus = true;
+                    isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
 
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendPredefinedRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second predefined message is not transmitted after a period of 30 seconds");
-				host.Close();
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendPredefinedRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second predefined message is not transmitted after a period of 30 seconds");
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(1), "The second predefined message has not been transmitted to the train as expected.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(1), "The second predefined message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -2211,48 +2379,58 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
 
 			using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
-			using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
-				_sessionManagerMock.Object,
-				_notificationSenderMock.Object,
-				_train2groundClientMock.Object,
-				logManager))
-			{
-				IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
-				host.Open();
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
 
-				Guid generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.CancelAllMessages(sessionId, target, 3);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "CancelAllMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "CancelAllMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext cancelRequestContext = instantMessageService.LastAddedRequest;
 
-				generatedRequestId = Guid.NewGuid();
-				_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-				result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType2 });
-				Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType2 });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendPredefinedMessages didn't accepted the valid request");
 
-				Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
-				InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext2 = instantMessageService.LastAddedRequest;
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendPredefinedMessages method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendPredefinedRequestContext2 = instantMessageService.LastAddedRequest;
 
-				Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First free text message is not transmitted after a period of 30 seconds");
-				Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
-				Expect(() => sendPredefinedRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
+                    Expect(() => sendPredefinedRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "First free text message is not transmitted after a period of 30 seconds");
+                    Expect(() => cancelRequestContext.IsStateFinal, Is.True.After(30 * 1000, 250), "CancelAllMessages request is not transmitted after a period of 30 seconds");
+                    Expect(() => sendPredefinedRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "Second free text message is not transmitted after a period of 30 seconds");
 
-				host.Close();
+                    host.Close();
 
-				Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
-				Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(2), "The predefined messages has not been transmitted to the train as expected.");
-			}
+                    Expect(trainService.CancelAllMessagesCallCount, Is.EqualTo(1), "The CancelAllMessages on the train has not been called");
+                    Expect(trainService.SendPredefinedMesssageCallCount, Is.EqualTo(2), "The predefined messages has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
 		}
 
 		#endregion

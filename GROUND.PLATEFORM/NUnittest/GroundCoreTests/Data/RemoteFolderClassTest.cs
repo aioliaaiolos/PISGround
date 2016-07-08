@@ -13,6 +13,7 @@ using System.Configuration;
 using NUnit.Framework;
 using PIS.Ground.Core.Data;
 using Moq;
+using System.IO;
 
 namespace GroundCoreTests.Data
 {
@@ -21,6 +22,11 @@ namespace GroundCoreTests.Data
     public class RemoteFolderClassTest
     {
         #region attributes
+
+        /// <summary>
+        /// The remote data store path.
+        /// </summary>
+        private string _remoteDataStorePath;
 
         /// <summary>
         /// Remote folder object
@@ -51,7 +57,14 @@ namespace GroundCoreTests.Data
         [SetUp]
         public void Setup()
         {
-            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = "c:/RemoteDataStore";
+            _remoteDataStorePath = Path.Combine(Path.GetTempPath(), "RemoteDataStorePathUnitTest");
+
+            if (!Directory.Exists(_remoteDataStorePath))
+            {
+                Directory.CreateDirectory(_remoteDataStorePath);
+            }
+
+            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = _remoteDataStorePath;
 
             lRemoteFolder = new RemoteFolderClass("FolderName", 0);
 
@@ -72,6 +85,11 @@ namespace GroundCoreTests.Data
         {
             // Do something after each tests
             _remoteFileMockList.Clear();
+
+            if (Directory.Exists(_remoteDataStorePath))
+            {
+                Directory.Delete(_remoteDataStorePath, true);
+            }
         }
 
         #endregion

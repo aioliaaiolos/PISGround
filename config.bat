@@ -4,7 +4,7 @@
 :: Description    : 	download all files necessary to build GROUND project
 ::				  : 				   copyVoute.bat
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-06-21
+:: Updated        :						  2016-07-07
 ::=====================================================================================
 @echo off
 
@@ -14,10 +14,10 @@ if "%1"=="" SETLOCAL
 :: Updatable section - BEGIN
 ::=====================================================================================
 
-set VERSION_NUMBER=5.16.7.1
-set SETUP_VERSION=5.16.0701
-set SETUP_PRODUCT_CODE_GUID={529E7344-DC5F-4426-ABBF-B82A70412946}
-SET SETUP_PACKAGE_CODE_GUID={2145AA94-15EB-41DC-B7A1-8DDF77F9FA54}
+set VERSION_NUMBER=5.16.8.0
+set SETUP_VERSION=5.16.0800
+set SETUP_PRODUCT_CODE_GUID={D0557F4F-09D1-4C78-A513-C7DF3C3EEF9A}
+SET SETUP_PACKAGE_CODE_GUID={C8192351-EC42-4750-B1B2-EC290F2F8B9C}
 
 :: Version of the pre-requisite files to deliver PIS-Ground
 set REQUESITE_VERSION=5.8.0.9
@@ -30,7 +30,7 @@ set GroundServer_Requisites_ZIPFileName=%GroundServer_Requisites_PrefixFileName%
 set GroundServer_Requisites_x64_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x64-V%REQUESITE_VERSION%
 set GroundServer_Requisites_x86_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x86-V%REQUESITE_VERSION%
 set Groundserver_TestPackages_ZIPFileName=PISGroundIntegrationTestsPackages_V5.16.0
-set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.1.1
+set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.3.0
 
 ::=====================================================================================
 :: Updatable section - END
@@ -74,10 +74,10 @@ IF ERRORLEVEL 1 (
 SetLocal EnableDelayedExpansion		
 echo Execution Ends at %date% !time:~0,2!:!time:~3,2!:!time:~6,2! >> "%CURRENT_PATH%configLog.txt"
 ENDLOCAL
-type "%CURRENT_PATH%configLog.txt"
 
-if "%EXIT_CODE%"=="0" echo config Success
+if "%EXIT_CODE%"=="0" echo config Success >> "%CURRENT_PATH%configLog.txt"
 if not "%EXIT_CODE%"=="0" echo config Failed with the EXIT_CODE : %EXIT_CODE% >> "%CURRENT_PATH%configLog.txt"
+IF EXIST "%CURRENT_PATH%configLog.txt" type "%CURRENT_PATH%configLog.txt"
 
 pause
 
