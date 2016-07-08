@@ -16,6 +16,8 @@ using System.Configuration;
 using PIS.Ground.Core.LogMgmt;
 using PIS.Ground.Core.Common;
 using System.ServiceModel;
+using System.Globalization;
+using System.Text;
 
 namespace PIS.Ground.RealTime
 {
@@ -183,9 +185,9 @@ namespace PIS.Ground.RealTime
 
 							Train.RealTime.SetMissionRealTimeRequest request = new Train.RealTime.SetMissionRealTimeRequest(
 									missionCode,
-									rtinfoDelay != null ? Train.RealTime.ActionTypeEnum.Update : Train.RealTime.ActionTypeEnum.Delete,
+									rtinfoDelay != null ? Train.RealTime.ActionTypeEnum.Set : Train.RealTime.ActionTypeEnum.Delete,
 									rtinfoDelay,
-									rtinfoWeather != null ? Train.RealTime.ActionTypeEnum.Update : Train.RealTime.ActionTypeEnum.Delete,
+									rtinfoWeather != null ? Train.RealTime.ActionTypeEnum.Set : Train.RealTime.ActionTypeEnum.Delete,
 									rtinfoWeather);
 							Train.RealTime.SetMissionRealTimeResponse response = ((Train.RealTime.IRealTimeTrainService)lTrainClient).SetMissionRealTime(request);
 
@@ -312,9 +314,10 @@ namespace PIS.Ground.RealTime
 		{
 			if (listOfResultType != null)
 			{
+                StringBuilder logStr = new StringBuilder(1000);
 				foreach (var resultType in listOfResultType)
 				{
-					string logStr = string.Empty;
+                    logStr.Length = 0;
 					TraceType logLevel = TraceType.EXCEPTION;
 
 					switch (resultType.ResultCode)
@@ -327,15 +330,17 @@ namespace PIS.Ground.RealTime
 							logLevel = TraceType.WARNING;
 							break;
 						case PIS.Train.RealTime.ResultCodeEnum.ComplexError:
+                        case PIS.Train.RealTime.ResultCodeEnum.InvalidSoapRequest:
+                        case PIS.Train.RealTime.ResultCodeEnum.Error:
 						default:
 							logLevel = TraceType.ERROR;
 							break;
 					}
 
-					logStr += string.Format(
+					logStr.AppendFormat(CultureInfo.CurrentCulture,
 						Logs.RESULT_PROCESS_CMD,
 						elementId,
-						resultType.InformationType.ToString(),
+						resultType.InformationType,
 						resultType.MissionCode,
 						resultType.StationCode);
 
@@ -343,7 +348,7 @@ namespace PIS.Ground.RealTime
 					{
 						foreach (var parameterError in complexError.ParameterErrorList)
 						{
-							logStr += string.Format(
+							logStr.AppendFormat(CultureInfo.CurrentCulture,
 								Logs.RESULT_PROCESS_PARAMETER,
 								parameterError.ParameterName,
 								parameterError.ErrorMessage,
@@ -351,7 +356,7 @@ namespace PIS.Ground.RealTime
 						}
 					}
 
-					LogManager.WriteLog(logLevel, logStr, "PIS.Ground.RealTime.RequestProcessor.ProcessCommandResultList", null, EventIdEnum.RealTime);
+					LogManager.WriteLog(logLevel, logStr.ToString(), "PIS.Ground.RealTime.RequestProcessor.ProcessCommandResultList", null, EventIdEnum.RealTime);
 				}
 			}
 		}
