@@ -124,9 +124,7 @@
   <PropertyGroup>
     <PreBuildEvent>call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Ground.Infotainment.Journaling.ReportExchange ReportExchangeClient.cs ReportExchangeClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Train\ReportExchangeTrain.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd
 
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.Infotainment.Journaling.Notification INotificationGroundService.cs NotificationGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd 
-
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)\Clients PIS.Ground.Infotainment.Journaling.AppGround AppGroundClient.cs AppGroundClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.Infotainment.Journaling.Notification INotificationGroundService.cs NotificationGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd
 </PreBuildEvent>
   </PropertyGroup>
 </Project>
