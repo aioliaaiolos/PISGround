@@ -32,12 +32,13 @@ if "%ARGS_COUNT%" GEQ 10 (
 
 if %ARGS_COUNT% GEQ 5 goto :Ok
 
-echo USAGE: %0 directory namespace csfile configfile wsdlfiles
+echo USAGE: %0 directory namespace csfile configfile wsdlfiles [keepConfig]
 echo directory The path where output files shall be saved
 echo namespace The wsdl namespace to pass as argument to svcutil.exe method
 echo csfile The name of the destination source file (c# file)
 echo configfile The name of the destination config file (.config)
 echo wsdlfiles One or more filename that describe the wsdl.
+echo keepConfig When keepConfig is specified at the end, the configuration file is keep after generation. By defaut, configuration file is not kept.
 SET EXIT_CODE=3
 goto :End
 
@@ -51,6 +52,13 @@ SHIFT
 SHIFT
 SHIFT
 SHIFT
+
+SET KEEPCONFIG=N
+
+IF /I "%1" == "keepConfig" (
+	SET KEEPCONFIG=Y
+	SHIFT
+)
 
 @echo on
 "%SVCUTIL%" /directory:%DIRECTORY% /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %1 %2 %3 %4 %5 %6 %7 %8 %9
@@ -82,6 +90,8 @@ SET EXIT_CODE=5
 goto :End
 
 :Config
+
+if "%KEEPCONFIG%" NEQ "Y" goto :End
 
 IF EXIST %DIRECTORY%\%CONFIGFILE% (
 	FC /B %DIRECTORY%\%CONFIGFILE% %DIRECTORY%\%CONFIGFILE%.temp.config >NUL
