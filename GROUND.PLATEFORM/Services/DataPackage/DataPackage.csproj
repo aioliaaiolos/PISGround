@@ -167,9 +167,6 @@
 
 call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.DataPackage.Notification INotificationGroundService.cs NotificationGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd
 
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.DataPackage.DataPackageSync IDataPackageSyncGroundService.cs DataPackageSyncGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\DataPackageSyncGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\CommonGround.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\DataPackageSyncGround.xsd
-
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Ground.DataPackage.AppGround AppGroundClient.cs AppGroundClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd 
-</PreBuildEvent>
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.DataPackage.DataPackageSync IDataPackageSyncGroundService.cs DataPackageSyncGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\DataPackageSyncGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\CommonGround.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\DataPackageSyncGround.xsd</PreBuildEvent>
   </PropertyGroup>
 </Project>
