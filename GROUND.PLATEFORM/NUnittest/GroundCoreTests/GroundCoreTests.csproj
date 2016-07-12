@@ -88,4 +88,9 @@
       <Name>InstantMessage</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="PackageAccess\LMT2N2.db" />
+    <None Include="PackageAccess\LMTSIVE_Regiolis.db" />
+    <None Include="PackageAccess\LMTURBAN.db" />
+  </ItemGroup>
 </Project>

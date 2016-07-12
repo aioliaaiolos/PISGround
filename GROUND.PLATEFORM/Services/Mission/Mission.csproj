@@ -87,12 +87,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Clients\MissionTrainClient.config" />
     <Content Include="NotificationGroundService.svc" />
     <Content Include="T2GNotificationService.asmx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Clients\AppGroundClient.config" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -126,7 +122,6 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PreBuildEvent>call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Train.Mission MissionTrainClient.cs MissionTrainClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Train\MissionTrain.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd
-
 
 call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.Mission.Notification INotificationGroundService.cs NotificationGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd</PreBuildEvent>
   </PropertyGroup>
