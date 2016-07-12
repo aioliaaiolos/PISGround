@@ -93,21 +93,13 @@ namespace PIS.Ground.RealTime
 		/// <returns>The mission real time information.</returns>
 		RealTimeInformationType IRTPISDataStore.GetMissionRealTimeInformation(string missionCode)
 		{
-			RealTimeInformationType result = null;
+   			RealTimeInformationType result = null;
 
 			if (!string.IsNullOrEmpty(missionCode))
 			{
 				lock (_missionData)
 				{
-					try
-					{
-						result = _missionData[missionCode];
-					}
-					catch (KeyNotFoundException)
-					{
-						// key not found, return null
-						result = null;
-					}
+                    _missionData.TryGetValue(missionCode, out result);
 				}
 			}
 
@@ -123,20 +115,17 @@ namespace PIS.Ground.RealTime
 			bool dataUpdated = false;
 			if (missionDelay != null || missionWeather != null)
 			{
-				RealTimeInformationType update = new RealTimeInformationType();
 
 				if (!string.IsNullOrEmpty(missionCode))
 				{
 					lock (_missionData)
 					{
-						try
-						{
-							update = _missionData[missionCode];
-						}
-						catch (KeyNotFoundException)
-						{
-							// key not found, we will use the newly created instance
-						}
+                        RealTimeInformationType update;
+                        bool found = _missionData.TryGetValue(missionCode, out update);
+                        if (!found)
+                        {
+                            update = new RealTimeInformationType();
+                        }
 
 						if (missionDelay != null)
 						{
@@ -152,8 +141,10 @@ namespace PIS.Ground.RealTime
 							dataUpdated = true;
 						}
 
-						_missionData.Remove(missionCode);
-						_missionData.Add(missionCode, update);
+                        if (!found)
+                        {
+                            _missionData.Add(missionCode, update);
+                        }
 
 						///Call event
 						if (dataUpdated)
@@ -171,16 +162,17 @@ namespace PIS.Ground.RealTime
 		/// <returns>The station real time information.</returns>
 		List<RealTimeStationStatusType> IRTPISDataStore.GetStationRealTimeInformation(string missionCode, List<string> stationList)
 		{
-			List<RealTimeStationStatusType> result = null;
+			List<RealTimeStationStatusType> result = new List<RealTimeStationStatusType>();
 
 			if (!string.IsNullOrEmpty(missionCode))
 			{
-				result = new List<RealTimeStationStatusType>();
-
 				lock (_stationData)
 				{
 					try
 					{
+                        List<RealTimeStationInformationType>  stationForMission;
+                        if (_stationData.TryGetValue(missionCode, out stationForMission))
+                        {
 						if (stationList != null && stationList.Count > 0)
 						{
 							List<string> stationListCopy = new List<string>(stationList);
@@ -204,11 +196,13 @@ namespace PIS.Ground.RealTime
 						}
 						else
 						{
+                            result.Capacity = stationForMission.Count;
 							foreach (var stationInfo in _stationData[missionCode])
 							{
 								result.Add(new RealTimeStationStatusType(stationInfo));
 							}
 						}
+                        }
 					}
 					catch (KeyNotFoundException)
 					{
@@ -228,11 +222,10 @@ namespace PIS.Ground.RealTime
 		void IRTPISDataStore.SetStationRealTimeInformation(string missionCode, List<RealTimeStationInformationType> stationInformationList, out List<RealTimeStationResultType> stationResultList)
 		{
 			bool dataUpdated = false;
-			stationResultList = null;
+            stationResultList = new List<RealTimeStationResultType>();
 
 			if (!string.IsNullOrEmpty(missionCode) && stationInformationList != null && stationInformationList.Count > 0)
 			{
-				stationResultList = new List<RealTimeStationResultType>();
 				KeyValuePair<string, List<string>> stationUpdateList = new KeyValuePair<string, List<string>>(missionCode,new List<string>());
 
 				lock (_stationData)

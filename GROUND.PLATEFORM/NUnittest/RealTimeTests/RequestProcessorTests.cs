@@ -155,7 +155,7 @@ namespace PIS.Ground.RealTimeTests
 			ElementList<AvailableElementData> elementList = null;
 			RTPISDataStoreEventArgs eventArgs = new RTPISDataStoreEventArgs("DummyMission",null);
 
-			this._rtpisDataStore.Raise(m => m.Changed += null, eventArgs);
+			this._rtpisDataStore.Raise(m => m.Changed -= null, eventArgs);
 			this._train2groundClientMock.Verify(foo => foo.GetAvailableElementDataListByMissionCode(It.IsAny<string>(), out elementList), Times.Once());
 		}
 
@@ -241,7 +241,7 @@ namespace PIS.Ground.RealTimeTests
 
 			try
 			{
-				this._rtpisDataStore.Raise(m => m.Changed += null, eventArgs);
+				this._rtpisDataStore.Raise(m => m.Changed -= null, eventArgs);
 			}
 			finally
 			{

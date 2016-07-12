@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="IRealTimeService.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2014.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -26,7 +26,7 @@ namespace PIS.Ground.RealTime
 	/// 6.	Set Station Real Time information.
 	/// </summary>
 	[ServiceContract(Namespace = "http://alstom.com/pacis/pis/ground/realtime/", Name = "RealTimeService")]
-	public interface IRealTimeService
+	public interface IRealTimeService: IDisposable
 	{		
 		/// <summary>
 		/// This function allows the GroundApp to request from the ground PIS the list of available elements. This list includes also missions that are running for each element, and the versions of the LMT and PIS Base data packages.

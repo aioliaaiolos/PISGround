@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RealTimeTrainService.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -74,7 +74,7 @@ namespace PIS.Ground.RealTimeTests.TrainServerSimulator
 				//Start the Service
 				_host.Open();
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
                 if (_host != null)
                 {

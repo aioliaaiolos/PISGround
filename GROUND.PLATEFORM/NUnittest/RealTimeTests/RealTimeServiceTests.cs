@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RealTimeTests.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2014.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -106,26 +106,30 @@ namespace PIS.Ground.RealTimeTests
 					It.IsAny<string>(),
 					It.IsAny<EventHandler<ElementEventArgs>>()));
 
-			RealTimeService.Initialize(
-				this._train2groundClientMock.Object,
-				this._sessionManagerMock.Object,
-                this._notificationSenderMock.Object,
-				this._requestProcessorMock.Object,
-				this._remoteDataStoreFactory.Object,
-				this._rtpisDataStore.Object);
-
-			this._rts = new RealTimeServiceTested();
 
 			if (!Directory.Exists(_dbWorkingPath))
 			{
 				Directory.CreateDirectory(_dbWorkingPath);
 			}
-		}
+        
+            this._rts = new RealTimeServiceTested(this._train2groundClientMock.Object,
+                this._sessionManagerMock.Object,
+                this._notificationSenderMock.Object,
+                this._requestProcessorMock.Object,
+                this._remoteDataStoreFactory.Object,
+                this._rtpisDataStore.Object);
+        }
 
 		/// <summary>Tear down called after each test to clean.</summary>
 		[TearDown]
 		public void TearDown()
 		{
+            if (_rts != null)
+            {
+                _rts.Dispose();
+                _rts = null;
+            }
+
 			if (Directory.Exists(_dbWorkingPath))
 			{
 				string filepath = Path.Combine(_dbWorkingPath, "file.db");
@@ -381,10 +385,10 @@ namespace PIS.Ground.RealTimeTests
 		{
 			string missionCode = null;
 			string elementId = "TRAIN-1";
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 			
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(false);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 
 			RealTimeRetrieveStationListResult rtr = this._rts.RetrieveStationList(Guid.NewGuid(), missionCode, elementId);
 
@@ -406,17 +410,17 @@ namespace PIS.Ground.RealTimeTests
 			string elementId = "TRAIN-1";
 			AvailableElementData elementData = null;
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eT2GServerOffline;
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 			
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(true);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 			this._train2groundClientMock.Setup(y => y.GetAvailableElementDataByElementNumber(elementId, out elementData)).Returns(returns);
 
 			RealTimeRetrieveStationListResult rtr = this._rts.RetrieveStationList(Guid.NewGuid(), missionCode, elementId);
 
 			this._train2groundClientMock.Verify(w => w.GetAvailableElementDataByElementNumber(elementId, out elementData), Times.Once());
 
-			Assert.AreEqual(validGuid, rtr.RequestId);
+			Assert.AreEqual(requestGuid, rtr.RequestId);
 			Assert.AreEqual(RealTimeServiceErrorEnum.T2GServerOffline, rtr.ResultCode);
 			Assert.IsNull(rtr.MissionCode);
 			Assert.AreEqual(elementId, rtr.ElementID);
@@ -431,17 +435,17 @@ namespace PIS.Ground.RealTimeTests
 			string elementId = "TRAIN-1";
 			AvailableElementData elementData = null;
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eElementNotFound;
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(true);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 			this._train2groundClientMock.Setup(y => y.GetAvailableElementDataByElementNumber(elementId, out elementData)).Returns(returns);
 
 			RealTimeRetrieveStationListResult rtr = this._rts.RetrieveStationList(Guid.NewGuid(), missionCode, elementId);
 
 			this._train2groundClientMock.Verify(w => w.GetAvailableElementDataByElementNumber(elementId, out elementData), Times.Once());
 
-			Assert.AreEqual(validGuid, rtr.RequestId);
+			Assert.AreEqual(requestGuid, rtr.RequestId);
 			Assert.AreEqual(RealTimeServiceErrorEnum.ErrorInvalidElementId, rtr.ResultCode);
 			Assert.IsNull(rtr.MissionCode);
 			Assert.AreEqual(elementId, rtr.ElementID);
@@ -455,10 +459,10 @@ namespace PIS.Ground.RealTimeTests
 			string missionCode = null;
 			AvailableElementData elementData = InitTrainElement();
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(true);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 			this._train2groundClientMock.Setup(y => y.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData)).Returns(returns);
 			this._remoteDataStoreFactory.Setup(z => z.GetRemoteDataStoreInstance()).Returns(new RemoteDataStoreSimulator.RemoteDataStore("NotValidPath"));
 
@@ -466,7 +470,7 @@ namespace PIS.Ground.RealTimeTests
 
 			this._train2groundClientMock.Verify(w => w.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData), Times.Once());
 
-			Assert.AreEqual(validGuid, rtr.RequestId);
+			Assert.AreEqual(requestGuid, rtr.RequestId);
 			Assert.AreEqual(RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable, rtr.ResultCode);
 			Assert.IsNull(rtr.MissionCode);
 			Assert.AreEqual(elementData.ElementNumber, rtr.ElementID);
@@ -483,11 +487,11 @@ namespace PIS.Ground.RealTimeTests
 			string missionCode = null;
 			AvailableElementData elementData = InitTrainElement();
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 			List<string> refList = InitUrbanStationList(null);
 
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(true);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 			this._train2groundClientMock.Setup(y => y.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData)).Returns(returns);
 			this._remoteDataStoreFactory.Setup(z => z.GetRemoteDataStoreInstance()).Returns(new RemoteDataStoreSimulator.RemoteDataStore(this._dbWorkingPath));
 
@@ -495,7 +499,7 @@ namespace PIS.Ground.RealTimeTests
 
 			this._train2groundClientMock.Verify(w => w.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData), Times.Once());
 
-			Assert.AreEqual(validGuid, rtr.RequestId);
+			Assert.AreEqual(requestGuid, rtr.RequestId);
 			Assert.AreEqual(RealTimeServiceErrorEnum.RequestAccepted, rtr.ResultCode);
 			Assert.IsNull(rtr.MissionCode);
 			Assert.AreEqual(elementData.ElementNumber, rtr.ElementID);
@@ -512,12 +516,12 @@ namespace PIS.Ground.RealTimeTests
 			string missionCode = "231";
 			AvailableElementData elementData = InitTrainElement();
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			Guid validGuid = Guid.NewGuid();
+			Guid requestGuid = Guid.NewGuid();
 
 			List<string> refList = InitUrbanStationList(missionCode);
 
 			this._sessionManagerMock.Setup(x => x.IsSessionValid(It.IsAny<Guid>())).Returns(true);
-			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out validGuid)).Returns(string.Empty);
+			this._sessionManagerMock.Setup(x => x.GenerateRequestID(It.IsAny<Guid>(), out requestGuid)).Returns(string.Empty);
 			this._train2groundClientMock.Setup(y => y.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData)).Returns(returns);
 			this._remoteDataStoreFactory.Setup(z => z.GetRemoteDataStoreInstance()).Returns(new RemoteDataStoreSimulator.RemoteDataStore(this._dbWorkingPath));
 
@@ -525,7 +529,7 @@ namespace PIS.Ground.RealTimeTests
 
 			this._train2groundClientMock.Verify(w => w.GetAvailableElementDataByElementNumber(elementData.ElementNumber, out elementData), Times.Once());
 
-			Assert.AreEqual(validGuid, rtr.RequestId);
+			Assert.AreEqual(requestGuid, rtr.RequestId);
 			Assert.AreEqual(RealTimeServiceErrorEnum.RequestAccepted, rtr.ResultCode);
 			Assert.AreEqual(missionCode, rtr.MissionCode);
 			Assert.AreEqual(elementData.ElementNumber, rtr.ElementID);
@@ -1387,5 +1391,18 @@ namespace PIS.Ground.RealTimeTests
 				RealTimeService._platformType = value;
 			}
 		}
+
+        public RealTimeServiceTested(
+            IT2GManager t2gManager,
+            ISessionManagerExtended sessionManager,
+            INotificationSender notificationSender,
+            IRequestProcessor requestProcessor,
+            IRemoteDataStoreFactory remoteDataStoreFactory,
+            IRTPISDataStore rtpisDataStore) :
+            base(t2gManager, sessionManager, notificationSender, requestProcessor, remoteDataStoreFactory, rtpisDataStore)
+        {
+            /* No logic body */
+        }
+
 	}
 }

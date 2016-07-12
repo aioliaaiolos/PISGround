@@ -22,7 +22,7 @@ using System.Text;
 namespace PIS.Ground.RealTime
 {
 	/// <summary>Request processor.</summary>
-	public class RequestProcessor : IRequestProcessor
+	public class RequestProcessor : IRequestProcessor, IDisposable
 	{
 		#region const
 
@@ -75,13 +75,46 @@ namespace PIS.Ground.RealTime
 
 			// Register a callback that will start streaming on new trains
 			_rtpisDataStore.Changed += new ChangedEventHandler(RTPISDataStoreChanged);
-		}
+        }
 
-		#endregion
+        #endregion
 
-		#region events
+        #region IDisposable
 
-		/// <summary>
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_rtpisDataStore != null)
+                {
+                    _rtpisDataStore.Changed -= new ChangedEventHandler(RTPISDataStoreChanged);
+                }
+
+                if (_t2gManager != null)
+                {
+                    _t2gManager.UnsubscribeFromElementChangeNotification(SubscriberId);
+                }
+            }
+        }
+
+        #endregion
+
+        #region events
+
+        /// <summary>
 		/// Callback called when Element Online state changes (signaled by the T2G Client).
 		/// </summary>
 		/// <param name="sender">Source of the event.</param>
