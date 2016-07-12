@@ -87,7 +87,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Clients\MissionTrainClient.config" />
     <Content Include="NotificationGroundService.svc" />
     <Content Include="T2GNotificationService.asmx" />
   </ItemGroup>
