@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="SIVENGLmtDatabaseAccessor.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -31,7 +31,7 @@ namespace PIS.Ground.Core.PackageAccess
 			: base(databasePath)
 		{
 			QuerySelectStationFromCode = DatabaseQueries.SIVENG_SELECT_STATION_FROM_CODE_UIC;
-			QuerySelectMissionFromOperatorCode = DatabaseQueries.SIVENG_SELECT_MISSION_FROM_OPERATEUR_ID;
+			QuerySelectMissionFromOperatorCode = DatabaseQueries.SIVENG_SELECT_MISSION_FROM_OPERATOR_ID;
 			QuerySelectLanguageFromLanguageId = DatabaseQueries.SIVENG_SELECT_LANGUE_FROM_LANGUAGE_ID;
 			QuerySelectServiceFromServiceId = DatabaseQueries.SIVENG_SELECT_SERVICE_FROM_SERVICE_ID;
 			QuerySelectRegionFromRegionId = DatabaseQueries.SIVENG_SELECT_REGION_FROM_REGION_ID;

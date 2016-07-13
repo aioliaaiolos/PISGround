@@ -35,11 +35,11 @@ namespace PIS.Ground.Core.PackageAccess
 		protected string QuerySelectStationFromCode { get; set; }
 
 		/// <summary>Gets or sets the SQL query for getting mission from operator code.</summary>
-		/// <value>The query select mission from operateur code.</value>
+		/// <value>The query select mission from operator code.</value>
 		protected string QuerySelectMissionFromOperatorCode { get; set; }
 
 		/// <summary>Gets or sets the SQL query for getting language from language identifier.</summary>
-		/// <value>The query select mission from operateur code.</value>
+		/// <value>The query select mission from operator code.</value>
 		protected string QuerySelectLanguageFromLanguageId { get; set; }
 
 		/// <summary>Gets or sets the SQL query for getting service from service identifier.</summary>
@@ -144,14 +144,10 @@ namespace PIS.Ground.Core.PackageAccess
 			{
 				try
 				{
-                    using (DataTable table = new DataTable())
+                    object dbResult = Database.mExecuteScalar(QuerySelectMissionFromOperatorCode, new KeyValuePair<string, object>("@ID", operatorCode));
+                    if (dbResult != null)
                     {
-                        table.Locale = CultureInfo.InvariantCulture;
-                        Database.mExecuteQuery(String.Format(CultureInfo.InvariantCulture, QuerySelectMissionFromOperatorCode, operatorCode), table);
-                        foreach (DataRow row in table.Rows)
-                        {
-                            result = (uint)((Int64)row.ItemArray[0]);
-                        }
+                        result = Convert.ToUInt32(dbResult, CultureInfo.InvariantCulture);
                     }
 				}
 				catch (Exception ex)

@@ -124,9 +124,9 @@
     <value>SELECT ID_LANGUE FROM TBL_LANGUE WHERE ID_LANGUE IN ({0})</value>
     <comment>{0}: Language Id</comment>
   </data>
-  <data name="SIVENG_SELECT_MISSION_FROM_OPERATEUR_ID" xml:space="preserve">
-    <value>SELECT ID_MISSION FROM TBL_MISSION WHERE ID_OPERATEUR = '{0}'</value>
-    <comment>{0}: Operateur Code</comment>
+  <data name="SIVENG_SELECT_MISSION_FROM_OPERATOR_ID" xml:space="preserve">
+    <value>SELECT ID_MISSION FROM TBL_MISSION WHERE ID_OPERATEUR = @ID</value>
+    <comment>{0}: Operator Code</comment>
   </data>
   <data name="SIVENG_SELECT_MISSION_ROUTE_FROM_ID" xml:space="preserve">
     <value>SELECT ID_GARE_ORIGINE,ID_GARE_ARRIVEE FROM TBL_MARCHE_TYPE JOIN TBL_SEGMENT ON (TBL_SEGMENT.ID_MARCHE_TYPE = TBL_MARCHE_TYPE.ID_MARCHE_TYPE) WHERE (TBL_SEGMENT.ID_MISSION == {0}) ORDER BY TBL_SEGMENT.RANG</value>
@@ -161,9 +161,9 @@
     <value>SELECT ID FROM language WHERE ID IN ({0})</value>
     <comment>{0}: Language Id</comment>
   </data>
-  <data name="URBAN_SELECT_MISSION_FROM_OPERATEUR_ID" xml:space="preserve">
-    <value>SELECT ID FROM mission WHERE CODE = '{0}';</value>
-    <comment>{0}: Operateur Code</comment>
+  <data name="URBAN_SELECT_MISSION_FROM_OPERATOR_ID" xml:space="preserve">
+    <value>SELECT ID FROM mission WHERE CODE = @ID;</value>
+    <comment>{0}: Operator Code</comment>
   </data>
   <data name="URBAN_SELECT_MISSION_ROUTE_FROM_ID" xml:space="preserve">
     <value>SELECT ORI_STATION_ID, DEST_STATION_ID FROM segment JOIN mission_segment_schedule ON ( mission_segment_schedule.SEGMENT_ID = segment.ID) WHERE MISSION_ID='{0}' AND SEGMENT_STOP_AT_DEST = 1</value>

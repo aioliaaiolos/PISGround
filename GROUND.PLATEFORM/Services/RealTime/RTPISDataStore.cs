@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RTPISDataStore.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -99,7 +99,10 @@ namespace PIS.Ground.RealTime
 			{
 				lock (_missionData)
 				{
-                    _missionData.TryGetValue(missionCode, out result);
+                    if (_missionData.TryGetValue(missionCode, out result))
+                    {
+                        result = result.Clone();
+                    }
 				}
 			}
 
@@ -110,51 +113,58 @@ namespace PIS.Ground.RealTime
 		/// <param name="missionCode">The mission code.</param>
 		/// <param name="missionDelay">The mission delay.</param>
 		/// <param name="missionWeather">The mission weather.</param>
-		void IRTPISDataStore.SetMissionRealTimeInformation(string missionCode, RealTimeDelayType missionDelay, RealTimeWeatherType missionWeather)
-		{
-			bool dataUpdated = false;
-			if (missionDelay != null || missionWeather != null)
-			{
+        void IRTPISDataStore.SetMissionRealTimeInformation(string missionCode, RealTimeDelayType missionDelay, RealTimeWeatherType missionWeather)
+        {
+            bool dataUpdated = false;
+            if (!string.IsNullOrEmpty(missionCode))
+            {
+                lock (_missionData)
+                {
+                    RealTimeInformationType update;
+                    bool found = _missionData.TryGetValue(missionCode, out update);
+                    if (!found)
+                    {
+                        update = new RealTimeInformationType();
+                        dataUpdated = true;
+                    }
 
-				if (!string.IsNullOrEmpty(missionCode))
-				{
-					lock (_missionData)
-					{
-                        RealTimeInformationType update;
-                        bool found = _missionData.TryGetValue(missionCode, out update);
-                        if (!found)
-                        {
-                            update = new RealTimeInformationType();
-                        }
+                    if (missionDelay != null)
+                    {
+                        update.MissionDelay = missionDelay.Clone();
+                        update.MissionDelay.UpdateDate = DateTime.Now;
+                        dataUpdated = true;
+                    }
+                    else if (update.MissionDelay != null)
+                    {
+                        update.MissionDelay = null;
+                        dataUpdated = true;
+                    }
 
-						if (missionDelay != null)
-						{
-							update.MissionDelay = missionDelay;
-							update.MissionDelay.UpdateDate = DateTime.Now;
-							dataUpdated = true;
-						}
+                    if (missionWeather != null)
+                    {
+                        update.MissionWeather = missionWeather.Clone();
+                        update.MissionWeather.UpdateDate = DateTime.Now;
+                        dataUpdated = true;
+                    }
+                    else if (update.MissionWeather != null)
+                    {
+                        update.MissionWeather = null;
+                        dataUpdated = true;
+                    }
 
-						if (missionWeather != null)
-						{
-							update.MissionWeather = missionWeather;
-							update.MissionWeather.UpdateDate = DateTime.Now;
-							dataUpdated = true;
-						}
+                    if (!found)
+                    {
+                        _missionData.Add(missionCode, update);
+                    }
 
-                        if (!found)
-                        {
-                            _missionData.Add(missionCode, update);
-                        }
-
-						///Call event
-						if (dataUpdated)
-						{
-							OnChanged(new RTPISDataStoreEventArgs(missionCode, null));
-						}
-					}
-				}
-			}
-		}
+                    ///Call event
+                    if (dataUpdated)
+                    {
+                        OnChanged(new RTPISDataStoreEventArgs(missionCode, null));
+                    }
+                }
+            }
+        }
 
 		/// <summary>Gets station real time information.</summary>
 		/// <param name="missionCode">The mission code.</param>

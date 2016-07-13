@@ -641,34 +641,34 @@ namespace PIS.Ground.RealTime
 				{
 					string error = _sessionManager.GenerateRequestID(sessionId, out result.RequestId);
 
-					if (string.IsNullOrEmpty(error))
-					{
-							if (missionDelay == null && missionWeather == null)
-							{
-								result.ResultCode = RealTimeServiceErrorEnum.ErrorNoRtpisData;
-							}
-							else
-							{
-								RealTimeService._rtpisDataStore.SetMissionRealTimeInformation(missionCode, missionDelay, missionWeather);
+                    if (string.IsNullOrEmpty(error))
+                    {
+                        RealTimeService._rtpisDataStore.SetMissionRealTimeInformation(missionCode, missionDelay, missionWeather);
 
-								if (missionDelay == null)
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.InfoNoDelayData;
-								}
-								else if (missionWeather == null)
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.InfoNoWeatherData;
-								}
-								else
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
-								}
-							}
-					}
-					else
-					{
-						result.ResultCode = RealTimeServiceErrorEnum.ErrorRequestIdGeneration;
-					}
+                        if (missionDelay == null)
+                        {
+                            if (missionWeather == null)
+                            {
+                                result.ResultCode = RealTimeServiceErrorEnum.InfoNoData;
+                            }
+                            else
+                            {
+                                result.ResultCode = RealTimeServiceErrorEnum.InfoNoDelayData;
+                            }
+                        }
+                        else if (missionWeather == null)
+                        {
+                            result.ResultCode = RealTimeServiceErrorEnum.InfoNoWeatherData;
+                        }
+                        else
+                        {
+                            result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
+                        }
+                    }
+                    else
+                    {
+                        result.ResultCode = RealTimeServiceErrorEnum.ErrorRequestIdGeneration;
+                    }
 				}
 				else
 				{

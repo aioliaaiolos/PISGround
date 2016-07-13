@@ -926,10 +926,10 @@ namespace PIS.Ground.RealTimeTests
 
 			RealTimeSetMissionRealTimeInformationResult rtr = this._rts.SetMissionRealTimeInformation(Guid.NewGuid(), missionCode, delay, weather);
 
-			this._rtpisDataStore.Verify(x => x.SetMissionRealTimeInformation(missionCode, delay, weather), Times.Never());
+			this._rtpisDataStore.Verify(x => x.SetMissionRealTimeInformation(missionCode, delay, weather), Times.Once());
 
 			Assert.AreEqual(validGuid, rtr.RequestId);
-			Assert.AreEqual(RealTimeServiceErrorEnum.ErrorNoRtpisData, rtr.ResultCode);
+			Assert.AreEqual(RealTimeServiceErrorEnum.InfoNoData, rtr.ResultCode);
 		}
 
 		/// <summary>Sets mission real time information no delay data.</summary>

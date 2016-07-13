@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RTPISDataStoreTests.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2014.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -131,7 +131,15 @@ namespace PIS.Ground.RealTimeTests
         {
             string missionCode = "DummyMission";
             RealTimeDelayType delay = null;
-            RealTimeWeatherType weather = new RealTimeWeatherType();
+            RealTimeWeatherType weather = new RealTimeWeatherType()
+            {
+                Humidity = "2%",
+                TemperatureInCentigrade = "3",
+                TemperatureInFahrenheit = "37",
+                WeatherCondition = "cold",
+                WeatherConditionCode = 7
+            };
+            
             bool WasItHit = false;
             ChangedEventHandler theCallback = delegate { WasItHit = true; };
             _rtpisds.Changed += theCallback;
@@ -141,7 +149,11 @@ namespace PIS.Ground.RealTimeTests
                 RealTimeInformationType rtr = _rtpisds.GetMissionRealTimeInformation(missionCode);
 
                 Assert.AreEqual(delay, rtr.MissionDelay);
-                Assert.AreEqual(weather, rtr.MissionWeather);
+                Assert.AreEqual(weather.Humidity, rtr.MissionWeather.Humidity);
+                Assert.AreEqual(weather.TemperatureInFahrenheit, rtr.MissionWeather.TemperatureInFahrenheit);
+                Assert.AreEqual(weather.TemperatureInCentigrade, rtr.MissionWeather.TemperatureInCentigrade);
+                Assert.AreEqual(weather.WeatherCondition, rtr.MissionWeather.WeatherCondition);
+                Assert.AreEqual(weather.WeatherConditionCode, rtr.MissionWeather.WeatherConditionCode);
                 Assert.IsTrue(WasItHit);
             }
             finally
@@ -156,7 +168,13 @@ namespace PIS.Ground.RealTimeTests
         public void MissionRealTimeInformationNoWeatherData()
         {
             string missionCode = "DummyMission";
-            RealTimeDelayType delay = new RealTimeDelayType();
+            RealTimeDelayType delay = new RealTimeDelayType()
+            {
+                Delay = 100,
+                DelayReason = "slow",
+                DelayReasonCode = 199
+            };
+
             RealTimeWeatherType weather = null;
             bool WasItHit = false;
             ChangedEventHandler theCallback = delegate { WasItHit = true; };
@@ -167,7 +185,9 @@ namespace PIS.Ground.RealTimeTests
                 _rtpisds.SetMissionRealTimeInformation(missionCode, delay, weather);
                 RealTimeInformationType rtr = _rtpisds.GetMissionRealTimeInformation(missionCode);
 
-                Assert.AreEqual(delay, rtr.MissionDelay);
+                Assert.AreEqual(delay.Delay, rtr.MissionDelay.Delay);
+                Assert.AreEqual(delay.DelayReason, rtr.MissionDelay.DelayReason);
+                Assert.AreEqual(delay.DelayReasonCode, rtr.MissionDelay.DelayReasonCode);
                 Assert.AreEqual(weather, rtr.MissionWeather);
                 Assert.IsTrue(WasItHit);
             }
@@ -193,8 +213,10 @@ namespace PIS.Ground.RealTimeTests
                 _rtpisds.SetMissionRealTimeInformation(missionCode, delay, weather);
                 RealTimeInformationType rtr = _rtpisds.GetMissionRealTimeInformation(missionCode);
 
-                Assert.IsNull(rtr);
-                Assert.IsFalse(WasItHit);
+                Assert.IsNotNull(rtr);
+                Assert.IsNull(rtr.MissionDelay);
+                Assert.IsNull(rtr.MissionWeather);
+                Assert.IsTrue(WasItHit);
             }
             finally
             {
@@ -207,8 +229,21 @@ namespace PIS.Ground.RealTimeTests
         public void MissionRealTimeInformationAllData()
         {
             string missionCode = "DummyMission";
-            RealTimeDelayType delay = new RealTimeDelayType();
-            RealTimeWeatherType weather = new RealTimeWeatherType();
+            RealTimeDelayType delay = new RealTimeDelayType()
+            {
+                Delay = 1,
+                DelayReason = "because",
+                DelayReasonCode = 2,
+                UpdateDate = DateTime.Now
+            };
+            RealTimeWeatherType weather = new RealTimeWeatherType()
+            {
+                Humidity = "5%",
+                TemperatureInCentigrade = "4",
+                TemperatureInFahrenheit = "39",
+                WeatherCondition = "ok",
+                WeatherConditionCode = 255
+            };
             bool WasItHit = false;
             ChangedEventHandler theCallback = delegate { WasItHit = true; };
             _rtpisds.Changed += theCallback;
@@ -218,8 +253,14 @@ namespace PIS.Ground.RealTimeTests
                 _rtpisds.SetMissionRealTimeInformation(missionCode, delay, weather);
                 RealTimeInformationType rtr = _rtpisds.GetMissionRealTimeInformation(missionCode);
 
-                Assert.AreEqual(delay, rtr.MissionDelay);
-                Assert.AreEqual(weather, rtr.MissionWeather);
+                Assert.AreEqual(delay.Delay, rtr.MissionDelay.Delay);
+                Assert.AreEqual(delay.DelayReason, rtr.MissionDelay.DelayReason);
+                Assert.AreEqual(delay.DelayReasonCode, rtr.MissionDelay.DelayReasonCode);
+                Assert.AreEqual(weather.Humidity, rtr.MissionWeather.Humidity);
+                Assert.AreEqual(weather.TemperatureInFahrenheit, rtr.MissionWeather.TemperatureInFahrenheit);
+                Assert.AreEqual(weather.TemperatureInCentigrade, rtr.MissionWeather.TemperatureInCentigrade);
+                Assert.AreEqual(weather.WeatherCondition, rtr.MissionWeather.WeatherCondition);
+                Assert.AreEqual(weather.WeatherConditionCode, rtr.MissionWeather.WeatherConditionCode);
                 Assert.IsTrue(WasItHit);
             }
             finally

@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RequestProcessor.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -27,7 +27,7 @@ namespace PIS.Ground.RealTime
 		#region const
 
 		/// <summary>Identifier for event subscription.</summary>
-		private const string SubscriberId = "PIS.Ground.RealTime.RequestProcessor";
+		public const string SubscriberId = "PIS.Ground.RealTime.RequestProcessor";
 
 		#endregion
 
