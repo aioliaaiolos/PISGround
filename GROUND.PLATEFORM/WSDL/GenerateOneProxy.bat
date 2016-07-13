@@ -3,7 +3,7 @@
 :: MakeFile name  : 
 :: Description    : 	File specialized to generate WCF proxies files and ensure that file has been modified
 ::                       before replacing the previous files.			
-:: Updated        :						  2016-06-22
+:: Updated        :						  2016-07-13
 ::=====================================================================================
 
 @echo off
