@@ -4,7 +4,7 @@
 :: Description    : Unit test functions for GROUND project
 ::				  : 	compile all unit test files 
 :: Date           :			   2015-09-30
-:: Update         :			   2016-07-08			
+:: Update         :			   2016-07-13			
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -26,9 +26,12 @@ if "%WORKING_DIR%" == "" (
 
 REM --> If error flag set, we do not have admin.
 if "%errorlevel%" NEQ "0" (
-    echo This script require Administrator rights to be executed.
-    SET EXIT_CODE=2
-	goto :End
+	REM On Build machine, the check is deactivated
+	if "%JENKINS_URL%" == "" (
+		echo This script require Administrator rights to be executed.
+		SET EXIT_CODE=2
+		goto :End
+	)
 )
 
 :: Cleanup
