@@ -28,14 +28,22 @@ namespace PIS.Ground.RealTime
 {
 	/// <summary>Real time service.</summary>
     [CreateOnDispatchService(typeof(RealTimeService))]
-	[ServiceBehavior(Namespace = "http://alstom.com/pacis/pis/ground/realtime/")]
-	public class RealTimeService : IRealTimeService
+	[ServiceBehavior(Namespace = "http://alstom.com/pacis/pis/ground/realtime/", InstanceContextMode=InstanceContextMode.Single, ConcurrencyMode=ConcurrencyMode.Multiple)]
+	public class RealTimeService : IRealTimeService, IDisposable
 	{		
 		#region fields
 
-        private static volatile bool _initialized = false;
-
         private static object _initializationLock = new object();
+
+        /// <summary>
+        /// The number of object that refer to static fields.
+        /// </summary>
+        private static uint _initializationCount = 0;
+
+        /// <summary>
+        /// The instant message service instance that initialized the static data.
+        /// </summary>
+        private static RealTimeService _instanceCreator;
 
         private static IT2GManager _t2gManager = null;
 		
@@ -72,52 +80,75 @@ namespace PIS.Ground.RealTime
 
             Initialize();
 		}
+		/// <summary>Initializes a new instance of the RealTimeService class.</summary>
+        /// <param name="t2gManager">The manager to interact with T2G application.</param>
+        /// <param name="sessionManager">Manager for session.</param>
+        /// <param name="notificationSender">The object to use to send notifications.</param>
+        /// <param name="requestProcessor">The request processor instance.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="rtpisDataStore">The rtpis data store.</param>
+        public RealTimeService(
+            IT2GManager t2gManager,
+			ISessionManagerExtended sessionManager,
+            INotificationSender notificationSender,
+			IRequestProcessor requestProcessor,
+			IRemoteDataStoreFactory remoteDataStoreFactory,
+			IRTPISDataStore rtpisDataStore)
+
+        {
+            Initialize(this, t2gManager, sessionManager, notificationSender, requestProcessor, remoteDataStoreFactory, rtpisDataStore);
+        }
 
 		/// <summary>Initializes this object.</summary>
-		public static void Initialize()
-		{
-			if (!_initialized)
+        private void Initialize()
+        {
+            lock (_initializationLock)
             {
-                lock (_initializationLock)
+                if (_initializationCount == 0)
                 {
-                    if (!_initialized)
+                    try
                     {
-                        try
-                        {
-                            _sessionManager = new SessionManager();
+                        _instanceCreator = this;
+                        _sessionManager = new SessionManager();
 
-                            _notificationSender = new NotificationSender(_sessionManager);
+                        _notificationSender = new NotificationSender(_sessionManager);
 
-                            _t2gManager = T2GManagerContainer.T2GManager;
-                            					                                    
-                            _remoteDataStoreFactory = new RemoteDataStoreFactory();				
-					
-                            _rtpisDataStore = new RTPISDataStore();
-				
-					        _requestProcessor = new RequestProcessor(
-                                _t2gManager,
-                                _rtpisDataStore);
-                            
-				        }
-                        catch (System.Exception e)
-                        {
-                            LogManager.WriteLog(TraceType.ERROR, e.Message, "PIS.Ground.RealTime.RealTimeService.Initialize", e, EventIdEnum.RealTime);
-                        }
+                        _t2gManager = T2GManagerContainer.T2GManager;
 
-                        _initialized = true;
+                        _remoteDataStoreFactory = new RemoteDataStoreFactory();
+
+                        _rtpisDataStore = new RTPISDataStore();
+
+                        _requestProcessor = new RequestProcessor(
+                            _t2gManager,
+                            _rtpisDataStore);
+
+                        _initializationCount = 1;
                     }
+                    catch (System.Exception e)
+                    {
+                        Uninitialize(true);
+                        LogManager.WriteLog(TraceType.ERROR, e.Message, "PIS.Ground.RealTime.RealTimeService.Initialize", e, EventIdEnum.RealTime);
+                    }
+
+                }
+                else
+                {
+                    _initializationCount++;
                 }
             }
         }
 		
 		/// <summary>Initializes this object.</summary>
-		/// <param name="train2groundClient">The T2G client to use local data store.</param>
+        /// <param name="instance">The instance that create this object</param>
+        /// <param name="t2gManager">The manager to interact with T2G application.</param>
 		/// <param name="sessionManager">Manager for session.</param>
-		/// <param name="requestProcessor">The request processor instance.</param>
+        /// <param name="notificationSender">The object to use to send notifications.</param>
+        /// <param name="requestProcessor">The request processor instance.</param>
 		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
 		/// <param name="rtpisDataStore">The rtpis data store.</param>
-		/// <param name="plateformType">Type of the plateform.</param>
-		public static void Initialize(
+		private static void Initialize(
+            RealTimeService instance,
             IT2GManager t2gManager,
 			ISessionManagerExtended sessionManager,
             INotificationSender notificationSender,
@@ -125,63 +156,140 @@ namespace PIS.Ground.RealTime
 			IRemoteDataStoreFactory remoteDataStoreFactory,
 			IRTPISDataStore rtpisDataStore)
 		{
-			try
-			{
-                if (t2gManager != null)
-				{
-                    RealTimeService._t2gManager = t2gManager;
-				}
+            if (instance == null)
+            {
+                throw new ArgumentNullException("instance");
+            }
 
-				if (sessionManager != null)
-				{
-					RealTimeService._sessionManager = sessionManager;
-				}
+            if (t2gManager == null)
+            {
+                throw new ArgumentNullException("t2gManager");
+            }
+            if (sessionManager == null)
+            {
+                throw new ArgumentNullException("sessionManager");
+            }
 
-                if (notificationSender != null)
+            if (notificationSender == null)
+            {
+                throw new ArgumentNullException("notificationSender");
+            }
+
+            if (requestProcessor == null)
+            {
+                throw new ArgumentNullException("requestProcessor");
+            }
+
+            if (remoteDataStoreFactory == null)
+            {
+                throw new ArgumentNullException("remoteDataStoreFactory");
+            }
+
+            if (rtpisDataStore == null)
+            {
+                throw new ArgumentNullException("rtpisDataStore");
+            }
+
+            lock (_initializationLock)
+            {
+                try
                 {
+                    if (_initializationCount != 0)
+                    {
+                        Uninitialize(true);
+                    }
+
+                    RealTimeService._instanceCreator = instance;
+                    RealTimeService._t2gManager = t2gManager;
+                    RealTimeService._sessionManager = sessionManager;
                     RealTimeService._notificationSender = notificationSender;
-                } 
+                    RealTimeService._remoteDataStoreFactory = remoteDataStoreFactory;
+                    RealTimeService._rtpisDataStore = rtpisDataStore;
+                    RealTimeService._requestProcessor = requestProcessor;
 
-                if (remoteDataStoreFactory != null)
-				{
-					RealTimeService._remoteDataStoreFactory = remoteDataStoreFactory;
-				}
-
-				if (rtpisDataStore != null)
-				{
-					RealTimeService._rtpisDataStore = rtpisDataStore;
-				}
-
-				if (RealTimeService._requestProcessor == null)
-				{
-					RealTimeService._requestProcessor = new RequestProcessor(_t2gManager, _rtpisDataStore);
-				}
-
-                _initialized = true;
-			}
-			catch (System.Exception e)
-			{
-				LogManager.WriteLog(TraceType.ERROR, e.Message, "PIS.Ground.RealTime.RealTimeService.Initialize", e, EventIdEnum.RealTime);
-			}
+                    _initializationCount++;
+                }
+                catch (System.Exception e)
+                {
+                    Uninitialize(true);
+                    LogManager.WriteLog(TraceType.ERROR, e.Message, "PIS.Ground.RealTime.RealTimeService.Initialize", e, EventIdEnum.RealTime);
+                }
+            }
 		}
 
+        /// <summary>Uninitializes this object.</summary>
+        /// <param name="force">Indicates if the uninitialization shall be forced.</param>
+		private static void Uninitialize(bool force)
+		{
+			lock (_initializationLock)
+			{
+                if (_initializationCount < 2 || force)
+				{
+                    IDisposable disposable = _requestProcessor as IDisposable;
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
+
+                    _t2gManager = null;
+                    _remoteDataStoreFactory = null;
+                    _rtpisDataStore = null;
+					_sessionManager = null;
+					_notificationSender = null;
+                    _instanceCreator = null;
+                    _requestProcessor = null;
+				}
+			}
+
+            if (_initializationCount != 0 && !force)
+            {
+                _initializationCount--;
+            }
+        }
+
+
 		#endregion
 
-		#region events
+        #region IDisposable
 
-		#endregion
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-		#region properties
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Uninitialize(false);
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region methods 
+        #region events
 
-		#region private
+        #endregion
 
-		#region static
+        #region properties
 
-		/// <summary>Searches for the first lmt database file path.</summary>
+        #endregion
+
+        #region methods
+
+        #region private
+
+        #region static
+
+        /// <summary>Searches for the first lmt database file path.</summary>
 		/// <param name="packagePath">Full pathname of the package file.</param>
 		/// <returns>The found lmt database file path.</returns>
 		private static string FindLmtDatabaseFilePath(string packagePath)
@@ -191,7 +299,7 @@ namespace PIS.Ground.RealTime
 			try
 			{
 				string[] fileNames = Directory.GetFiles(packagePath, "*.db", SearchOption.AllDirectories);
-				if (fileNames != null && fileNames.Count() > 0)
+				if (fileNames != null && fileNames.LongLength > 0)
 				{
 					lmtDatabaseFilePath = fileNames[0]; // select the first
 				}
@@ -212,104 +320,122 @@ namespace PIS.Ground.RealTime
 		/// <param name="result">[in,out] The result.</param>
 		public static void GetStationListFromLMTDataBase(string missionCode, string elementId, AvailableElementData elementData, ref RealTimeRetrieveStationListResult result)
 		{
-			if (result == null)
-			{
-				result = new RealTimeRetrieveStationListResult();
-				result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
-			}
+            if (_instanceCreator == null)
+            {
+                throw new InvalidOperationException("The method GetStationListFromLMTDataBase cannot be invoked when no valid instance of Realtime service exist.");
+            }
 
-			if (elementData.PisBaselineData != null)
-			{
-				if (!string.IsNullOrEmpty(elementData.PisBaselineData.CurrentVersionLmtOut))
-				{
-					string lmtVersion = elementData.PisBaselineData.CurrentVersionLmtOut;
+            _instanceCreator.PerformGetStationListFromLMTDataBase(missionCode, elementId, elementData, ref result);
 
-					using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-					{
-						if (remoteDataStore != null)
-						{
-							if (remoteDataStore.checkIfDataPackageExists("LMT", lmtVersion))
-							{
-								var openPackageResult = remoteDataStore.openLocalDataPackage(
-									"LMT",
-									lmtVersion,
-									string.Empty);
+		}
 
-								if (openPackageResult.Status == OpenDataPackageStatusEnum.COMPLETED)
-								{
-									string lmtDatabaseFilePath = FindLmtDatabaseFilePath(openPackageResult.LocalPackagePath);
-									if (!string.IsNullOrEmpty(lmtDatabaseFilePath))
-									{
-										using (var lmtDatabaseAccessor = new LmtDatabaseAccessor(lmtDatabaseFilePath, _platformType))
-										{
-											result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
-											result.StationList = new List<string>();
+        /// <summary>
+        /// Performs the get station list from LMT data base.
+        /// </summary>
+        /// <param name="missionCode">The mission code.</param>
+        /// <param name="elementId">Identifier for the element.</param>
+        /// <param name="elementData">Information describing the element.</param>
+        /// <param name="result">[in, out] The result.</param>
+        protected virtual void PerformGetStationListFromLMTDataBase(string missionCode, string elementId, AvailableElementData elementData, ref RealTimeRetrieveStationListResult result)
+        {
+            if (result == null)
+            {
+                result = new RealTimeRetrieveStationListResult();
+                result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
+            }
 
-											if (string.IsNullOrEmpty(missionCode))
-											{
-												foreach (var station in lmtDatabaseAccessor.GetStationList())
-												{
-													if (!result.StationList.Contains(station.OperatorCode))
-													{
-														result.StationList.Add(station.OperatorCode);
-													}
-												}
-											}
-											else
-											{
-												uint? missionId = lmtDatabaseAccessor.GetMissionInternalCodeFromOperatorCode(missionCode);
-												if (missionId != null)
-												{
-													List<uint> missionRoute = lmtDatabaseAccessor.GetMissionRoute((uint)missionId);
-													foreach (uint stationId in missionRoute)
-													{
-														result.StationList.Add(lmtDatabaseAccessor.GetStationOperatorCodeFromInternalCode(stationId));
-													}
-												}
-												else
-												{
-													result.ResultCode = RealTimeServiceErrorEnum.ErrorInvalidMissionCode;
-												}
-											}
+            if (elementData.PisBaselineData != null)
+            {
+                if (!string.IsNullOrEmpty(elementData.PisBaselineData.CurrentVersionLmtOut))
+                {
+                    string lmtVersion = elementData.PisBaselineData.CurrentVersionLmtOut;
+
+                    using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
+                    {
+                        if (remoteDataStore != null)
+                        {
+                            if (remoteDataStore.checkIfDataPackageExists("LMT", lmtVersion))
+                            {
+                                var openPackageResult = remoteDataStore.openLocalDataPackage(
+                                    "LMT",
+                                    lmtVersion,
+                                    string.Empty);
+
+                                if (openPackageResult.Status == OpenDataPackageStatusEnum.COMPLETED)
+                                {
+                                    string lmtDatabaseFilePath = FindLmtDatabaseFilePath(openPackageResult.LocalPackagePath);
+                                    if (!string.IsNullOrEmpty(lmtDatabaseFilePath))
+                                    {
+                                        using (var lmtDatabaseAccessor = new LmtDatabaseAccessor(lmtDatabaseFilePath, _platformType))
+                                        {
+                                            result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
+                                            result.StationList = new List<string>();
+
+                                            if (string.IsNullOrEmpty(missionCode))
+                                            {
+                                                foreach (var station in lmtDatabaseAccessor.GetStationList())
+                                                {
+                                                    if (!result.StationList.Contains(station.OperatorCode))
+                                                    {
+                                                        result.StationList.Add(station.OperatorCode);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                uint? missionId = lmtDatabaseAccessor.GetMissionInternalCodeFromOperatorCode(missionCode);
+                                                if (missionId != null)
+                                                {
+                                                    List<uint> missionRoute = lmtDatabaseAccessor.GetMissionRoute((uint)missionId);
+                                                    foreach (uint stationId in missionRoute)
+                                                    {
+                                                        result.StationList.Add(lmtDatabaseAccessor.GetStationOperatorCodeFromInternalCode(stationId));
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    result.ResultCode = RealTimeServiceErrorEnum.ErrorInvalidMissionCode;
+                                                }
+                                            }
 
                                             if (result.ResultCode == RealTimeServiceErrorEnum.RequestAccepted &&
                                                 result.StationList.Count == 0)
-											{
-												result.ResultCode = RealTimeServiceErrorEnum.InfoNoDataForElement;
-											}
-										}
-									}
-									else
-									{
-										result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
-										LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_LMT_DB_NOT_FOUND, lmtVersion, elementId), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
-									}
-								}
-								else
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
-									LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_CANT_OPEN_PACKAGE, lmtVersion, elementId), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
-								}
-							}
-							else
-							{
-								result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
-								LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_UNKNOWN_EMBEDDED_LMT, lmtVersion), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
-							}
-						}
-						else
-						{
-							result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
-							LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_UNKNOWN), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
-						}
-					}
-				}
-				else
-				{
-					result.ResultCode = RealTimeServiceErrorEnum.InfoNoDataForElement;
-				}
-			}
-		}
+                                            {
+                                                result.ResultCode = RealTimeServiceErrorEnum.InfoNoDataForElement;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
+                                        LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_LMT_DB_NOT_FOUND, lmtVersion, elementId), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
+                                    }
+                                }
+                                else
+                                {
+                                    result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
+                                    LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_CANT_OPEN_PACKAGE, lmtVersion, elementId), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
+                                }
+                            }
+                            else
+                            {
+                                result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
+                                LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_RETRIEVESTATIONLIST_UNKNOWN_EMBEDDED_LMT, lmtVersion), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
+                            }
+                        }
+                        else
+                        {
+                            result.ResultCode = RealTimeServiceErrorEnum.ErrorRemoteDatastoreUnavailable;
+                            LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_UNKNOWN), "PIS.Ground.RealTime.RealTimeService.RetrieveStationList", null, EventIdEnum.RealTime);
+                        }
+                    }
+                }
+                else
+                {
+                    result.ResultCode = RealTimeServiceErrorEnum.InfoNoDataForElement;
+                }
+            }
+        }
 
 		#endregion
 
@@ -515,34 +641,34 @@ namespace PIS.Ground.RealTime
 				{
 					string error = _sessionManager.GenerateRequestID(sessionId, out result.RequestId);
 
-					if (string.IsNullOrEmpty(error))
-					{
-							if (missionDelay == null && missionWeather == null)
-							{
-								result.ResultCode = RealTimeServiceErrorEnum.ErrorNoRtpisData;
-							}
-							else
-							{
-								RealTimeService._rtpisDataStore.SetMissionRealTimeInformation(missionCode, missionDelay, missionWeather);
+                    if (string.IsNullOrEmpty(error))
+                    {
+                        RealTimeService._rtpisDataStore.SetMissionRealTimeInformation(missionCode, missionDelay, missionWeather);
 
-								if (missionDelay == null)
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.InfoNoDelayData;
-								}
-								else if (missionWeather == null)
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.InfoNoWeatherData;
-								}
-								else
-								{
-									result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
-								}
-							}
-					}
-					else
-					{
-						result.ResultCode = RealTimeServiceErrorEnum.ErrorRequestIdGeneration;
-					}
+                        if (missionDelay == null)
+                        {
+                            if (missionWeather == null)
+                            {
+                                result.ResultCode = RealTimeServiceErrorEnum.InfoNoData;
+                            }
+                            else
+                            {
+                                result.ResultCode = RealTimeServiceErrorEnum.InfoNoDelayData;
+                            }
+                        }
+                        else if (missionWeather == null)
+                        {
+                            result.ResultCode = RealTimeServiceErrorEnum.InfoNoWeatherData;
+                        }
+                        else
+                        {
+                            result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
+                        }
+                    }
+                    else
+                    {
+                        result.ResultCode = RealTimeServiceErrorEnum.ErrorRequestIdGeneration;
+                    }
 				}
 				else
 				{
@@ -642,21 +768,29 @@ namespace PIS.Ground.RealTime
 
 					if (string.IsNullOrEmpty(error))
 					{
-							if (stationInformationList != null && stationInformationList.Count() != 0)
+							if (stationInformationList != null && stationInformationList.Count != 0)
 							{
 								if (stationInformationList.Count <= 60)
 								{
 									List<RealTimeStationStatusType> stationStatusList = RealTimeService._rtpisDataStore.GetStationRealTimeInformation(result.MissionCode, null);
 									List<string> stationList = new List<string>();
 
-									if (stationStatusList != null)
+									if (stationStatusList != null && stationStatusList.Count > 0)
 									{
-										stationList = stationStatusList.Select(item => item.StationID).ToList();
+                                        stationList.Capacity = stationStatusList.Count + stationInformationList.Count;
+										stationList.AddRange(stationStatusList.Select(item => item.StationID));
 									}
+                                    else
+                                    {
+                                        stationList.Capacity = stationList.Count + stationInformationList.Count; 
+                                    }
 
-									stationList.AddRange(stationInformationList.Select(item => item.StationCode).ToList());
+									stationList.AddRange(stationInformationList.Select(item => item.StationCode));
+                                    stationList.Sort();
+                                    string previousStation = null;
+                                    stationList.RemoveAll(s => { bool isADuplicate = (s == previousStation); previousStation = s; return isADuplicate; });
 
-									if (stationList.Distinct().Count() <= 60)
+									if (stationList.Count <= 60)
 									{
 										result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
 										RealTimeService._rtpisDataStore.SetStationRealTimeInformation(result.MissionCode, stationInformationList, out result.StationResultList);
@@ -727,8 +861,8 @@ namespace PIS.Ground.RealTime
 					if (string.IsNullOrEmpty(error))
 					{
 						
-							var missionData = RealTimeService._rtpisDataStore.GetMissionRealTimeInformation(result.MissionCode);
-							var stationListData = RealTimeService._rtpisDataStore.GetStationRealTimeInformation(result.MissionCode, stationList);
+							RealTimeInformationType missionData = RealTimeService._rtpisDataStore.GetMissionRealTimeInformation(result.MissionCode);
+							List<RealTimeStationStatusType> stationListData = RealTimeService._rtpisDataStore.GetStationRealTimeInformation(result.MissionCode, stationList);
 
                             if (missionData == null)
                             {
@@ -737,7 +871,7 @@ namespace PIS.Ground.RealTime
                             }
                             else if ( missionData.MissionDelay != null ||
                                       missionData.MissionWeather != null ||
-                                      (stationListData != null && stationListData.Count() > 0) )
+                                      (stationListData != null && stationListData.Count > 0) )
                             {
                                 result.ResultCode = RealTimeServiceErrorEnum.RequestAccepted;
                                 result.StationList = new List<string>();

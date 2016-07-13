@@ -147,20 +147,28 @@ namespace PIS.Ground.Core.SQLite
         ///     Allows the programmer to retrieve single items from the DB.
         /// </summary>
         /// <param name="pSql">The query to run.</param>
-        /// <param name="pValue">The string that will get the result</param>
-        public void mExecuteScalar(string pSql, ref string pValue)
+        /// <param name="pParameters">The parameters of the query.</param>
+        /// <returns>The value of execute scalar</returns>
+        public object mExecuteScalar(string pSql, params KeyValuePair<string, object>[] pParameters)
         {
+            object scalarValue = null;
             try
             {
                 aDbConnection.Open();
-				using (SQLiteCommand lMycommand = new SQLiteCommand(aDbConnection))
+				using (SQLiteCommand lMycommand = new SQLiteCommand(pSql, aDbConnection))
 				{
-					lMycommand.CommandText = pSql;
+                    if (pParameters != null && pParameters.LongLength > 0)
+                    {
+                        foreach(KeyValuePair<string, object> parameter in pParameters)
+                        {
+                            lMycommand.Parameters.AddWithValue(parameter.Key, parameter.Value);
+                        }
+                    }
 					object lValue = lMycommand.ExecuteScalar();
-					if (lValue != null)
-					{
-						pValue = lValue.ToString();
-					}
+                    if (lValue != DBNull.Value)
+                    {
+                        scalarValue = lValue;
+                    }
 				}
             }
             catch (SQLiteException lSQLiteException)
@@ -171,6 +179,8 @@ namespace PIS.Ground.Core.SQLite
             {
                 aDbConnection.Close();
             }
+
+            return scalarValue;
         }
 
         /// <summary>

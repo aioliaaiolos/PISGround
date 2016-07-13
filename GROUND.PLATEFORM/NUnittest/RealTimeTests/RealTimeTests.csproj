@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompleteRealTimeServiceTests.cs" />
     <Compile Include="RealTimeServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteDataStoreSimulator\RemoteDataStore.cs" />

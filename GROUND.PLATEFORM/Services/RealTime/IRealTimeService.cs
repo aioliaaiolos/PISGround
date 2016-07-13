@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="IRealTimeService.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2014.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using PIS.Ground.Core.Data;
+using System.Linq;
 
 namespace PIS.Ground.RealTime
 {
@@ -26,7 +27,7 @@ namespace PIS.Ground.RealTime
 	/// 6.	Set Station Real Time information.
 	/// </summary>
 	[ServiceContract(Namespace = "http://alstom.com/pacis/pis/ground/realtime/", Name = "RealTimeService")]
-	public interface IRealTimeService
+	public interface IRealTimeService: IDisposable
 	{		
 		/// <summary>
 		/// This function allows the GroundApp to request from the ground PIS the list of available elements. This list includes also missions that are running for each element, and the versions of the LMT and PIS Base data packages.
@@ -190,6 +191,12 @@ namespace PIS.Ground.RealTime
 		/// </summary>
 		[EnumMember(Value = "T2G_SERVER_OFFLINE")]
 		T2GServerOffline = 13,
+
+        /// <summary>
+        /// No data information in command.
+        /// </summary>
+        [EnumMember(Value = "INFO_NO_DATA")]
+        InfoNoData = 14,
 	}
 
 	/// <summary>
@@ -247,6 +254,15 @@ namespace PIS.Ground.RealTime
 
 		/// <summary>Date/Time of the update.</summary>
 		public DateTime UpdateDate;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>the cloned instance.</returns>
+        public RealTimeDelayType Clone()
+        {
+            return (RealTimeDelayType)MemberwiseClone();
+        }
 	}
 
 	/// <summary>
@@ -256,13 +272,13 @@ namespace PIS.Ground.RealTime
 	public class RealTimeWeatherType
 	{
 		/// <summary>
-		/// General temperature for the mission in Celcius.
+		/// General temperature for the mission in Celsius.
 		/// </summary>
 		[DataMember(IsRequired = true)]
 		public string TemperatureInCentigrade;
 
 		/// <summary>
-		/// General temperature for the mission in Farenheit.
+		/// General temperature for the mission in Fahrenheit.
 		/// </summary>
 		[DataMember(IsRequired = true)]
 		public string TemperatureInFahrenheit;
@@ -287,6 +303,15 @@ namespace PIS.Ground.RealTime
 
 		/// <summary>Date/Time of the update.</summary>
 		public DateTime UpdateDate;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance</returns>
+        public RealTimeWeatherType Clone()
+        {
+            return (RealTimeWeatherType)MemberwiseClone();
+        }
 	}
 
 	/// <summary>
@@ -315,64 +340,8 @@ namespace PIS.Ground.RealTime
 			{
 				if (string.Compare(this.StationCode, src.StationCode) == 0)
 				{
-					if (src.StationData != null)
-					{
-						if (this.StationData == null)
-						{
-							this.StationData = src.StationData;
-						}
-						else
-						{
-							if (src.StationData.StationDelay != null)
-							{
-								this.StationData.StationDelay = src.StationData.StationDelay;
-								this.StationData.StationDelay.UpdateDate = DateTime.Now;
-							}
-
-							if (src.StationData.StationPlatform != null)
-							{
-								this.StationData.StationPlatform = src.StationData.StationPlatform;
-								this.StationData.StationPlatform.UpdateDate = DateTime.Now;
-							}
-
-							if (src.StationData.StationWeather != null)
-							{
-								this.StationData.StationWeather = src.StationData.StationWeather;
-								this.StationData.StationWeather.UpdateDate = DateTime.Now;
-							}
-
-							if (src.StationData.StationConnectionList != null)
-							{
-								if (this.StationData.StationConnectionList == null)
-								{
-									this.StationData.StationConnectionList = src.StationData.StationConnectionList;
-								}
-								else
-								{
-									var srcConnectionList = new List<RealTimeStationConnectionType>(src.StationData.StationConnectionList);
-									for (int i = 0; i < this.StationData.StationConnectionList.Count; i++)
-									{
-										var storedconnection = this.StationData.StationConnectionList[i];
-										var newConnection = srcConnectionList.Find(x => string.Compare(x.Operator, storedconnection.Operator) == 0 && string.Compare(x.CommercialNumber, storedconnection.CommercialNumber) == 0);
-										if (newConnection != null)
-										{
-											this.StationData.StationConnectionList[i] = newConnection;
-											this.StationData.StationConnectionList[i].UpdateDate = DateTime.Now;
-											srcConnectionList.Remove(newConnection);
-										}
-									}
-
-									foreach (var newConnection in srcConnectionList)
-									{
-										if (newConnection != null)
-										{
-											this.StationData.StationConnectionList.Add(newConnection);
-										}
-									}
-								}
-							}
-						}
-					}
+                    this.StationData = (src.StationData != null) ? src.StationData.Clone() : null;
+                    SetUpdateDate(DateTime.Now);
 				}
 			}
 		}
@@ -438,6 +407,28 @@ namespace PIS.Ground.RealTime
 		/// </summary>
 		[DataMember(IsRequired = false)]
 		public RealTimeWeatherType StationWeather;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance</returns>
+        public RealTimeStationDataType Clone()
+        {
+            RealTimeStationDataType clonedObject = new RealTimeStationDataType()
+            {
+                StationWeather = this.StationWeather != null ? this.StationWeather.Clone() : null,
+                StationPlatform = this.StationPlatform != null ? this.StationPlatform.Clone() : null,
+                StationDelay = this.StationDelay != null ? this.StationDelay.Clone() : null
+            };
+
+            if (this.StationConnectionList != null)
+            {
+                clonedObject.StationConnectionList = new List<RealTimeStationConnectionType>();
+                clonedObject.StationConnectionList.Capacity = this.StationConnectionList.Count;
+                clonedObject.StationConnectionList.AddRange(this.StationConnectionList.Select(connection => connection.Clone()));
+            }
+            return clonedObject;
+        }
 	}
 
 	/// <summary>
@@ -490,6 +481,15 @@ namespace PIS.Ground.RealTime
 
 		/// <summary>Date/Time of the update.</summary>
 		public DateTime UpdateDate;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance of this object.</returns>
+        public RealTimeStationPlatformType Clone()
+        {
+            return (RealTimeStationPlatformType)MemberwiseClone();
+        }
 	}
 
 	/// <summary>
@@ -578,6 +578,15 @@ namespace PIS.Ground.RealTime
 
 		/// <summary>Date/Time of the update.</summary>
 		public DateTime UpdateDate;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance.</returns>
+        public RealTimeStationConnectionType Clone()
+        {
+            return (RealTimeStationConnectionType)MemberwiseClone();
+        }
 	}
 
 	#endregion
@@ -688,6 +697,19 @@ namespace PIS.Ground.RealTime
 		/// </summary>
 		[DataMember(IsRequired = false)]
 		public RealTimeWeatherType MissionWeather;
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance.</returns>
+        public RealTimeInformationType Clone()
+        {
+            return new RealTimeInformationType
+            {
+                MissionDelay = this.MissionDelay != null ? this.MissionDelay.Clone() : null,
+                MissionWeather = this.MissionWeather != null ? this.MissionWeather.Clone() : null
+            };
+        }
 	}
 
 	/// <summary>
