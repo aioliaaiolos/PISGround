@@ -1472,7 +1472,7 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:PisGround DataPackage"
-        "ProductCode" = "8:{D0557F4F-09D1-4C78-A513-C7DF3C3EEF9A}"
+        "ProductCode" = "8:{39259377-8591-4565-9868-E660E2866083}"
         "PackageCode" = "8:{C8192351-EC42-4750-B1B2-EC290F2F8B9C}"
         "UpgradeCode" = "8:{77038588-AFD0-4916-9CBD-019B0C370888}"
         "RestartWWWService" = "11:TRUE"

@@ -1,10 +1,9 @@
 ::=====================================================================================
 :: File name      : 					config.bat
-:: MakeFile name  : 
 :: Description    : 	download all files necessary to build GROUND project
 ::				  : 				   copyVoute.bat
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-07-07
+:: Updated        :						  2016-07-13
 ::=====================================================================================
 @echo off
 
@@ -14,10 +13,18 @@ if "%1"=="" SETLOCAL
 :: Updatable section - BEGIN
 ::=====================================================================================
 
+::=====================================================================================
+:: Fields that need to be updated on every new version - Begin
+::=====================================================================================
 set VERSION_NUMBER=5.16.8.0
 set SETUP_VERSION=5.16.0800
-set SETUP_PRODUCT_CODE_GUID={D0557F4F-09D1-4C78-A513-C7DF3C3EEF9A}
 SET SETUP_PACKAGE_CODE_GUID={C8192351-EC42-4750-B1B2-EC290F2F8B9C}
+:: The setup product code does not need to be changed because PIS-Ground does not support
+:: multiple installation on same machine.
+
+::=====================================================================================
+:: Fields that need to be updated on every new version - End
+::=====================================================================================
 
 :: Version of the pre-requisite files to deliver PIS-Ground
 set REQUESITE_VERSION=5.8.0.9

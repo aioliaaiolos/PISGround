@@ -1167,7 +1167,7 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:PisGround Live Video Control"
-        "ProductCode" = "8:{D0557F4F-09D1-4C78-A513-C7DF3C3EEF9A}"
+        "ProductCode" = "8:{2F91867C-7530-4A44-8BE3-BEDB751F8DC7}"
         "PackageCode" = "8:{C8192351-EC42-4750-B1B2-EC290F2F8B9C}"
         "UpgradeCode" = "8:{092F4D3F-E40F-43E5-97BE-BA742344536E}"
         "RestartWWWService" = "11:TRUE"

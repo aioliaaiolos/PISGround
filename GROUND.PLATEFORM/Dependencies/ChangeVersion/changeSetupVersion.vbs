@@ -3,23 +3,28 @@
 ''  and update relevant GUIDs
 ''  
 ''  Hans-Jürgen Schmidt / 2007.12.19
-''  Last Updated: 2016.03.01
+''  Last Updated: 2016.07.14
 ''  
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 set a = wscript.arguments
-if a.count <> 4 then 
-	wscript.StdErr.WriteLine "The script required 4 arguments and " & CStr(a.count) & " argument(s) where provided"
+if a.count < 3 or a.count > 4 then 
+	wscript.StdErr.WriteLine "The script require 3 to 4 arguments and " & CStr(a.count) & " argument(s) where provided"
 	wscript.StdErr.WriteLine "Argument 1: Name of the file to update"
 	wscript.StdErr.WriteLine "Argument 2: Version number to set"
-	wscript.StdErr.WriteLine "Argument 3: Guid for product code"
-	wscript.StdErr.WriteLine "Argument 4: Guid for package code"
+	wscript.StdErr.WriteLine "Argument 3: Guid for package code"
+	wscript.StdErr.WriteLine "Argument 4: (Optional) Guid for product code"
 	wscript.quit 1
 end if
 
 fileName = a(0)
 newVersion = a(1)
-newProductCodeGuid = a(2)
-newPackageCodeGuid = a(3)
+newPackageCodeGuid = a(2)
+
+If (a.count > 3) Then
+	newProductCodeGuid = a(3)
+Else
+	set newProductCodeGuid = nothing
+End If
 
 'read and backup project file
 originalContent = ReadFileContent(fileName)
@@ -67,13 +72,16 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 		wscript.quit 11
 	End If
 
-	' Validate the product code guid
-	re.pattern = "^\{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}\}$"
-	set m = re.execute(newProductCodeGuid)
-	If m.Count <> 1 then
-		wscript.StdErr.WriteLine("-- The new product code guid to set does not follow that format: {00000000-1111-2222-3333-444444444444}")
-		wscript.StdErr.WriteLine("-- New product code guid value is '" & CStr(newProductCodeGuid) & "'")
-		wscript.quit 11
+	' Update the product code guid only if specified
+	If Not newProductCodeGuid Is Nothing Then
+		' Validate the product code guid
+		re.pattern = "^\{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}\}$"
+		set m = re.execute(newProductCodeGuid)
+		If m.Count <> 1 then
+			wscript.StdErr.WriteLine("-- The new product code guid to set does not follow that format: {00000000-1111-2222-3333-444444444444}")
+			wscript.StdErr.WriteLine("-- New product code guid value is '" & CStr(newProductCodeGuid) & "'")
+			wscript.quit 11
+		End If
 	End If
 	
 	re.pattern = "(""ProductVersion"" = ""8:)(\d+(\.\d+)+)"""
@@ -90,19 +98,22 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	
 	newFileContent = re.replace(newFileContent, "$1" & newVersion & """")
 
-	'replace ProductCode
-	re.pattern = "(""ProductCode"" = ""8:)(\{.+\})"""
-		
-	set m = re.Execute(newFileContent)
-	If m.Count = 0 then
-		wscript.StdErr.WriteLine("-- The file does not contain ProductCode to replace")
-		wscript.quit 11
-	ElseIf m.Count <> 1 then
-		wscript.StdErr.WriteLine("-- The file contains more than one ProductCode to replace")
-		wscript.quit 11
+	' Update the product code guid only if specified
+	If Not newProductCodeGuid Is Nothing Then
+		'replace ProductCode
+		re.pattern = "(""ProductCode"" = ""8:)(\{.+\})"""
+			
+		set m = re.Execute(newFileContent)
+		If m.Count = 0 then
+			wscript.StdErr.WriteLine("-- The file does not contain ProductCode to replace")
+			wscript.quit 11
+		ElseIf m.Count <> 1 then
+			wscript.StdErr.WriteLine("-- The file contains more than one ProductCode to replace")
+			wscript.quit 11
+		End If
+			
+		newFileContent = re.replace(newFileContent, "$1" & newProductCodeGuid & """")
 	End If
-		
-	newFileContent = re.replace(newFileContent, "$1" & newProductCodeGuid & """")
 
 	'replace PackageCode
 	re.pattern = "(""PackageCode"" = ""8:)(\{.+\})"""
