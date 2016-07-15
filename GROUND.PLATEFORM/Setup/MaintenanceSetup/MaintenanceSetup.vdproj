@@ -1237,7 +1237,7 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:PisGround Maintenance"
-        "ProductCode" = "8:{D0557F4F-09D1-4C78-A513-C7DF3C3EEF9A}"
+        "ProductCode" = "8:{967E18AB-3CA9-450E-BE11-93158AF96C76}"
         "PackageCode" = "8:{C8192351-EC42-4750-B1B2-EC290F2F8B9C}"
         "UpgradeCode" = "8:{B84D88C3-3B2E-4D32-96A5-39DCCD2EA32D}"
         "RestartWWWService" = "11:TRUE"

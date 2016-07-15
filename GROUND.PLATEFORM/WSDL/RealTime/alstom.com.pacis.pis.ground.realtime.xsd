@@ -40,6 +40,7 @@
       <xs:enumeration value="INFO_NO_DATA_FOR_ELEMENT" />
       <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE" />
       <xs:enumeration value="T2G_SERVER_OFFLINE" />
+      <xs:enumeration value="INFO_NO_DATA" />
     </xs:restriction>
   </xs:simpleType>
   <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/realtime/" name="RealTimeStartServiceErrorEnum" nillable="true" type="q5:RealTimeStartServiceErrorEnum" />
@@ -282,7 +283,7 @@
   <xs:element xmlns:q57="http://alstom.com/pacis/pis/ground/realtime/" name="ArrayOfRealTimeStationResultType" nillable="true" type="q57:ArrayOfRealTimeStationResultType" />
   <xs:complexType name="RealTimeStationResultType">
     <xs:sequence>
-      <xs:element xmlns:q58="http://alstom.com/pacis/pis/ground/realtime/" name="ConnectionList" nillable="true" type="q58:ArrayOfRealTimeConnectionResultType" />
+      <xs:element xmlns:q58="http://alstom.com/pacis/pis/ground/realtime/" name="ConnectionsResultList" nillable="true" type="q58:ArrayOfRealTimeConnectionResultType" />
       <xs:element xmlns:q59="http://alstom.com/pacis/pis/ground/realtime/" name="DelayResult" type="q59:RealTimeStationResultEnum" />
       <xs:element xmlns:q60="http://alstom.com/pacis/pis/ground/realtime/" name="PlatformResult" type="q60:RealTimeStationResultEnum" />
       <xs:element name="StationID" nillable="true" type="xs:string" />

@@ -1,10 +1,9 @@
 ::=====================================================================================
 :: File name      : 					changeVersion.bat
-:: MakeFile name  : 
 :: Description    : 	copy all files from the voute into the source code
 ::				  : 				   copyVoute.bat				
 :: Created        :						  ????
-:: Updated        :						  2016-06-21
+:: Updated        :						  2016-07-14
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -26,12 +25,6 @@ if "%VERSION_NUMBER%"=="" (
 	goto :End
 )
 
-if "%SETUP_PRODUCT_CODE_GUID%" == "" (
-	echo Variable SETUP_PRODUCT_CODE_GUID not defined
-	SET ERROR_CODE=3
-	goto :End
-)
-
 if "%SETUP_PACKAGE_CODE_GUID%" == "" (
 	echo Variable SETUP_PACKAGE_CODE_GUID not defined
 	SET ERROR_CODE=4
@@ -43,7 +36,7 @@ set WORKING_DIR=%SCRIPT_PATH%..\..
 
 for /f %%f in ('dir "%WORKING_DIR%\*Setup.vdproj" /s/b') do (
 	echo Update file "%%f"
-	cscript /NoLogo  "%SCRIPT_PATH%\changeSetupVersion.vbs" "%%f" %SETUP_VERSION% %SETUP_PRODUCT_CODE_GUID% %SETUP_PACKAGE_CODE_GUID%
+	cscript /NoLogo  "%SCRIPT_PATH%\changeSetupVersion.vbs" "%%f" %SETUP_VERSION% %SETUP_PACKAGE_CODE_GUID%
 	if ERRORLEVEL 1 (
 		echo Updating the version on file "%%f" FAILED.
 		SET ERROR_CODE=5
@@ -63,6 +56,6 @@ for /f %%f in ('dir "%WORKING_DIR%\AssemblyInfo.cs" /s/b') do (
 :End
 
 if "%EXIT_CODE%" == "0" echo Success
-if not "%EXIT_CODE%" == "0" echo changeVersion fail with error: %EXIT_CODE% > "%~dp0changeversionLog.txt"
+if not "%EXIT_CODE%" == "0" echo changeVersion fail with error: %EXIT_CODE%
 
 exit /B %ERROR_CODE%

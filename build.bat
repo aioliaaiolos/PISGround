@@ -1,10 +1,9 @@
 ::=====================================================================================
 :: File name      : 					build.bat
-:: MakeFile name  : 
 :: Description    : 			    build GROUND project
 ::				  : 			execute PISGround.sln project					
 :: Created        :						  2015-09-30
-:: Updated        :						  2016-07-08
+:: Updated        :						  2016-07-14
 ::
 :: Parameters     :   /quick  Do not force rebuild
 ::=====================================================================================
@@ -54,7 +53,6 @@ if ERRORLEVEL 1 (
 )
 
 :EndRunScripts
-type "%~dp0buildLog.txt"
 
 goto End
 :ProjectFileMissing
