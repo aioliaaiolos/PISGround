@@ -1130,7 +1130,7 @@ namespace PIS.Ground.InstantMessage
 												else
 												{
 													result.RequestId = Guid.Empty; // discard the generated request ID
-													result.ResultCode = InstantMessageErrorEnum.UnknownElementId;
+                                                    result.ResultCode = InstantMessageErrorEnum.NoBaselineFoundForElementId;
 													break;
 												}
 											}
@@ -1253,7 +1253,7 @@ namespace PIS.Ground.InstantMessage
 												else
 												{
 													result.RequestId = Guid.Empty; // discard the generated request ID
-													result.ResultCode = InstantMessageErrorEnum.UnknownElementId;
+                                                    result.ResultCode = InstantMessageErrorEnum.NoBaselineFoundForElementId;
 													break;
 												}
 											}
@@ -1414,7 +1414,7 @@ namespace PIS.Ground.InstantMessage
 												else
 												{
 													result.RequestId = Guid.Empty;
-													result.ResultCode = InstantMessageErrorEnum.UnknownElementId;
+                                                    result.ResultCode = InstantMessageErrorEnum.NoBaselineFoundForElementId;
 													break;
 												}
 											}

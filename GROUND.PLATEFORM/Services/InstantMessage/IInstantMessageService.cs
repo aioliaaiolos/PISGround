@@ -222,7 +222,13 @@ namespace PIS.Ground.InstantMessage
 
         /// <summary>An enum constant representing the internal error option.</summary>
         [EnumMember(Value = "INTERNAL_ERROR")]
-        InternalError
+        InternalError,
+
+        /// <summary>
+        /// An enum constant representing the no baseline found for element identifier option.
+        /// </summary>
+        [EnumMember(Value = "NO_BASELINE_FOUND_FOR_ELEMENT_ID")]
+        NoBaselineFoundForElementId
     }    
 
     [DataContract(Namespace = "http://alstom.com/pacis/pis/ground/instantmessage/", Name = "StationName")]

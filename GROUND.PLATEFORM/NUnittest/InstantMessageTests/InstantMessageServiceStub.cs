@@ -21,6 +21,7 @@ namespace PIS.Ground.InstantMessageTests
 	internal class InstantMessageServiceStub : InstantMessageService
 	{
 		private bool _blockAddNewRequest;
+        private bool _isElementKnownByDataStore;
 		private List<InstantMessageService.InstantMessageRequestContext> _blockedNewRequest = new List<InstantMessageService.InstantMessageRequestContext>();
 
 
@@ -58,15 +59,22 @@ namespace PIS.Ground.InstantMessageTests
 			ILogManager logManager) :
 			base(sessionManager, notificationSender, train2groungManager, logManager)
 		{
-			// No logic body
+            _isElementKnownByDataStore = true;
 		}
+
+        /// <summary>Sets the return value of the function IsElementKnownByDatastore.</summary>
+        /// <param name="value">The value that shall be returned by the function IsElementKnownByDatastore.</param>
+        internal void SetIsElementKnownByDatastoreReturnValue(bool value)
+        {
+            _isElementKnownByDataStore = value;
+        }
 
 		/// <summary>Query if 'elementId' is element known by datastore.</summary>
 		/// <param name="elementId">Identifier for the element.</param>
 		/// <returns>true if element known by datastore, false if not.</returns>
 		protected override bool IsElementKnownByDatastore(string elementId)
 		{
-			return true;
+            return _isElementKnownByDataStore;
 		}
 
 		/// <summary>Query if 'packageType' is data package known by datastore.</summary>
