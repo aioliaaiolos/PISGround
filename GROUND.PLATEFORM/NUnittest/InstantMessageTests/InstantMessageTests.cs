@@ -564,6 +564,73 @@ namespace PIS.Ground.InstantMessageTests
             }
 		}
 
+        /// <summary>Verify that method SendFreeTextMessage returns the correct value when no baseline is assigned to the train in the remote datastore.</summary>
+        [Test, Category("SendFreeTextMessage")]
+        public void SendFreeTextMessage_NobaselineFoundForTrain()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
+
+            ILogManager logManager = new LogManager();
+            AvailableElementData train1 = CreateAvailableElement("TRAIN-1", true, "5.12.14.0");
+            ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
+            elementList.Add(train1);
+            T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
+            SessionData sessionData = new SessionData();
+            Guid sessionId = Guid.NewGuid();
+            TargetAddressType target = new TargetAddressType();
+            target.Id = "TRAIN-1";
+            target.Type = AddressTypeEnum.Element;
+            bool isTrain1Online = true;
+
+            FreeTextMessageType freeTextMessageType = new FreeTextMessageType();
+            freeTextMessageType.Identifier = "M1";
+            freeTextMessageType.NumberOfRepetitions = 1;
+            freeTextMessageType.DelayBetweenRepetitions = 0;
+            freeTextMessageType.DisplayDuration = 45;
+            freeTextMessageType.AttentionGetter = false;
+            freeTextMessageType.FreeText = "This is a free text message";
+
+            ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
+            Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
+
+            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-1", (int)eServiceID.eSrvSIF_InstantMessageServer, out train1ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+
+            TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
+
+            using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
+
+                    instantMessageService.SetIsElementKnownByDatastoreReturnValue(false);
+
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, 2, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.NoBaselineFoundForElementId), "SendFreeTextMessage didn't return the expected value.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
+        }
+
 		#endregion
 
 		#region SendPredefinedMessage
@@ -644,6 +711,75 @@ namespace PIS.Ground.InstantMessageTests
             }
 		}
 
+        /// <summary>
+        /// Verify that method SendPredefinedMessages returns the correct value when no baseline is assigned to the train in the remote datastore.
+        /// </summary>
+        [Test, Category("SendPredefinedMessages")]
+        public void SendPredefinedMessages_NobaselineFoundForTrain()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
+
+            ILogManager logManager = new LogManager();
+            AvailableElementData train1 = CreateAvailableElement("TRAIN-1", true, "5.12.14.0");
+            ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
+            elementList.Add(train1);
+            T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
+            SessionData sessionData = new SessionData();
+            Guid sessionId = Guid.NewGuid();
+            TargetAddressType target = new TargetAddressType();
+            target.Id = "TRAIN-1";
+            target.Type = AddressTypeEnum.Element;
+            bool isTrain1Online = true;
+
+            PredefinedMessageType predefinedMessageType = new PredefinedMessageType();
+            predefinedMessageType.Identifier = "Predef1";
+            predefinedMessageType.StationId = "S1";
+            predefinedMessageType.CarId = 1;
+            predefinedMessageType.Delay = 30;
+            predefinedMessageType.DelayReason = "a lot of snow";
+            predefinedMessageType.Hour = new DateTime(2015, 11, 25, 10, 0, 0, 0, DateTimeKind.Utc);
+
+            ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
+            Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
+
+            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-1", (int)eServiceID.eSrvSIF_InstantMessageServer, out train1ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+
+            TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
+
+            using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
+
+                    instantMessageService.SetIsElementKnownByDatastoreReturnValue(false);
+
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageServiceInterface.SendPredefinedMessages(sessionId, target, 2, new PredefinedMessageType[] { predefinedMessageType });
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.NoBaselineFoundForElementId), "SendPredefinedMessages didn't return the expected value.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
+        }
+
 		#endregion
 
 		#region SendScheduledMessage
@@ -721,6 +857,69 @@ namespace PIS.Ground.InstantMessageTests
                 }
             }
 		}
+
+        /// <summary>Verify that method SendScheduleMessage returns the correct value when no baseline is assigned to the train in the remote datastore.</summary>
+        [Test, Category("SendScheduledMessage")]
+        public void SendScheduledMessage_NobaselineFoundForTrain()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
+
+            ILogManager logManager = new LogManager();
+            AvailableElementData train1 = CreateAvailableElement("TRAIN-1", true, "5.12.14.0");
+            ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
+            elementList.Add(train1);
+            T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
+            SessionData sessionData = new SessionData();
+            Guid sessionId = Guid.NewGuid();
+            Guid generatedRequestId = Guid.NewGuid();
+            TargetAddressType target = new TargetAddressType();
+            target.Id = "TRAIN-1";
+            target.Type = AddressTypeEnum.Element;
+            ScheduledMessageType messageType = new ScheduledMessageType();
+            bool isTrain1Online = true;
+            messageType.FreeText = "This is a scheduled message";
+            messageType.Identifier = "M1";
+            messageType.Period = new ScheduledPeriodType();
+            messageType.Period.StartDateTime = DateTime.UtcNow;
+            messageType.Period.EndDateTime = messageType.Period.StartDateTime.AddMinutes(10);
+            ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
+            Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
+
+            _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-1", (int)eServiceID.eSrvSIF_InstantMessageServer, out train1ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+
+            TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
+
+            using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    host.Open();
+                    instantMessageService.SetIsElementKnownByDatastoreReturnValue(false);
+                    InstantMessageResult result = instantMessageService.SendScheduledMessage(sessionId, target, 1, messageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.NoBaselineFoundForElementId), "SendScheduledMessage didn't return the expected value.");
+
+                    host.Close();
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+                }
+            }
+        }
 
 		/// <summary>Verify that method SendScheduleMessage send the message successfully to the train.</summary>
 		[Test, Category("SendScheduledMessage")]
