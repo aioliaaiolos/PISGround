@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="LocalDataStorage.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2013.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -12,18 +12,21 @@ namespace PIS.Ground.Core.T2G
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
-	using PIS.Ground.Core.Data;
+    using System.Text.RegularExpressions;
+    using PIS.Ground.Core.Data;
 	using PIS.Ground.Core.LogMgmt;
 	using PIS.Ground.Core.T2G.WebServices.Identification;
 	using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
 	using PIS.Ground.Core.Common;
+    using System.Configuration;
+    using PIS.Ground.Core.Utility;
 
-	/// <summary>Represting Local Data storage.</summary>
+	/// <summary>Local Data storage for train information.</summary>
 	internal class T2GLocalDataStorage
-	{
-		#region Private Variables
+    {
+        #region Private Variables
 
-		/// <summary>Service request time out.</summary>
+        /// <summary>Service request time out.</summary>
 		private const int ServiceRequestTimeOut = 100;
 
 		/// <summary>
@@ -42,6 +45,15 @@ namespace PIS.Ground.Core.T2G
 
 		private T2GSessionData _sessionData;
 
+        /// <summary>Indicates if filtering of local train service is enabled or not.</summary>
+        private bool _filterLocalServiceOnly;
+
+        /// <summary>The regular expression string to extract the vehicle id from the train name.</summary>
+        private string _regexStringThatExtractVehicleId;
+
+        /// <summary>The regular expression to extract the vehicle if from the train name.</summary>
+        private Regex _regexThatExtractVehicleId;
+
 		#endregion
 
 		#region Constructor
@@ -49,8 +61,17 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>
 		/// Prevents a default instance of the LocalDataStorage class from being created.
 		/// </summary>
-		internal T2GLocalDataStorage(T2GSessionData sessionData)
+        /// <param name="sessionData">Information to hold T2G session data.</param>
+        /// <param name="filterLocalTrainService">Indicates if the filtering on local train service is enabled or not.
+        /// If not specified, the value is retrieved from the configuration file.</param>
+        /// <param name="regexStringThatExtractVehicleId">The regular expression string that permit to extract the vehicle id from a train system name. If not specifed, the value stored in configuration file is used.</param>
+		internal T2GLocalDataStorage(T2GSessionData sessionData, bool? filterLocalTrainService, string regexStringThatExtractVehicleId)
 		{
+            if (sessionData == null)
+            {
+                throw new ArgumentNullException("sessionData");
+            }
+
 			_sessionData = sessionData;
 
 			_messageIdList = new List<string>(
@@ -71,6 +92,34 @@ namespace PIS.Ground.Core.T2G
                     eServiceID.eSrvSIF_RealTimeServer,
                     eServiceID.eSrvSIF_ReportExchangeServer 
                 });
+
+            if (filterLocalTrainService.HasValue)
+            {
+                _filterLocalServiceOnly = filterLocalTrainService.Value;
+            }
+            else
+            {
+                // Value not specified, use value stored into the configuration file
+                _filterLocalServiceOnly = ServiceConfiguration.FilterLocalTrainService;
+            }
+
+            if (string.IsNullOrEmpty(regexStringThatExtractVehicleId))
+            {
+                _regexStringThatExtractVehicleId = ServiceConfiguration.RegularExpressionStringToExtractVehicleIdFromSystemId;
+                if (_filterLocalServiceOnly)
+                {
+                    _regexThatExtractVehicleId = ServiceConfiguration.RegularExpressionToExtractVehicleIdFromSystemId;
+                }
+            }
+            else
+            {
+                // Does not perform error checking here, when value are provided as parameter, it's for automated tests.
+                _regexStringThatExtractVehicleId = regexStringThatExtractVehicleId;
+                if (_filterLocalServiceOnly)
+                {
+                    _regexThatExtractVehicleId = new Regex(_regexStringThatExtractVehicleId, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                }
+            }
 		}
 
 		#endregion

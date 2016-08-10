@@ -57,7 +57,7 @@ namespace GroundCoreTests
 		[Test]
 		public void RemoveSystem()
 		{
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+            T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			string lTrainId = "TRAIN-1";
 
@@ -87,7 +87,7 @@ namespace GroundCoreTests
 		[Test]
 		public void AddSystemTest()
 		{
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			//Test 1 : Add new SystemInfo in the list
 			string lTrainId1 = "SYSTEM-1";
@@ -175,7 +175,7 @@ namespace GroundCoreTests
 			int nbSystem = 1000;
 			int nbServices = 50;
 
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+            T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			//Fill system list with SystemInfo that have servicesInfo and fieldInfo
 			List<SystemInfo> lTmpSystem = new List<SystemInfo>();
@@ -286,7 +286,7 @@ namespace GroundCoreTests
 		[Test]
 		public void GetSystemDataTest()
 		{
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+            T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			List<SystemInfo> lTmpList;
 
@@ -324,7 +324,7 @@ namespace GroundCoreTests
 		[Test]
 		public void IsElementOnlineTest()
 		{
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+            T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			List<SystemInfo> lTmpList;
 
@@ -362,7 +362,7 @@ namespace GroundCoreTests
 		[Test]
 		public void DoesElementExistsTest()
 		{
-			T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData());
+            T2GLocalDataStorage ds = new T2GLocalDataStorage(new T2GSessionData(), false, string.Empty);
 
 			List<SystemInfo> lTmpList;
 
