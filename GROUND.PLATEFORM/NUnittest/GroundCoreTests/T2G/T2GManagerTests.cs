@@ -67,7 +67,7 @@ namespace GroundCoreTests.T2G
 			//_sessionData = new Mock<T2GSessionData>();
 			_sessionData = new T2GSessionData();
 			//_localDataStorage = new Mock<T2GLocalDataStorage>(_sessionData);
-			_localDataStorage = new T2GLocalDataStorage(_sessionData);
+			_localDataStorage = new T2GLocalDataStorage(_sessionData, false, string.Empty);
 			//_notifierTarget = new Mock<IT2GNotifierTarget>();
 			//_connectionListener = new Mock<IT2GConnectionListener>();
 			//_fileDistributionManager = new Mock<T2GFileDistributionManager>(_sessionData, _notifierTarget.Object);

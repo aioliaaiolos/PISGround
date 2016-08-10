@@ -408,4 +408,30 @@
   <data name="T2GConverterMissingItemsInNotificationMessageError" xml:space="preserve">
     <value>The following items of the T2G notification message of type {0} are missing or misconfigured: {1}. Please verify the configuration in the T2GVehicleInfo.xml file on the T2G server.</value>
   </data>
+  <data name="InvalidBooleanConfigurationParameter" xml:space="preserve">
+    <value>The value '{0}' for configuration parameter '{1}' is invalid and default value '{2}' is used. Acceptable values are '{3}' and '{4}'.</value>
+    <comment>{0} = invalid value
+{1} = parameter name
+{2} = default value
+{3} = First acceptable value
+{4} = Second acceptable value.</comment>
+  </data>
+  <data name="ConfigurationErrorInvalidRegularExpression" xml:space="preserve">
+    <value>The value '{0}' is not a well-formed regular expression specified for configuration parameter '{1}'. This default value will be used instead: '{2}'.</value>
+    <comment>{0} = invalid value
+{1} = paramater name
+{2} = default value</comment>
+  </data>
+  <data name="ConfigurationErrorMissingNamedGroupInRegularExpression" xml:space="preserve">
+    <value>The value '{0}' for configuration parameter '{1}' is invalid. The regular expression named group '{2}' is not found. This default value will be used instead: '{3}'.</value>
+    <comment>{0} = invalid value
+{1} = paramater name
+{2} = expected named group
+{3} = default value</comment>
+  </data>
+  <data name="ConfigurationErrorMissingParameter" xml:space="preserve">
+    <value>The required configuration parameter '{0}' is not specified. This default value will be used: '{1}'.</value>
+    <comment>{0} = missing parameter name
+{1} = Default value</comment>
+  </data>
 </root>
