@@ -69,16 +69,8 @@ using System.Text.RegularExpressions;
         /// <summary>The default value for enable filtering on local train service.</summary>
         private const bool DefaultValueForFilterOnLocalTrainService = false;
 
-        /// <summary>The default regular expression string that extract vehicle identifier.
-        /// </summary>
-        private const string DefaultRegexStringThatExtractVehicleId = "(?:(?:^TRAIN-?(?<id>[0-9]+)$)|(?<id>^[0-9]+$))";
-
         /// <summary>The parameter name that enable or disable filtering on local train service.</summary>
         private const string ParameterNameFilterLocalTrainService = "EnableFilterLocalServiceOnly";
-
-        /// <summary>The parameter name of the regular expression that extract the vehicle identifier from a train name.</summary>
-        private const string ParameterNameRegexThatExtractVehicleId = "ExtractVehicleIdFromSystemIdRegex";
-
         /// <summary>
         /// Holds Sql lite DataBase path value which is mentioned in Web.config
         /// </summary>
@@ -223,24 +215,6 @@ using System.Text.RegularExpressions;
             private set;
         }
 
-        /// <summary>
-        /// Gets the regular expression string to extract vehicle identifier from system identifier.
-        /// </summary>
-        public static string RegularExpressionStringToExtractVehicleIdFromSystemId
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the regular expression to extract vehicle identifier from system identifier.
-        /// </summary>
-        public static Regex RegularExpressionToExtractVehicleIdFromSystemId
-        {
-            get;
-            private set;
-        }
-
         #endregion
 
         static ServiceConfiguration()
@@ -286,7 +260,7 @@ using System.Text.RegularExpressions;
             // Initialize the application identifier
             InitializeRunningServiceName();
 
-            error |= !InitializeFilteringLocalTrainParameters();
+            error |= !InitializeFilterLocalTrainParameter();
 
             // Initialize Session Time Out
             if (ConfigurationManager.AppSettings[SESSIONTIMEOUT] != null)
@@ -497,7 +471,6 @@ using System.Text.RegularExpressions;
                 message += "ServiceConfiguration.T2GServicePwd=[" + ServiceConfiguration.T2GServicePwd + "]" + Environment.NewLine;
                 message += "ServiceConfiguration.T2GServiceUserName=[" + ServiceConfiguration.T2GServiceUserName + "]" + Environment.NewLine;
                 message += "ServiceConfiguration.EnableFilterLocalServiceOnly=[" + ServiceConfiguration.FilterLocalTrainService.ToString() + "]" + Environment.NewLine;
-                message += "ServiceConfiguration.ExtractVehicleIdFromSystemIdRegex=[" + ServiceConfiguration.RegularExpressionStringToExtractVehicleIdFromSystemId + "]" + Environment.NewLine;
                 message += "ServiceConfiguration.RunningServiceName=[" + ServiceConfiguration.RunningServiceName + "]" + Environment.NewLine;
 
                 LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
@@ -581,14 +554,12 @@ using System.Text.RegularExpressions;
         }
 
         /// <summary>
-        /// Initializes parameter value to filter local train parameters.
+        /// Loads the parameter filter local train from the configuration file.
         /// </summary>
         /// <returns>Success of the initialization. True if no error has been detected, false otherwise.</returns>
-        private static bool InitializeFilteringLocalTrainParameters()
+        private static bool InitializeFilterLocalTrainParameter()
         {
             bool success = true;
-            string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration", RunningServiceName);
-            RegularExpressionStringToExtractVehicleIdFromSystemId = DefaultRegexStringThatExtractVehicleId;
 
             string filterValue = ConfigurationManager.AppSettings[ParameterNameFilterLocalTrainService];
             if (string.Equals(filterValue, Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
@@ -599,74 +570,31 @@ using System.Text.RegularExpressions;
             {
                 FilterLocalTrainService = false;
             }
+            else if (string.IsNullOrEmpty(filterValue))
+            {
+                success = false;
+                FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
+                string errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                        Properties.Resources.ConfigurationErrorMissingParameter,
+                                        ParameterNameFilterLocalTrainService,
+                                        (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString));
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
+            }
             else
             {
                 success = false;
                 FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
 
                 string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                                        Properties.Resources.InvalidBooleanConfigurationParameter,
+                                        Properties.Resources.ConfigurationErrorInvalidBooleanValue,
                                         filterValue,
                                         ParameterNameFilterLocalTrainService,
                                         (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString),
                                         Boolean.TrueString,
                                         Boolean.FalseString);
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
                 LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-            }
-
-            bool useDefault = false;
-            string regexPattern = ConfigurationManager.AppSettings[ParameterNameRegexThatExtractVehicleId];
-            if (string.IsNullOrEmpty(regexPattern))
-            {
-                useDefault = true;
-
-                // Verify if the configuration value is mandatory or not.
-                if (FilterLocalTrainService)
-                {
-                    success = false;
-                    string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                        Properties.Resources.ConfigurationErrorMissingParameter,
-                        ParameterNameRegexThatExtractVehicleId,
-                        DefaultRegexStringThatExtractVehicleId);
-                    LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-                }
-            }
-            else if (regexPattern.IndexOf("?<id>", StringComparison.Ordinal) < 0)
-            {
-                useDefault = true;
-                success = false;
-                string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Properties.Resources.ConfigurationErrorMissingNamedGroupInRegularExpression,
-                    regexPattern,
-                    ParameterNameRegexThatExtractVehicleId,
-                    "?<id>",
-                    DefaultRegexStringThatExtractVehicleId);
-                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-            }
-            else
-            {
-                try
-                {
-                    RegularExpressionToExtractVehicleIdFromSystemId = new Regex(regexPattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                    RegularExpressionStringToExtractVehicleIdFromSystemId = regexPattern;
-                }
-                catch
-                {
-                    useDefault = true;
-                    success = false;
-                    string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                        Properties.Resources.ConfigurationErrorInvalidRegularExpression,
-                        regexPattern,
-                        ParameterNameRegexThatExtractVehicleId,
-                        DefaultRegexStringThatExtractVehicleId);
-                    LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-                }
-            }
-
-            if (useDefault)
-            {
-                RegularExpressionStringToExtractVehicleIdFromSystemId = DefaultRegexStringThatExtractVehicleId;
-                RegularExpressionToExtractVehicleIdFromSystemId = new Regex(DefaultRegexStringThatExtractVehicleId, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
             }
 
             return success;

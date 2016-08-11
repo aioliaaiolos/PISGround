@@ -61,20 +61,11 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The value &apos;{0}&apos; is not a well-formed regular expression specified for configuration parameter &apos;{1}&apos;. This default value will be used instead: &apos;{2}&apos;..
+        ///   Looks up a localized string similar to The value &apos;{0}&apos; for configuration parameter &apos;{1}&apos; is invalid and default value &apos;{2}&apos; is used. Acceptable values are &apos;{3}&apos; and &apos;{4}&apos;..
         /// </summary>
-        internal static string ConfigurationErrorInvalidRegularExpression {
+        internal static string ConfigurationErrorInvalidBooleanValue {
             get {
-                return ResourceManager.GetString("ConfigurationErrorInvalidRegularExpression", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value &apos;{0}&apos; for configuration parameter &apos;{1}&apos; is invalid. The regular expression named group &apos;{2}&apos; is not found. This default value will be used instead: &apos;{3}&apos;..
-        /// </summary>
-        internal static string ConfigurationErrorMissingNamedGroupInRegularExpression {
-            get {
-                return ResourceManager.GetString("ConfigurationErrorMissingNamedGroupInRegularExpression", resourceCulture);
+                return ResourceManager.GetString("ConfigurationErrorInvalidBooleanValue", resourceCulture);
             }
         }
         
@@ -399,15 +390,6 @@ namespace PIS.Ground.Core.Properties {
         internal static string InUploadFile {
             get {
                 return ResourceManager.GetString("InUploadFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value &apos;{0}&apos; for configuration parameter &apos;{1}&apos; is invalid and default value &apos;{2}&apos; is used. Acceptable values are &apos;{3}&apos; and &apos;{4}&apos;..
-        /// </summary>
-        internal static string InvalidBooleanConfigurationParameter {
-            get {
-                return ResourceManager.GetString("InvalidBooleanConfigurationParameter", resourceCulture);
             }
         }
         

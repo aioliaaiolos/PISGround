@@ -112,7 +112,7 @@ namespace PIS.Ground.Core.T2G
 			_fileDistributionEventHandlers = new Dictionary<string, EventHandler<FileDistributionStatusArgs>>();
 
 			_sessionData = new T2GSessionData();
-			_localDataStorage = new T2GLocalDataStorage(_sessionData, null, null);
+			_localDataStorage = new T2GLocalDataStorage(_sessionData, null);
 
 			if (!string.IsNullOrEmpty(ServiceConfiguration.T2GServiceNotificationUrl))
 			{
