@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="SystemInfoData.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2013.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
@@ -13,22 +13,22 @@ namespace PIS.Ground.Core.Data
 {
 
 	/// <summary>
-	/// 
+	/// Define the communication link of a system
 	/// </summary>
 	public enum CommunicationLink
 	{
 		/// <summary>
-		/// 
+		/// Wifi
 		/// </summary>
 		WIFI = 0,
 
 		/// <summary>
-		/// 
+		/// GPRS 
 		/// </summary>
 		_2G3G = 1,
 
 		/// <summary>
-		/// 
+		/// Unknown
 		/// </summary>
 		NotApplicable = 2,
 	}
@@ -40,106 +40,108 @@ namespace PIS.Ground.Core.Data
 	{
 		#region Private Variable
 		/// <summary>
-		/// 
+		/// Name of the described system.
 		/// </summary>
-		private readonly string strSystemIdField;
+		private readonly string _systemId;
 
 		/// <summary>
-		/// 
+		/// Unique vehicle physical identifier.
 		/// </summary>
-		private readonly int vehiclePhysicalIdField;
+		private readonly ushort _vehiclePhysicalId;
 
 		/// <summary>
-		/// 
+		/// Current mission identifier.
 		/// </summary>
-		private readonly string strMissionIdField;
+		private readonly string _missionId;
 
 		/// <summary>
-		/// 
+		/// Communication link between the embedded system and T2G ground server.
 		/// </summary>
-		private readonly CommunicationLink communicationLinkField;
+		private readonly CommunicationLink _communicationLink;
 
 		/// <summary>
-		/// 
+		/// Status of the system as provided by T2G. It's a bit field.
 		/// </summary>
-		private readonly uint statusField;
+		private readonly uint _status;
 
 		/// <summary>
-		/// 
+		/// Indicates if the embedded system communicate with the T2G ground server.
 		/// </summary>
-		private readonly bool isOnlineField;
+		private readonly bool _isOnline;
 
 		/// <summary>
 		/// List of Services which will be filled by calling Notification service of Notification
 		/// </summary>
-		private readonly ServiceInfoList objServiceList;
+		private readonly ServiceInfoList _serviceList;
 
 		/// <summary>
 		/// Pis Base line information
 		/// </summary>
-		private readonly PisBaseline objPisBaseline;
+		private readonly PisBaseline _pisBaseline;
 
 		/// <summary>true if this object is pis baseline up to date.</summary>
-		private readonly bool isPisBaselineUpToDate;
+		private readonly bool _isPisBaselineUpToDate;
 
 		/// <summary>
 		/// Pis Software information
 		/// </summary>
-		private readonly PisVersion objPisVersion;
+		private readonly PisVersion _pisVersion;
 
 		/// <summary>
 		/// Pis mission information
 		/// </summary>
-		private readonly PisMission objPisMission;
+		private readonly PisMission _pisMission;
 
 		#endregion
 
 		#region Constructor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemInfo"/> class.
+        /// </summary>
 		public SystemInfo()
 		{
-			this.strSystemIdField = string.Empty;
-			this.strMissionIdField = string.Empty;
-			this.vehiclePhysicalIdField = 0;
-			this.statusField = 0;
-			this.isOnlineField = false;
-			this.communicationLinkField = CommunicationLink.NotApplicable;
+			this._systemId = string.Empty;
+			this._missionId = string.Empty;
+			this._vehiclePhysicalId = 0;
+			this._status = 0;
+			this._isOnline = false;
+			this._communicationLink = CommunicationLink.NotApplicable;
 
-			this.objServiceList = new ServiceInfoList();
-			this.objPisBaseline = new PisBaseline();
-			this.objPisVersion = new PisVersion();
-			this.objPisMission = new PisMission();
+			this._serviceList = new ServiceInfoList();
+			this._pisBaseline = new PisBaseline();
+			this._pisVersion = new PisVersion();
+			this._pisMission = new PisMission();
 
-			this.isPisBaselineUpToDate = false;
+			this._isPisBaselineUpToDate = false;
 		}
 
 		public SystemInfo(
-			string pstrSystemIdField,
-			string pstrMissionFiled,
-			int piVehiclePhysicalIdField,
-			uint piStatus,
-			bool pIsOnline,
-			CommunicationLink peCommunicationLinkField,
+			string systemId,
+			string missionId,
+			ushort vehiclePhysicalIdField,
+			uint status,
+			bool isOnline,
+			CommunicationLink communicationLink,
 			ServiceInfoList serviceList,
 			PisBaseline pisBaseline,
 			PisVersion pisVersion,
 			PisMission pisMission,
 			bool isPisBaselineUpToDate)
-			: this()
 		{
-			this.strSystemIdField = pstrSystemIdField;
-			this.strMissionIdField = pstrMissionFiled;
-			this.vehiclePhysicalIdField = piVehiclePhysicalIdField;
-			this.statusField = piStatus;
-			this.isOnlineField = pIsOnline;
-			this.communicationLinkField = peCommunicationLinkField;
+			this._systemId = systemId;
+			this._missionId = missionId;
+			this._vehiclePhysicalId = vehiclePhysicalIdField;
+			this._status = status;
+			this._isOnline = isOnline;
+			this._communicationLink = communicationLink;
 
-			this.objServiceList = serviceList;
-			this.objPisBaseline = pisBaseline;
-			this.objPisVersion = pisVersion;
-			this.objPisMission = pisMission;
+			this._serviceList = serviceList;
+			this._pisBaseline = pisBaseline;
+			this._pisVersion = pisVersion;
+			this._pisMission = pisMission;
 
-			this.isPisBaselineUpToDate = isPisBaselineUpToDate;
+			this._isPisBaselineUpToDate = isPisBaselineUpToDate;
 		}
 
 		public SystemInfo(SystemInfo other)
@@ -148,22 +150,22 @@ namespace PIS.Ground.Core.Data
 			if (other != null)
 			{
 				// copy string references (strings are immutable)
-				this.strSystemIdField = other.strSystemIdField;
-				this.strMissionIdField = other.strMissionIdField;
-				this.vehiclePhysicalIdField = other.vehiclePhysicalIdField;
-				this.statusField = other.statusField;
-				this.isOnlineField = other.isOnlineField;
-				this.communicationLinkField = other.communicationLinkField;
+				this._systemId = other._systemId;
+				this._missionId = other._missionId;
+				this._vehiclePhysicalId = other._vehiclePhysicalId;
+				this._status = other._status;
+				this._isOnline = other._isOnline;
+				this._communicationLink = other._communicationLink;
 
 				// shallow copy of list (service infos are immutable)
-				this.objServiceList = new ServiceInfoList(other.objServiceList);
+				this._serviceList = new ServiceInfoList(other._serviceList);
 
 				// deep copy
-				this.objPisBaseline = new PisBaseline(other.objPisBaseline);
-				this.objPisVersion = new PisVersion(other.objPisVersion);
-				this.objPisMission = new PisMission(other.objPisMission);
+				this._pisBaseline = new PisBaseline(other._pisBaseline);
+				this._pisVersion = new PisVersion(other._pisVersion);
+				this._pisMission = new PisMission(other._pisMission);
 
-				this.isPisBaselineUpToDate = other.isPisBaselineUpToDate;
+				this._isPisBaselineUpToDate = other._isPisBaselineUpToDate;
 			}
 		}
 
@@ -178,7 +180,7 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.objPisBaseline;
+				return this._pisBaseline;
 			}
 		}
 
@@ -190,7 +192,7 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.isPisBaselineUpToDate;
+				return this._isPisBaselineUpToDate;
 			}
 		}
 
@@ -201,7 +203,7 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.objPisVersion;
+				return this._pisVersion;
 			}
 		}
 
@@ -212,62 +214,62 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.objPisMission;
+				return this._pisMission;
 			}
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		public int VehiclePhysicalId
+		public ushort VehiclePhysicalId
 		{
 			get
 			{
-				return this.vehiclePhysicalIdField;
+				return this._vehiclePhysicalId;
 			}
 		}
 
 		/// <summary>
-		/// 
+		/// Gets the system identifier.
 		/// </summary>
 		public string SystemId
 		{
 			get
 			{
-				return this.strSystemIdField;
+				return this._systemId;
 			}
 		}
 
 		/// <summary>
-		/// 
+		/// Gets the mission identifier.
 		/// </summary>
 		public string MissionId
 		{
 			get
 			{
-				return this.strMissionIdField;
+				return this._missionId;
 			}
 		}
 
 		/// <summary>
-		/// 
+		/// Gets the communication link.
 		/// </summary>
 		public CommunicationLink CommunicationLink
 		{
 			get
 			{
-				return this.communicationLinkField;
+				return this._communicationLink;
 			}
 		}
 
 		/// <summary>
-		/// 
+		/// Gets the status of the embedded system.
 		/// </summary>
 		public uint Status
 		{
 			get
 			{
-				return this.statusField;
+				return this._status;
 			}
 		}
 
@@ -277,7 +279,7 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.isOnlineField;
+				return this._isOnline;
 			}
 		}
 
@@ -288,7 +290,7 @@ namespace PIS.Ground.Core.Data
 		{
 			get
 			{
-				return this.objServiceList;
+				return this._serviceList;
 			}
 		}
 
