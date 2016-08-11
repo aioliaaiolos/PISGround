@@ -49,12 +49,6 @@ namespace PIS.Ground.Core.T2G
         /// <summary>Indicates if filtering of local train service is enabled or not.</summary>
         private bool _filterLocalServiceOnly;
 
-        /// <summary>The regular expression string to extract the vehicle id from the train name.</summary>
-        private string _regexStringThatExtractVehicleId;
-
-        /// <summary>The regular expression to extract the vehicle if from the train name.</summary>
-        private Regex _regexThatExtractVehicleId;
-
         /// <summary>
         /// Dictionary that associate a subscription id with a service id. Key is the subscription id and Value is the associated service id.
         /// </summary>
@@ -64,7 +58,6 @@ namespace PIS.Ground.Core.T2G
         /// The lock object to access variable _associationSubscriptionIdWithServiceId.
         /// </summary>
         private object _subscriptionAssociationsLock = new object();
-
 		#endregion
 
 		#region Constructor
@@ -75,8 +68,7 @@ namespace PIS.Ground.Core.T2G
         /// <param name="sessionData">Information to hold T2G session data.</param>
         /// <param name="filterLocalTrainService">Indicates if the filtering on local train service is enabled or not.
         /// If not specified, the value is retrieved from the configuration file.</param>
-        /// <param name="regexStringThatExtractVehicleId">The regular expression string that permit to extract the vehicle id from a train system name. If not specifed, the value stored in configuration file is used.</param>
-		internal T2GLocalDataStorage(T2GSessionData sessionData, bool? filterLocalTrainService, string regexStringThatExtractVehicleId)
+		internal T2GLocalDataStorage(T2GSessionData sessionData, bool? filterLocalTrainService)
 		{
             if (sessionData == null)
             {
@@ -112,24 +104,6 @@ namespace PIS.Ground.Core.T2G
             {
                 // Value not specified, use value stored into the configuration file
                 _filterLocalServiceOnly = ServiceConfiguration.FilterLocalTrainService;
-            }
-
-            if (string.IsNullOrEmpty(regexStringThatExtractVehicleId))
-            {
-                _regexStringThatExtractVehicleId = ServiceConfiguration.RegularExpressionStringToExtractVehicleIdFromSystemId;
-                if (_filterLocalServiceOnly)
-                {
-                    _regexThatExtractVehicleId = ServiceConfiguration.RegularExpressionToExtractVehicleIdFromSystemId;
-                }
-            }
-            else
-            {
-                // Does not perform error checking here, when value are provided as parameter, it's for automated tests.
-                _regexStringThatExtractVehicleId = regexStringThatExtractVehicleId;
-                if (_filterLocalServiceOnly)
-                {
-                    _regexThatExtractVehicleId = new Regex(_regexStringThatExtractVehicleId, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                }
             }
 		}
 

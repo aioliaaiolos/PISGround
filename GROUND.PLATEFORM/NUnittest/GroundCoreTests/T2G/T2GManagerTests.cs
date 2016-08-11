@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="T2GManagerTests.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2015.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -67,7 +67,7 @@ namespace GroundCoreTests.T2G
 			//_sessionData = new Mock<T2GSessionData>();
 			_sessionData = new T2GSessionData();
 			//_localDataStorage = new Mock<T2GLocalDataStorage>(_sessionData);
-			_localDataStorage = new T2GLocalDataStorage(_sessionData, false, string.Empty);
+			_localDataStorage = new T2GLocalDataStorage(_sessionData, false);
 			//_notifierTarget = new Mock<IT2GNotifierTarget>();
 			//_connectionListener = new Mock<IT2GConnectionListener>();
 			//_fileDistributionManager = new Mock<T2GFileDistributionManager>(_sessionData, _notifierTarget.Object);
