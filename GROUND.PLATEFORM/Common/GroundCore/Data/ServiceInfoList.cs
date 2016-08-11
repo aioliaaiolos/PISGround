@@ -8,6 +8,8 @@ namespace PIS.Ground.Core.Data
 {
     public class ServiceInfoList : IEnumerable<ServiceInfo>
     {
+        private static readonly ServiceInfoList _empty = new ServiceInfoList();
+
         private readonly ServiceInfo[] _serviceInfoArray;
 
         /// <summary>
@@ -16,6 +18,17 @@ namespace PIS.Ground.Core.Data
         public int Count
         {
             get { return _serviceInfoArray.Length; }
+        }
+
+        /// <summary>
+        /// Gets the read-only empty service info list.
+        /// </summary>
+        public static ServiceInfoList Empty
+        {
+            get
+            {
+                return _empty;
+            }
         }
 
         /// <summary>Initializes a new instance of the ServiceInfoList class.</summary>
@@ -62,6 +75,18 @@ namespace PIS.Ground.Core.Data
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<ServiceInfo>)this).GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ServiceInfo"/> at the specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public ServiceInfo this[int index]
+        {
+            get
+            {
+                return _serviceInfoArray[index];
+            }
         }
     }
 }
