@@ -54,6 +54,40 @@ namespace PIS.Ground.Core.LogMgmt
         }
 
         #region Error Logs
+
+        /// <summary>
+        /// Determines whether f trace is active for the specified trace lever.
+        /// </summary>
+        /// <param name="level">The level to evaluate.</param>
+        /// <returns>true if the trace is active, false otherwise.</returns>
+        public static bool IsTraceActive(TraceType level)
+        {
+            bool isActive;
+            switch (level)
+            {
+                case TraceType.ERROR:
+                    isActive = _userLogLevel != TraceType.NONE;
+                    break;
+                case TraceType.DEBUG:
+                    isActive = _userLogLevel == TraceType.DEBUG;
+                    break;
+                case TraceType.EXCEPTION:
+                    isActive = (_userLogLevel != TraceType.NONE);
+                    break;
+                case TraceType.INFO:
+                    isActive = (_userLogLevel == TraceType.INFO || _userLogLevel == TraceType.DEBUG);
+                    break;
+                case TraceType.WARNING:
+                    isActive = (_userLogLevel == TraceType.WARNING || _userLogLevel == TraceType.INFO || _userLogLevel == TraceType.DEBUG);
+                    break;
+                default:
+                    isActive = (_userLogLevel == TraceType.DEBUG);
+                    break;
+            }
+
+            return isActive;
+        }
+
         /// <summary>
         /// Logs the errors to log file.
         /// </summary>
@@ -68,55 +102,31 @@ namespace PIS.Ground.Core.LogMgmt
             bool objWriteLogSuccess = false;
             try
             {
-                EventLogEntryType objEntryType;
-                bool objWriteEventLog = false;
-                switch (trace)
+                if (LogManager.IsTraceActive(trace))
                 {
-                    case TraceType.ERROR:
-                        objEntryType = EventLogEntryType.Error;
-                        if (_userLogLevel != TraceType.NONE)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                     case TraceType.DEBUG:
-                        objEntryType = EventLogEntryType.FailureAudit;
-                        if (_userLogLevel == TraceType.DEBUG)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                   case TraceType.EXCEPTION:
-                        objEntryType = EventLogEntryType.Error;
-                        if (_userLogLevel != TraceType.NONE)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                   case TraceType.INFO:
-                        objEntryType = EventLogEntryType.Information;
-                        if (_userLogLevel == TraceType.INFO || _userLogLevel == TraceType.DEBUG)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                    case TraceType.WARNING:
-                        objEntryType = EventLogEntryType.Warning;
-                        if (_userLogLevel == TraceType.WARNING || _userLogLevel == TraceType.INFO || _userLogLevel == TraceType.DEBUG)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                    default:
-                        objEntryType = EventLogEntryType.Information;
-                        if (_userLogLevel == TraceType.DEBUG)
-                        {
-                            objWriteEventLog = true;
-                        }
-                        break;
-                }
-                if (objWriteEventLog == true)
-                {
+                    EventLogEntryType objEntryType;
+                    switch (trace)
+                    {
+                        case TraceType.ERROR:
+                            objEntryType = EventLogEntryType.Error;
+                            break;
+                        case TraceType.DEBUG:
+                            objEntryType = EventLogEntryType.FailureAudit;
+                            break;
+                        case TraceType.EXCEPTION:
+                            objEntryType = EventLogEntryType.Error;
+                            break;
+                        case TraceType.INFO:
+                            objEntryType = EventLogEntryType.Information;
+                            break;
+                        case TraceType.WARNING:
+                            objEntryType = EventLogEntryType.Warning;
+                            break;
+                        default:
+                            objEntryType = EventLogEntryType.Information;
+                            break;
+                    }
+
                     objWriteLogSuccess = WriteEventLog(objEx, context, message, objEntryType, (int)eventId);
                 }
             }

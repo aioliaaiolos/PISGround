@@ -486,7 +486,7 @@ using System.Text.RegularExpressions;
             }
 
 
-            if (LogManager.LogLevel == TraceType.DEBUG || LogManager.LogLevel == TraceType.INFO)
+            if (LogManager.IsTraceActive(TraceType.INFO))
             {
                 string message = string.Empty;
                 message += "ServiceConfiguration.SessionSqLiteDBPath=[" + ServiceConfiguration.SessionSqLiteDBPath + "]" + Environment.NewLine;
