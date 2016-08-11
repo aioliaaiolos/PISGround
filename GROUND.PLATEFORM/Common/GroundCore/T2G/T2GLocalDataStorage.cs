@@ -8,19 +8,17 @@
 //---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.T2G
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-    using System.Text.RegularExpressions;
-    using PIS.Ground.Core.Data;
-	using PIS.Ground.Core.LogMgmt;
-	using PIS.Ground.Core.T2G.WebServices.Identification;
-	using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
-	using PIS.Ground.Core.Common;
-    using System.Configuration;
-    using PIS.Ground.Core.Utility;
+    using System;
+    using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using PIS.Ground.Core.Common;
+    using PIS.Ground.Core.Data;
+    using PIS.Ground.Core.LogMgmt;
+    using PIS.Ground.Core.T2G.WebServices.Identification;
+    using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
+    using PIS.Ground.Core.Utility;
 
 	/// <summary>Local Data storage for train information.</summary>
 	internal class T2GLocalDataStorage

@@ -10,14 +10,11 @@ namespace PIS.Ground.Core.Utility
 {
     using System;
     using System.Configuration;
-    using System.Data.SqlClient;
+    using System.Globalization;
     using System.IO;
-    using System.Xml;
+    using System.Web;
     using PIS.Ground.Core.Data;
     using PIS.Ground.Core.LogMgmt;
-    using System.Web;
-using System.Text.RegularExpressions;
-    using System.Globalization;
 
     /// <summary>
     /// Utility Class
