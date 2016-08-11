@@ -120,13 +120,13 @@ namespace PIS.Ground.Core.T2G
                 // services with the same ID present on a train, but PIS ground uses only those services that can only have one
                 // instance on a given train. 
 
-                if (!string.IsNullOrEmpty(systemId) && serviceList != null && serviceList.Length != 0 && serviceList[0] != null)
+                if (!string.IsNullOrEmpty(systemId))
                 {
-                    ServiceInfo service = T2GDataConverter.BuildService(serviceList[0]);
+                    ServiceInfoList services = T2GDataConverter.BuildServiceList(serviceList);
 
-                    if (service != null)
+                    if (services != null)
                     {
-                        _localDataStorage.OnServiceChanged(systemId, isSystemOnline, subscriptionId, service);
+                        _localDataStorage.OnServiceChanged(systemId, isSystemOnline, subscriptionId, services);
 
                         ElementEventArgs elementEventArgs = _localDataStorage.BuildElementInfoChangedEvent(systemId);
 
