@@ -670,7 +670,7 @@ namespace PIS.Ground.Core.T2G
                     int existingSystemInfoIndex = _systemList.FindIndex(s => s.SystemId == systemId);
 
                     // System is know. Update possible.
-                    if (existingSystemInfoIndex > 0)
+                    if (existingSystemInfoIndex >= 0)
 					{
                         SystemInfo existingSystemInfo = _systemList[existingSystemInfoIndex];
 
@@ -701,7 +701,9 @@ namespace PIS.Ground.Core.T2G
                                 }
 
                                 int insertIndex = updatedList.FindIndex(i => i.VehiclePhysicalId == service.VehiclePhysicalId &&
-                                    i.ServiceId == service.ServiceId);
+                                    i.ServiceId == service.ServiceId 
+                                    && i.ServicePortNumber == service.ServicePortNumber
+                                    && i.ServiceIPAddress == service.ServiceIPAddress );
 
                                 if (insertIndex < 0)
                                 {
@@ -762,6 +764,8 @@ namespace PIS.Ground.Core.T2G
         /// <item>ServiceId in ascending order.</item>
         /// <item>VehiclePhysicalId that match the system id. Only possible when filtering local train service is enabled.</item>
         /// <item>VehiclePhysicalId in ascending order.</item>
+        /// <item>IP address in ascending order.</item>
+        /// <item>Port number in ascending order</item>
         /// </list></para>
         /// </summary>
         /// <param name="x">The first object to compare.</param>
@@ -798,6 +802,15 @@ namespace PIS.Ground.Core.T2G
                 else
                 {
                     comparisonResult = Convert.ToInt32(x.VehiclePhysicalId) - Convert.ToInt32(y.VehiclePhysicalId);
+                }
+            }
+            else
+            {
+                comparisonResult = string.CompareOrdinal(x.ServiceIPAddress, y.ServiceIPAddress);
+
+                if (comparisonResult == 0)
+                {
+                    comparisonResult = Convert.ToInt32(x.ServicePortNumber) - Convert.ToInt32(y.ServicePortNumber);
                 }
             }
 
@@ -853,27 +866,30 @@ namespace PIS.Ground.Core.T2G
 
 				lock (_systemListLock)
 				{
-					SystemInfo objSys = _systemList.Find(obj => obj.SystemId == systemId);
-
-					if (objSys != null && objSys.IsOnline != isSystemOnline)
+					int foundIndex = _systemList.FindIndex(obj => obj.SystemId == systemId);
+                    if (foundIndex >= 0)
 					{
-						// This info is mainly updated in GetSystemList (initially) or OnSystemChanged (after), but
-						// we might as well update it here, since it is returned along with the service list.
-						SystemInfo updatedSystemInfo = new SystemInfo(
-							objSys.SystemId,
-							objSys.MissionId,
-							objSys.VehiclePhysicalId,
-							objSys.Status,
-							isSystemOnline,
-							objSys.CommunicationLink,
-							objSys.ServiceList,
-							objSys.PisBaseline,
-							objSys.PisVersion,
-							objSys.PisMission,
-							objSys.IsPisBaselineUpToDate && isSystemOnline);
+                        SystemInfo foundSystem = _systemList[foundIndex];
+                        if (foundSystem.IsOnline != isSystemOnline)
+                        {
+                            // This info is mainly updated in GetSystemList (initially) or OnSystemChanged (after), but
+                            // we might as well update it here, since it is returned along with the service list.
+                            SystemInfo updatedSystemInfo = new SystemInfo(
+                                foundSystem.SystemId,
+                                foundSystem.MissionId,
+                                foundSystem.VehiclePhysicalId,
+                                foundSystem.Status,
+                                isSystemOnline,
+                                foundSystem.CommunicationLink,
+                                foundSystem.ServiceList,
+                                foundSystem.PisBaseline,
+                                foundSystem.PisVersion,
+                                foundSystem.PisMission,
+                                foundSystem.IsPisBaselineUpToDate && isSystemOnline);
 
-						UpdateSystem(objSys);
-                        updated = true;
+                            _systemList[foundIndex] = updatedSystemInfo;
+                            updated = true;
+                        }
 					}
 				}
 

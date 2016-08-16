@@ -8,6 +8,8 @@
 //---------------------------------------------------------------------------------------------------
 using System;
 using System.Linq;
+using System.Text;
+using System.Globalization;
 
 namespace PIS.Ground.Core.Data
 {
@@ -313,7 +315,7 @@ namespace PIS.Ground.Core.Data
 			if (this.SystemId != lOther.SystemId) { return false; }
 			if (this.MissionId != lOther.MissionId) { return false; }
 			if (this.IsPisBaselineUpToDate != lOther.IsPisBaselineUpToDate) { return false; }
-			if (!this.ServiceList.SequenceEqual(lOther.ServiceList)) { return false; }
+			if (!this.ServiceList.Equals(lOther.ServiceList)) { return false; }
 			if (!this.PisBaseline.Equals(lOther.PisBaseline)) { return false; }
 			if (!this.PisVersion.Equals(lOther.PisVersion)) { return false; }
 			if (!this.PisMission.Equals(lOther.PisMission)) { return false; }
@@ -325,5 +327,41 @@ namespace PIS.Ground.Core.Data
 		{
 			return base.GetHashCode();
 		}
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder output = new StringBuilder(200);
+            Dump(string.Empty, output);
+            return output.ToString();
+        }
+
+        /// <summary>
+        /// Dumps the current object into an output string.
+        /// </summary>
+        /// <param name="prefix">The prefix to add when writing each member.</param>
+        /// <param name="output">The output string.</param>
+        public void Dump(string prefix, StringBuilder output)
+        {
+            string memberPrefix = prefix + "\t";
+            output.Append("{");
+
+            output.AppendFormat(CultureInfo.InvariantCulture, "SystemId = '{0}',", SystemId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}VehicleId = '{1}',", memberPrefix, VehiclePhysicalId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}IsOnline = '{1}',", memberPrefix, IsOnline).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}MissionId = '{1}',", memberPrefix, MissionId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}CommunicationLink = '{1}',", memberPrefix, CommunicationLink).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}Status = '{1}',", memberPrefix, Status).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}IsPisBaselineUpToDate = '{1}',", memberPrefix, IsPisBaselineUpToDate).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}ServiceList[Count={1}] = ", memberPrefix, ServiceList.Count);
+            ServiceList.Dump(memberPrefix + "\t", output);
+
+            output.Append("}");
+        }
 	}
 }

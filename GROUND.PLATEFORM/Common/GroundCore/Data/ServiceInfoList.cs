@@ -6,6 +6,10 @@ using System.Collections;
 
 namespace PIS.Ground.Core.Data
 {
+    /// <summary>
+    /// Manage a readonly collection of ServiceInfo object.
+    /// </summary>
+    /// <seealso cref="System.Collections.Generic.IEnumerable{PIS.Ground.Core.Data.ServiceInfo}" />
     public class ServiceInfoList : IEnumerable<ServiceInfo>
     {
         private static readonly ServiceInfoList _empty = new ServiceInfoList();
@@ -87,6 +91,94 @@ namespace PIS.Ground.Core.Data
             {
                 return _serviceInfoArray[index];
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            bool isEqual = !object.ReferenceEquals(null, obj);
+            if (isEqual)
+            {
+                ServiceInfoList other = obj as ServiceInfoList;
+                if (!object.ReferenceEquals(null, other))
+                {
+                    if (Count == other.Count)
+                    {
+                        for (int i = 0; i < Count && isEqual; ++i)
+                        {
+                            isEqual = this[i].Equals(other[i]);
+                        }
+                    }
+                    else
+                    {
+                        isEqual = false;
+                    }
+                }
+                else
+                {
+                    isEqual = false;
+                }
+            }
+
+            return isEqual;
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return _serviceInfoArray.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder output = new StringBuilder(200);
+            Dump(string.Empty, output);
+            return output.ToString();
+        }
+
+        /// <summary>
+        /// Dumps the current collection into an output string.
+        /// </summary>
+        /// <param name="prefix">The prefix to add when writing each item.</param>
+        /// <param name="output">The output string.</param>
+        public void Dump(string prefix, StringBuilder output)
+        {
+            output.Append("{");
+
+            string itemPrefix = prefix + "\t";
+            for (int i = 0; i < Count; ++i)
+            {
+                if (i != 0)
+                {
+                    output.AppendLine(",");
+                }
+                else
+                {
+                    output.AppendLine();
+                }
+
+
+                output.AppendFormat("{0}[{1}] = ", itemPrefix, i);
+                this[i].Dump(itemPrefix, output);
+            }
+            output.Append("}");
         }
     }
 }

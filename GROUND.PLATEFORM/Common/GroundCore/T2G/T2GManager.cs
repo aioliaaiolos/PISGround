@@ -669,14 +669,13 @@ namespace PIS.Ground.Core.T2G
 
 			if (T2GServerConnectionStatus)
 			{
-				//Check if element exists
-				if (_localDataStorage.ElementExists(elementNumber))
-				{
-					//Get connexion status of element.
-					isOnline = _localDataStorage.IsElementOnline(elementNumber);
-
-					lReturn = T2GManagerErrorEnum.eSuccess;
-				}
+                //Get connexion status of element first to improve speed when system is online.
+                // Then, check if the element exist.
+                isOnline = _localDataStorage.IsElementOnline(elementNumber);
+                if (isOnline || _localDataStorage.ElementExists(elementNumber))
+                {
+                    lReturn = T2GManagerErrorEnum.eSuccess;
+                }
 				else
 				{
 					lReturn = T2GManagerErrorEnum.eElementNotFound;
@@ -718,33 +717,30 @@ namespace PIS.Ground.Core.T2G
 
 			serviceDataResult = new ServiceInfo(); // always return an object
 
-			if (T2GServerConnectionStatus)
-			{
-				if (_localDataStorage.ElementExists(systemId))
-				{
-					ServiceInfo service = _localDataStorage.GetAvailableServiceData(systemId, serviceId);
+            if (T2GServerConnectionStatus)
+            {
+                // By default, assume that system exist to speed up expected behavior
+                ServiceInfo service = _localDataStorage.GetAvailableServiceData(systemId, serviceId);
+                if (object.ReferenceEquals(service, null))
+                {
+                    lReturn = _localDataStorage.ElementExists(systemId) ? T2GManagerErrorEnum.eServiceInfoNotFound : T2GManagerErrorEnum.eElementNotFound;
+                }
+                else if (service.IsAvailable)
+                {
+                    serviceDataResult = service; // Copy reference, service info immutable
 
-					if (service != null && service.IsAvailable)
-					{
-						serviceDataResult = service; // Copy reference, service info immutable
+                    lReturn = T2GManagerErrorEnum.eSuccess;
 
-						lReturn = T2GManagerErrorEnum.eSuccess;
-
-					}
-					else
-					{
-						lReturn = T2GManagerErrorEnum.eServiceInfoNotFound;
-					}
-				}
-				else
-				{
-					lReturn = T2GManagerErrorEnum.eElementNotFound;
-				}
-			}
-			else
-			{
-				lReturn = T2GManagerErrorEnum.eT2GServerOffline;
-			}
+                }
+                else
+                {
+                    lReturn = T2GManagerErrorEnum.eServiceInfoNotFound;
+                }
+            }
+            else
+            {
+                lReturn = T2GManagerErrorEnum.eT2GServerOffline;
+            }
 
 			return lReturn;
 		}
