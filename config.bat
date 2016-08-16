@@ -3,7 +3,7 @@
 :: Description    : 	download all files necessary to build GROUND project
 ::				  : 				   copyVoute.bat
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-07-14
+:: Updated        :						  2016-08-16
 ::=====================================================================================
 @echo off
 
@@ -31,7 +31,7 @@ set REQUESITE_VERSION=5.8.0.9
 
 set T2GClientDelivery_ZIPFilename=T2GClientDelivery1.0.12.0
 set Ground_SourceCode_ZIPFilename=Ground_SourceCode%VERSION_NUMBER%
-set Ground_Dependencies_ZIPFilename=PISGroundDependencies_V5_16_0
+set Ground_Dependencies_ZIPFilename=PISGroundDependencies_V5_16_8
 set GroundServer_Requisites_PrefixFileName=MT92-2PIS010010-PIS2G-Ground_Server-REQUISITES-
 set GroundServer_Requisites_ZIPFileName=%GroundServer_Requisites_PrefixFileName%V%REQUESITE_VERSION%
 set GroundServer_Requisites_x64_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x64-V%REQUESITE_VERSION%
