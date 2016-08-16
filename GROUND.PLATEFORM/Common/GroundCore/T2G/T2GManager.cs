@@ -715,7 +715,7 @@ namespace PIS.Ground.Core.T2G
 		{
 			T2GManagerErrorEnum lReturn = T2GManagerErrorEnum.eFailed;
 
-			serviceDataResult = new ServiceInfo(); // always return an object
+            serviceDataResult = null;
 
             if (T2GServerConnectionStatus)
             {
@@ -742,6 +742,11 @@ namespace PIS.Ground.Core.T2G
                 lReturn = T2GManagerErrorEnum.eT2GServerOffline;
             }
 
+            if (lReturn != T2GManagerErrorEnum.eSuccess)
+            {
+                // Always return a valid object.
+                serviceDataResult = new ServiceInfo();
+            }
 			return lReturn;
 		}
 	}
