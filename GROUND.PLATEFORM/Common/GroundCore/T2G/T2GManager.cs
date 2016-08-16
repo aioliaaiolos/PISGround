@@ -669,7 +669,7 @@ namespace PIS.Ground.Core.T2G
 
 			if (T2GServerConnectionStatus)
 			{
-                //Get connexion status of element first to improve speed when system is online.
+                // Get connection status of element first to improve speed when system is online.
                 // Then, check if the element exist.
                 isOnline = _localDataStorage.IsElementOnline(elementNumber);
                 if (isOnline || _localDataStorage.ElementExists(elementNumber))
