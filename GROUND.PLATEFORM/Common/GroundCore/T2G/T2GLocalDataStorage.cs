@@ -8,17 +8,16 @@
 //---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.T2G
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-    using System.Text.RegularExpressions;
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using PIS.Ground.Core.Common;
     using PIS.Ground.Core.Data;
-	using PIS.Ground.Core.LogMgmt;
-	using PIS.Ground.Core.T2G.WebServices.Identification;
-	using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
-	using PIS.Ground.Core.Common;
-    using System.Configuration;
+    using PIS.Ground.Core.LogMgmt;
+    using PIS.Ground.Core.T2G.WebServices.Identification;
+    using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
     using PIS.Ground.Core.Utility;
 
 	/// <summary>Local Data storage for train information.</summary>
@@ -48,6 +47,15 @@ namespace PIS.Ground.Core.T2G
         /// <summary>Indicates if filtering of local train service is enabled or not.</summary>
         private bool _filterLocalServiceOnly;
 
+        /// <summary>
+        /// Dictionary that associate a subscription id with a service id. Key is the subscription id and Value is the associated service id.
+        /// </summary>
+        private Dictionary<int, ushort> _associationSubscriptionIdWithServiceId = new Dictionary<int, ushort>(20);
+
+        /// <summary>
+        /// The lock object to access variable _associationSubscriptionIdWithServiceId.
+        /// </summary>
+        private object _subscriptionAssociationsLock = new object();
 		#endregion
 
 		#region Constructor
@@ -104,23 +112,20 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>Builds element information changed event.</summary>
 		/// <param name="systemId">System ID.</param>
 		/// <returns>ElementEventArgs object.</returns>
-		internal ElementEventArgs BuildElementInfoChangedEvent(string systemId)
-		{
-			ElementEventArgs objElementEventArgs = null;
+        internal ElementEventArgs BuildElementInfoChangedEvent(string systemId)
+        {
+            ElementEventArgs objElementEventArgs = null;
 
-			lock (_systemListLock)
-			{
-				SystemInfo objSys = _systemList.Find(obj => obj.SystemId == systemId);
+            SystemInfo foundSystem = GetSystem(systemId);
 
-				if (objSys != null)
-				{
-					objElementEventArgs = new ElementEventArgs();
-					objElementEventArgs.SystemInformation = new SystemInfo(objSys); //Deep copy
-				}
-			}
+            if (foundSystem != null)
+            {
+                objElementEventArgs = new ElementEventArgs();
+                objElementEventArgs.SystemInformation = new SystemInfo(foundSystem); //Deep copy
+            }
 
-			return objElementEventArgs;
-		}
+            return objElementEventArgs;
+        }
 
 		/// <summary>Dumps a system list in .</summary>
 		/// <param name="traceLevel">The trace level.</param>
@@ -128,7 +133,7 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="context">The context to print.</param>
 		internal void DumpCurrentSystemList(TraceType traceLevel, string message, string context)
 		{
-			if (LogManager.LogLevel == traceLevel)
+			if (LogManager.IsTraceActive(traceLevel))
 			{
 				StringBuilder log = new StringBuilder();
 				log.AppendLine(message);
@@ -180,7 +185,7 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>ServiceInfo Data.</returns>
 		internal ServiceInfoList GetAvailableServiceData(string systemId)
 		{
-			ServiceInfoList serviceList = new ServiceInfoList();
+			ServiceInfoList serviceList = null;
 
 			if (!string.IsNullOrEmpty(systemId))
 			{
@@ -188,7 +193,7 @@ namespace PIS.Ground.Core.T2G
 				{
 					SystemInfo system = _systemList.Find(element => element.SystemId == systemId);
 
-					if (system != null && system.ServiceList != null && system.ServiceList.Count > 0)
+					if (system != null)
 					{
 						// Copy immutable list ref is ok, keep same references
 						serviceList = system.ServiceList;
@@ -196,7 +201,7 @@ namespace PIS.Ground.Core.T2G
 				}
 			}
 
-			return serviceList;
+			return serviceList??ServiceInfoList.Empty;
 		}
 
 		/// <summary>To Get the Service Information.</summary>
@@ -205,11 +210,7 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>ServiceInfo Data.</returns>
 		internal ServiceInfo GetAvailableServiceData(string systemId, int serviceId)
 		{
-			ServiceInfoList serviceList = GetAvailableServiceData(systemId);
-
-			//Return reference, service info being immutable
-			ServiceInfo service = Array.Find(serviceList.ToArray(), element => element.ServiceId == serviceId);
-
+			ServiceInfo service = GetAvailableServiceData(systemId).FirstOrDefault(element => element.ServiceId == serviceId);
 			return service;
 		}
 
@@ -229,17 +230,23 @@ namespace PIS.Ground.Core.T2G
 			return systemInfo;
 		}
 
-		/// <summary>Returns all system objects.</summary>        
+		/// <summary>Returns all system objects by creating a deep copy.</summary>        
 		/// <returns>List of all system objects.</returns>
 		internal List<SystemInfo> GetSystemList()
 		{
-			List<SystemInfo> systemInfoList = new List<SystemInfo>();
+			List<SystemInfo> systemInfoList;
 
 			lock (_systemListLock)
 			{
-				systemInfoList = new List<SystemInfo>(_systemList.Select(sys => new SystemInfo(sys)));
+				systemInfoList = new List<SystemInfo>(_systemList);
 			}
 
+            // No lock required here. Item in the list are immutable.
+            for (int i = 0; i < systemInfoList.Count; ++i)
+            {
+                systemInfoList[i] = new SystemInfo(systemInfoList[i]);
+            }
+            
 			return systemInfoList;
 		}
 
@@ -555,11 +562,11 @@ namespace PIS.Ground.Core.T2G
 					{
 						//Check if an item with same SystemID exists
 
-						SystemInfo existingSystemInfo = _systemList.Find(item => item.SystemId == newSystemInfo.SystemId);
+						int indexFound = _systemList.FindIndex(item => item.SystemId == newSystemInfo.SystemId);
 
 						//Check if it simply needs to be added or updated
 
-						if (existingSystemInfo == null)
+						if (indexFound < 0)
 						{
 							// Add fresh info
 
@@ -567,8 +574,7 @@ namespace PIS.Ground.Core.T2G
 						}
 						else
 						{
-							// Remove obsolete info
-							_systemList.Remove(existingSystemInfo);
+                            SystemInfo existingSystemInfo = _systemList[indexFound];
 
 							// Add updated info
 							SystemInfo updatedSystemInfo = new SystemInfo(
@@ -584,7 +590,7 @@ namespace PIS.Ground.Core.T2G
 								existingSystemInfo.PisMission,
 								existingSystemInfo.IsPisBaselineUpToDate && newSystemInfo.IsOnline);
 
-							_systemList.Add(updatedSystemInfo);
+							_systemList[indexFound] = updatedSystemInfo;
 						}
 					}
 				}
@@ -636,53 +642,180 @@ namespace PIS.Ground.Core.T2G
 		/// Update service list
 		/// </summary>
 		/// <param name="systemId">Identifier for the system.</param>
-		/// <param name="service">The updated service.</param>
-		private void UpdateServiceList(string systemId, ServiceInfo updatedService)
+        /// <param name="subscriptionId">Notification subscription identifier</param>
+        /// <param name="updatedServices">The updated services.</param>
+        /// <returns>true if the system has been updated, false otherwise.</returns>
+		private bool UpdateServiceList(string systemId, int subscriptionId, ServiceInfoList updatedServices)
 		{
-			LogManager.WriteLog(TraceType.INFO, "Updating service list for systemId=" + systemId, "PIS.Ground.Core.T2G.LocalDataStorage.UpdateServiceList", null, EventIdEnum.GroundCore);
+            bool listUpdated = false;
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string context = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.T2G.LocalDataStorage.UpdateServiceList", ServiceConfiguration.RunningServiceName);
+                LogManager.WriteLog(TraceType.INFO, "Updating service list for systemId=" + systemId, context, null, EventIdEnum.GroundCore);
+            }
 
 			try
 			{
+                ushort subscriptionServiceId = 0;
+                lock (_subscriptionAssociationsLock)
+                {
+                    if (!_associationSubscriptionIdWithServiceId.TryGetValue(subscriptionId, out subscriptionServiceId) && updatedServices.Count != 0)
+                    {
+                        _associationSubscriptionIdWithServiceId[subscriptionId] = updatedServices[0].ServiceId;
+                    }
+                }
+
 				lock (_systemListLock)
 				{
-					SystemInfo existingSystemInfo = _systemList.Find(obj => obj.SystemId == systemId);
+                    int existingSystemInfoIndex = _systemList.FindIndex(s => s.SystemId == systemId);
 
-					if (existingSystemInfo != null)
+                    // System is know. Update possible.
+                    if (existingSystemInfoIndex >= 0)
 					{
-						// Remove obsolete info
-						_systemList.Remove(existingSystemInfo);
+                        SystemInfo existingSystemInfo = _systemList[existingSystemInfoIndex];
 
-						// Create updated service list
+						List<ServiceInfo> updatedList = null;
 
-						List<ServiceInfo> updatedList = new List<ServiceInfo>(
-							existingSystemInfo.ServiceList.Where(
-								existingService => (existingService.ServiceId != updatedService.ServiceId)));
+                        // If the array is empty, this mean that we shall remove all services. Later, T2G will send an update.
+                        if (updatedServices.Count == 0)
+                        {
+                            // If serviceId is 0, this means that no mapping existing between the subscription id and the service id.
+                            if (subscriptionServiceId != 0)
+                            {
+                                updatedList = existingSystemInfo.ServiceList.Where(s => s.ServiceId != subscriptionServiceId).ToList();
+                                listUpdated = updatedList.Count != existingSystemInfo.ServiceList.Count;
+                            }
+                        }
+                        else
+                        {
+                            updatedList = new List<ServiceInfo>(existingSystemInfo.ServiceList);
 
-						updatedList.Add(updatedService);
+                            foreach (ServiceInfo service in updatedServices)
+                            {
+                                if (_filterLocalServiceOnly)
+                                {
+                                    if (service.VehiclePhysicalId != existingSystemInfo.VehiclePhysicalId)
+                                    {
+                                        continue;
+                                    }
+                                }
 
-						// Add updated info
-						SystemInfo updatedSystemInfo = new SystemInfo(
-							existingSystemInfo.SystemId,
-							existingSystemInfo.MissionId,
-							existingSystemInfo.VehiclePhysicalId,
-							existingSystemInfo.Status,
-							existingSystemInfo.IsOnline,
-							existingSystemInfo.CommunicationLink,
-							new ServiceInfoList(updatedList),
-							existingSystemInfo.PisBaseline,
-							existingSystemInfo.PisVersion,
-							existingSystemInfo.PisMission,
-							existingSystemInfo.IsPisBaselineUpToDate && existingSystemInfo.IsOnline);
+                                int insertIndex = updatedList.FindIndex(i => i.VehiclePhysicalId == service.VehiclePhysicalId &&
+                                    i.ServiceId == service.ServiceId 
+                                    && i.ServicePortNumber == service.ServicePortNumber
+                                    && i.ServiceIPAddress == service.ServiceIPAddress );
 
-						_systemList.Add(updatedSystemInfo);
+                                if (insertIndex < 0)
+                                {
+                                    updatedList.Add(service);
+                                    listUpdated = true;
+                                }
+                                else if (!service.Equals(updatedList[insertIndex]))
+                                {
+                                    updatedList[insertIndex] = service;
+                                    listUpdated = true;
+                                }
+                            }
+
+                            if (listUpdated)
+                            {
+                                // Service list shall be sorted
+                                System.Comparison<ServiceInfo> comparer = (ServiceInfo x, ServiceInfo y) => CompareServiceInfo(x, y, existingSystemInfo.VehiclePhysicalId);
+                                updatedList.Sort(comparer);
+                            }
+                        }
+
+                        if (listUpdated)
+                        {
+                            // Add updated info
+                            SystemInfo updatedSystemInfo = new SystemInfo(
+                                existingSystemInfo.SystemId,
+                                existingSystemInfo.MissionId,
+                                existingSystemInfo.VehiclePhysicalId,
+                                existingSystemInfo.Status,
+                                existingSystemInfo.IsOnline,
+                                existingSystemInfo.CommunicationLink,
+                                new ServiceInfoList(updatedList),
+                                existingSystemInfo.PisBaseline,
+                                existingSystemInfo.PisVersion,
+                                existingSystemInfo.PisMission,
+                                existingSystemInfo.IsPisBaselineUpToDate && existingSystemInfo.IsOnline);
+
+                            _systemList[existingSystemInfoIndex] = updatedSystemInfo;
+                        }
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.LocalDataStorage.UpdateServiceList", ex, EventIdEnum.GroundCore);
+                string context = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.T2G.LocalDataStorage.UpdateServiceList", ServiceConfiguration.RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, ex.Message, context, ex, EventIdEnum.GroundCore);
 			}
+
+            return listUpdated;
 		}
+
+        /// <summary>
+        /// Compares the service information object.
+        /// 
+        /// <para>This method order item by this field priority:
+        /// <list type="number">
+        /// <item>IsAvailable. true &lt; false.</item>
+        /// <item>ServiceId in ascending order.</item>
+        /// <item>VehiclePhysicalId that match the system id. Only possible when filtering local train service is enabled.</item>
+        /// <item>VehiclePhysicalId in ascending order.</item>
+        /// <item>IP address in ascending order.</item>
+        /// <item>Port number in ascending order</item>
+        /// </list></para>
+        /// </summary>
+        /// <param name="x">The first object to compare.</param>
+        /// <param name="y">The second object to compare.</param>
+        /// <param name="currentVehicleId">The current vehicle identifier.</param>
+        /// <returns>a signed integer that indicates the relative values of x and y, as shown in the following table.
+        /// <list type="table">
+        /// <listheader><term>Value</term><description>Meaning</description></listheader>
+        /// <item><term>Lest than 0</term><description>x is less than y.</description></item>
+        /// <item><term>0</term><description>x equals y.</description></item>
+        /// <item><term>Greater than 0</term><description>x is greater than y.</description></item>
+        /// </list></returns>
+        private static int CompareServiceInfo(ServiceInfo x, ServiceInfo y, ushort currentVehicleId)
+        {
+            int comparisonResult = 0;
+            if (x.IsAvailable != y.IsAvailable)
+            {
+                comparisonResult = (x.IsAvailable) ? -1 : 1;
+            }
+            else if (x.ServiceId != y.ServiceId)
+            {
+                comparisonResult = Convert.ToInt32(x.ServiceId) - Convert.ToInt32(y.ServiceId);
+            }
+            else if (x.VehiclePhysicalId != y.VehiclePhysicalId)
+            {
+                if (x.VehiclePhysicalId == currentVehicleId)
+                {
+                    comparisonResult = -1;
+                }
+                else if (y.VehiclePhysicalId == currentVehicleId)
+                {
+                    comparisonResult = 1;
+                }
+                else
+                {
+                    comparisonResult = Convert.ToInt32(x.VehiclePhysicalId) - Convert.ToInt32(y.VehiclePhysicalId);
+                }
+            }
+            else
+            {
+                comparisonResult = string.CompareOrdinal(x.ServiceIPAddress, y.ServiceIPAddress);
+
+                if (comparisonResult == 0)
+                {
+                    comparisonResult = Convert.ToInt32(x.ServicePortNumber) - Convert.ToInt32(y.ServicePortNumber);
+                }
+            }
+
+            return comparisonResult;
+        }
 
 		/// <summary>Executes the system changed action.</summary>
 		/// <param name="systemInfo">The new system info.</param>
@@ -715,46 +848,56 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="systemId">System id.</param>
 		/// <param name="isSystemOnline">True if this object is system online.</param>
 		/// <param name="subscriptionId">Identifier for the subscription.</param>
-		/// <param name="service">Service changed.</param>
-		internal void OnServiceChanged(string systemId, bool isSystemOnline, int subscriptionId, ServiceInfo service)
+		/// <param name="services">Services that changed.</param>
+        /// <returns>true if internal data changed, false otherwise.</returns>
+		internal bool OnServiceChanged(string systemId, bool isSystemOnline, int subscriptionId, ServiceInfoList services)
 		{
-			if (!string.IsNullOrEmpty(systemId) && service != null)
+            bool updated = false;
+            if (!string.IsNullOrEmpty(systemId) && services != null)
 			{
-				string message = String.Format(
-				"OnServiceChanged called, systemId={0}, isSystemOnline={1}, subscriptionId={2}, service={3}",
-				systemId, isSystemOnline, subscriptionId, service.ServiceName);
+                if (LogManager.IsTraceActive(TraceType.INFO))
+                {
+                    string message = String.Format(
+                    "OnServiceChanged called, systemId={0}, isSystemOnline={1}, subscriptionId={2}, service={3}",
+                    systemId, isSystemOnline, subscriptionId, services.Count != 0 ? services[0].ServiceName : "N/A");
 
-				LogManager.WriteLog(TraceType.INFO, message, "Ground.Core.T2G.T2GNotificationProcessor.OnServiceNotification", null, EventIdEnum.GroundCore);
+                    LogManager.WriteLog(TraceType.INFO, message, "Ground.Core.T2G.T2GNotificationProcessor.OnServiceNotification", null, EventIdEnum.GroundCore);
+                }
 
 				lock (_systemListLock)
 				{
-					SystemInfo objSys = _systemList.Find(obj => obj.SystemId == systemId);
-
-					if (objSys != null && objSys.IsOnline != isSystemOnline)
+					int foundIndex = _systemList.FindIndex(obj => obj.SystemId == systemId);
+                    if (foundIndex >= 0)
 					{
-						// This info is mainly updated in GetSystemList (initially) or OnSystemChanged (after), but
-						// we might as well update it here, since it is returned along with the service list.
-						SystemInfo updatedSystemInfo = new SystemInfo(
-							objSys.SystemId,
-							objSys.MissionId,
-							objSys.VehiclePhysicalId,
-							objSys.Status,
-							isSystemOnline,
-							objSys.CommunicationLink,
-							objSys.ServiceList,
-							objSys.PisBaseline,
-							objSys.PisVersion,
-							objSys.PisMission,
-							objSys.IsPisBaselineUpToDate && isSystemOnline);
+                        SystemInfo foundSystem = _systemList[foundIndex];
+                        if (foundSystem.IsOnline != isSystemOnline)
+                        {
+                            // This info is mainly updated in GetSystemList (initially) or OnSystemChanged (after), but
+                            // we might as well update it here, since it is returned along with the service list.
+                            SystemInfo updatedSystemInfo = new SystemInfo(
+                                foundSystem.SystemId,
+                                foundSystem.MissionId,
+                                foundSystem.VehiclePhysicalId,
+                                foundSystem.Status,
+                                isSystemOnline,
+                                foundSystem.CommunicationLink,
+                                foundSystem.ServiceList,
+                                foundSystem.PisBaseline,
+                                foundSystem.PisVersion,
+                                foundSystem.PisMission,
+                                foundSystem.IsPisBaselineUpToDate && isSystemOnline);
 
-						UpdateSystem(objSys);
+                            _systemList[foundIndex] = updatedSystemInfo;
+                            updated = true;
+                        }
 					}
 				}
 
-				UpdateServiceList(systemId, service);
+                updated |= UpdateServiceList(systemId, subscriptionId, services);
 			}
 
 			DumpCurrentSystemList(TraceType.DEBUG, "After OnServiceListChanged called:", "PIS.Ground.Core.T2G.LocalDataStorage.OnServiceListChanged");
+            return updated;
 		}
 
 		/// <summary>Executes the message changed action.</summary>

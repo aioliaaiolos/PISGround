@@ -1972,7 +1972,8 @@ namespace PIS.Ground.DataPackage
 												lResult.error_code = DataPackageErrorEnum.SERVICE_INFO_NOT_FOUND;
 												break;
 											default:
-												break;
+                                                lResult.error_code = DataPackageErrorEnum.ERROR;
+                                                break;
 										}
 									}
 								}
@@ -2927,6 +2928,7 @@ namespace PIS.Ground.DataPackage
 						lResult = DataPackageErrorEnum.SERVICE_INFO_NOT_FOUND;
 						break;
 					default:
+                        lResult = DataPackageErrorEnum.ERROR;
 						break;
 				}
 			}
@@ -3588,7 +3590,8 @@ namespace PIS.Ground.DataPackage
 					result.error_code = DataPackageErrorEnum.SERVICE_INFO_NOT_FOUND;
 					break;
 				default:
-					break;
+                    result.error_code = DataPackageErrorEnum.ERROR;
+                    break;
 			}
 
 			IRequestContext request = _requestFactory.CreateBaselineSettingRequestContext(

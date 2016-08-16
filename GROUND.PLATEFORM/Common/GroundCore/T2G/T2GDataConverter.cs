@@ -733,7 +733,7 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>Service list.</returns>
 		internal static ServiceInfoList BuildServiceList(PIS.Ground.Core.T2G.WebServices.Notification.serviceStruct[] pServiceStructList)
 		{
-			List<ServiceInfo> tempList = new List<ServiceInfo>();
+			List<ServiceInfo> tempList = new List<ServiceInfo>(pServiceStructList != null ? pServiceStructList.Length : 0);
 
 			if (pServiceStructList != null)
 			{
