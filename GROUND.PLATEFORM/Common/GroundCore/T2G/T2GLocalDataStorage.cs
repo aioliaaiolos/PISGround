@@ -155,7 +155,9 @@ namespace PIS.Ground.Core.T2G
 							log.AppendLine("	ServiceName (" + lService.ServiceName + ")");
 							log.AppendLine("	IsAvailable (" + lService.IsAvailable + ")");
 							log.AppendLine("	ServiceIPAddress (" + lService.ServiceIPAddress + ")");
-							log.AppendLine("	ServicePortNumber (" + lService.ServicePortNumber + ")");
+                            log.AppendLine("	ServicePortNumber (" + lService.ServicePortNumber + ")");
+                            log.AppendLine("	VehiclePhysicalId (" + lService.VehiclePhysicalId + ")");
+
 						}
 
 						log.AppendLine("  BASELINE");
