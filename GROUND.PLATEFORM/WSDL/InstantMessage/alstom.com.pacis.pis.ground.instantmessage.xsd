@@ -46,6 +46,7 @@
       <xs:enumeration value="INVALID_TRAIN_ID" />
       <xs:enumeration value="INVALID_STATUS" />
       <xs:enumeration value="INTERNAL_ERROR" />
+      <xs:enumeration value="NO_BASELINE_FOUND_FOR_ELEMENT_ID" />
     </xs:restriction>
   </xs:simpleType>
   <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/instantmessage/" name="InstantMessageErrorEnum" nillable="true" type="q5:InstantMessageErrorEnum" />
