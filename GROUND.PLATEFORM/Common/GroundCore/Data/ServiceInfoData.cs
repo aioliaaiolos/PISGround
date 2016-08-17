@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="ServiceInfoData.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -9,10 +9,8 @@
 namespace PIS.Ground.Core.Data
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    using System.Globalization;
     using System.Text;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// Representing Service information
@@ -219,6 +217,47 @@ namespace PIS.Ground.Core.Data
 
             return true;
         }
+        #endregion
+
+        #region Dump and ToString()
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder output = new StringBuilder(200);
+            Dump(string.Empty, output);
+            return output.ToString();
+        }
+
+        /// <summary>
+        /// Dumps the current object into an output string.
+        /// </summary>
+        /// <param name="prefix">The prefix to add when writing each member.</param>
+        /// <param name="output">The output string.</param>
+        public void Dump(string prefix, StringBuilder output)
+        {
+            string memberPrefix = prefix + "\t";
+            output.Append("{");
+
+            output.AppendFormat(CultureInfo.InvariantCulture, "ServiceName = '{0}',", ServiceName).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}Id = '{1}',", memberPrefix, ServiceId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}IsAvailable = '{1}',", memberPrefix, IsAvailable).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}VehicleId = '{1}',", memberPrefix, VehiclePhysicalId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}Port = '{1}',", memberPrefix, ServicePortNumber).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}IP = '{1}',", memberPrefix, ServiceIPAddress).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}OperatorId = '{1}',", memberPrefix, OperatorId).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}AID = '{1}',", memberPrefix, AID).AppendLine();
+            output.AppendFormat(CultureInfo.InvariantCulture, "{0}SID = '{1}'", memberPrefix, SID);
+
+            output.Append("}");
+        }
+
+
         #endregion
     }
 }

@@ -10,9 +10,9 @@ namespace PIS.Ground.Core.Utility
 {
     using System;
     using System.Configuration;
-    using System.Data.SqlClient;
+    using System.Globalization;
     using System.IO;
-    using System.Xml;
+    using System.Web;
     using PIS.Ground.Core.Data;
     using PIS.Ground.Core.LogMgmt;
 
@@ -63,40 +63,45 @@ namespace PIS.Ground.Core.Utility
         /// </summary>
         private const string T2GSERVICEID = "T2G_ServiceID";
 
+        /// <summary>The default value for enable filtering on local train service.</summary>
+        private const bool DefaultValueForFilterOnLocalTrainService = false;
+
+        /// <summary>The parameter name that enable or disable filtering on local train service.</summary>
+        private const string ParameterNameFilterLocalTrainService = "EnableFilterLocalServiceOnly";
         /// <summary>
         /// Holds Sql lite DataBase path value which is mentioned in Web.config
         /// </summary>
-        private static string strSessionSqLiteDBPath;
+        private static string _sessionSqLiteDBPath;
 
         /// <summary>
         /// Holds Session time out value which is mentioned in Web.config
         /// </summary>
-        private static int intSessionTimeOut;
+        private static int _sessionTimeOut;
 
         /// <summary>
         /// Holds Session timer checking value which is mentioned in Web.config
         /// </summary>
-        private static long intSessionTimerCheck;
+        private static long _sessionTimerCheck;
 
         /// <summary>
         /// Holds T2G Service UserName value which is mentioned in Web.config
         /// </summary>
-        private static string strT2GServiceUserName;
+        private static string _t2gServiceUserName;
 
         /// <summary>
         /// Holds T2G Service password value which is mentioned in Web.config
         /// </summary>
-        private static string strT2GServicePwd;
+        private static string _t2gServicePassword;
 
         /// <summary>
         /// Holds T2G Service Notification url value which is mentioned in Web.config
         /// </summary>
-        private static string strT2GServiceNotificataionUrl;
+        private static string _t2gServiceNotificationUrl;
 
         /// <summary>
         /// Holds the ApplicationId value which is mentioned in Web.config
         /// </summary>
-        private static string strApplicationId;
+        private static string _applicationId;
 
         /// <summary>
         /// Holds LogLevel name which is mentioned in Web.config
@@ -106,7 +111,7 @@ namespace PIS.Ground.Core.Utility
         /// <summary>
         /// Holds the LogLevel value which is mentioned in Web.config
         /// </summary>
-        private static TraceType enmLogLevel = TraceType.NONE;
+        private static TraceType _logLevel = TraceType.ERROR;
 
         #endregion
 
@@ -119,7 +124,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return strT2GServiceUserName;
+                return _t2gServiceUserName;
             }
         }
 
@@ -130,7 +135,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return strT2GServicePwd;
+                return _t2gServicePassword;
             }
         }
 
@@ -141,7 +146,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return strT2GServiceNotificataionUrl;
+                return _t2gServiceNotificationUrl;
             }
         }
 
@@ -152,7 +157,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return intSessionTimerCheck;
+                return _sessionTimerCheck;
             }
         }
 
@@ -163,7 +168,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return intSessionTimeOut;
+                return _sessionTimeOut;
             }
         }
 
@@ -174,7 +179,7 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return strSessionSqLiteDBPath;
+                return _sessionSqLiteDBPath;
             }
         }
 
@@ -185,8 +190,26 @@ namespace PIS.Ground.Core.Utility
         {
             get
             {
-                return strApplicationId;
+                return _applicationId;
             }
+        }
+
+        /// <summary>
+        /// Gets the name of the running service.
+        /// </summary>
+        public static string RunningServiceName
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether service shall be filtered for local service only.
+        /// </summary>
+        public static bool FilterLocalTrainService
+        {
+            get;
+            private set;
         }
 
         #endregion
@@ -203,15 +226,15 @@ namespace PIS.Ground.Core.Utility
         public static bool Initialize()
         {
             bool error = false;
-            // Initialize LogLovel for Event Viewer
+            // Initialize LogLevel for Event Viewer
             if (ConfigurationManager.AppSettings[EVENTMGRLOGLEVEL] != null)
             {
                 try
                 {
-                    enmLogLevel = (TraceType)Enum.Parse(typeof(TraceType), ConfigurationSettings.AppSettings["LogLevel"]);
-                    if (enmLogLevel >= TraceType.NONE && enmLogLevel <= TraceType.WARNING)
+                    _logLevel = (TraceType)Enum.Parse(typeof(TraceType), ConfigurationSettings.AppSettings["LogLevel"]);
+                    if (_logLevel >= TraceType.NONE && _logLevel <= TraceType.EXCEPTION)
                     {
-                        LogManager.LogLevel = enmLogLevel;
+                        LogManager.LogLevel = _logLevel;
                     }
                     else
                     {
@@ -231,19 +254,24 @@ namespace PIS.Ground.Core.Utility
                 error = true;
             }
 
+            // Initialize the application identifier
+            InitializeRunningServiceName();
+
+            error |= !InitializeFilterLocalTrainParameter();
+
             // Initialize Session Time Out
             if (ConfigurationManager.AppSettings[SESSIONTIMEOUT] != null)
             {
                 try
                 {
-                    intSessionTimeOut = 0;
-                    if (!int.TryParse(ConfigurationManager.AppSettings[SESSIONTIMEOUT], out intSessionTimeOut))
+                    _sessionTimeOut = 0;
+                    if (!int.TryParse(ConfigurationManager.AppSettings[SESSIONTIMEOUT], out _sessionTimeOut))
                     {
                         LogManager.WriteLog(TraceType.ERROR, PIS.Ground.Core.Properties.Resources.ExSessionTimeOutNotValid, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
                         error = true;
                     }
 
-                    if (intSessionTimeOut < 0)
+                    if (_sessionTimeOut < 0)
                     {
                         LogManager.WriteLog(TraceType.ERROR, PIS.Ground.Core.Properties.Resources.ExSessionTimeOutNotValid, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
                         error = true;
@@ -266,8 +294,8 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    intSessionTimerCheck = 0;
-                    if (!long.TryParse(ConfigurationManager.AppSettings[SESSIONTIMERCHECK], out intSessionTimerCheck))
+                    _sessionTimerCheck = 0;
+                    if (!long.TryParse(ConfigurationManager.AppSettings[SESSIONTIMERCHECK], out _sessionTimerCheck))
                     {
                         LogManager.WriteLog(TraceType.ERROR, PIS.Ground.Core.Properties.Resources.ExSessionTimerCheckNotValid, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
                         error = true;
@@ -275,10 +303,10 @@ namespace PIS.Ground.Core.Utility
                     else
                     {
                         //// converting to milliseconds
-                        intSessionTimerCheck = intSessionTimerCheck * 60000;
+                        _sessionTimerCheck = _sessionTimerCheck * 60000;
                     }
 
-                    if (intSessionTimerCheck < 0)
+                    if (_sessionTimerCheck < 0)
                     {
                         LogManager.WriteLog(TraceType.ERROR, PIS.Ground.Core.Properties.Resources.ExSessionTimerCheckNotValid, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
                         error = true;
@@ -301,7 +329,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    strSessionSqLiteDBPath = ConfigurationManager.AppSettings[SQLLITESESSIONSTOREPATH];
+                    _sessionSqLiteDBPath = ConfigurationManager.AppSettings[SQLLITESESSIONSTOREPATH];
                 }
                 catch
                 {
@@ -309,7 +337,7 @@ namespace PIS.Ground.Core.Utility
                     error = true;
                 }
 
-                if (string.IsNullOrEmpty(strSessionSqLiteDBPath))
+                if (string.IsNullOrEmpty(_sessionSqLiteDBPath))
                 {
                     LogManager.WriteLog(TraceType.ERROR, PIS.Ground.Core.Properties.Resources.ExConnectionStringNotFound, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
                     error = true;
@@ -325,7 +353,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    strT2GServiceUserName = ConfigurationManager.AppSettings[T2GUSERNAME];
+                    _t2gServiceUserName = ConfigurationManager.AppSettings[T2GUSERNAME];
                 }
                 catch
                 {
@@ -343,7 +371,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    strT2GServicePwd = ConfigurationManager.AppSettings[T2GPWD];
+                    _t2gServicePassword = ConfigurationManager.AppSettings[T2GPWD];
                 }
                 catch
                 {
@@ -361,7 +389,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    strT2GServiceNotificataionUrl = ConfigurationManager.AppSettings[T2GNOTIFICATIONURL];
+                    _t2gServiceNotificationUrl = ConfigurationManager.AppSettings[T2GNOTIFICATIONURL];
                 }
                 catch
                 {
@@ -379,7 +407,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    strApplicationId = ConfigurationManager.AppSettings[ApplicationId];
+                    _applicationId = ConfigurationManager.AppSettings[ApplicationId];
                 }
                 catch
                 {
@@ -429,18 +457,144 @@ namespace PIS.Ground.Core.Utility
             }
 
 
-            string message = string.Empty;
-            message += "ServiceConfiguration.SessionSqLiteDBPath=[" + ServiceConfiguration.SessionSqLiteDBPath + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.SessionTimeOut=[" + ServiceConfiguration.SessionTimeOut.ToString() + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.SessionTimerCheck=[" + ServiceConfiguration.SessionTimerCheck.ToString() + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.T2GApplicationId=[" + ServiceConfiguration.T2GApplicationId + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.T2GServiceNotificationUrl=[" + ServiceConfiguration.T2GServiceNotificationUrl + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.T2GServicePwd=[" + ServiceConfiguration.T2GServicePwd + "]" + Environment.NewLine;
-            message += "ServiceConfiguration.T2GServiceUserName=[" + ServiceConfiguration.T2GServiceUserName + "]" + Environment.NewLine;
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = string.Empty;
+                message += "ServiceConfiguration.SessionSqLiteDBPath=[" + ServiceConfiguration.SessionSqLiteDBPath + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.SessionTimeOut=[" + ServiceConfiguration.SessionTimeOut.ToString() + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.SessionTimerCheck=[" + ServiceConfiguration.SessionTimerCheck.ToString() + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.T2GApplicationId=[" + ServiceConfiguration.T2GApplicationId + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.T2GServiceNotificationUrl=[" + ServiceConfiguration.T2GServiceNotificationUrl + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.T2GServicePwd=[" + ServiceConfiguration.T2GServicePwd + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.T2GServiceUserName=[" + ServiceConfiguration.T2GServiceUserName + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.EnableFilterLocalServiceOnly=[" + ServiceConfiguration.FilterLocalTrainService.ToString() + "]" + Environment.NewLine;
+                message += "ServiceConfiguration.RunningServiceName=[" + ServiceConfiguration.RunningServiceName + "]" + Environment.NewLine;
 
-            LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
+                LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.Utility.InitializeConfigPaths", null, EventIdEnum.GroundCore);
+            }
 
             return error;
+        }
+
+        /// <summary>
+        /// Initializes the name of the running service.
+        /// </summary>
+        private static void InitializeRunningServiceName()
+        {
+            try
+            {
+                // Usually, the application run into IIS, so HttpContext is initialized.
+                HttpContext context = HttpContext.Current;
+                if (context != null && context.Request != null)
+                {
+                    RunningServiceName = context.Request.ApplicationPath.Trim('/');
+                }
+                else
+                {
+                    string path = new System.Uri(typeof(ServiceConfiguration).Assembly.CodeBase).LocalPath;
+                    
+                    // In case that we run into the debugger of Visual studio, web site might be located into a temporary folder.
+                    string tempAspNetFiles = Path.Combine(Path.GetTempPath(), "Temporary ASP.NET Files" + Path.DirectorySeparatorChar);
+
+                    if (path.StartsWith(tempAspNetFiles, StringComparison.OrdinalIgnoreCase))
+                    {
+                        path = path.Substring(tempAspNetFiles.Length);
+
+                        char firstChar = path[0];
+                        int foundIndex = path.IndexOfAny(new char[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar }, 0);
+
+                        if (foundIndex > 0)
+                        {
+                            path = path.Substring(0, foundIndex);
+                        }
+                    }
+                    else
+                    {
+                        // Run in the context of automated tests.
+                        string[] pathSplitted = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        int index = pathSplitted.Length;
+                        if (index > 1)
+                        {
+                            index -= 2;
+                            if (index > 1 && (string.Equals(pathSplitted[index], "Debug", StringComparison.OrdinalIgnoreCase) ||
+                                               string.Equals(pathSplitted[index], "Release", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                index--;
+                            }
+                            if (index > 1 && string.Equals(pathSplitted[index], "bin", StringComparison.OrdinalIgnoreCase))
+                            {
+                                index--;
+                            }
+                        }
+                        else
+                        {
+                            index = 0;
+                        }
+
+                        path = pathSplitted[index];
+                    }
+
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        RunningServiceName = path;
+                    }
+                    else
+                    {
+                        RunningServiceName = "PIS.Ground.Core";
+                    }
+                }
+            }
+            catch
+            {
+                RunningServiceName = "PIS.Ground.Core";
+            }
+        }
+
+        /// <summary>
+        /// Loads the parameter filter local train from the configuration file.
+        /// </summary>
+        /// <returns>Success of the initialization. True if no error has been detected, false otherwise.</returns>
+        private static bool InitializeFilterLocalTrainParameter()
+        {
+            bool success = true;
+
+            string filterValue = ConfigurationManager.AppSettings[ParameterNameFilterLocalTrainService];
+            if (string.Equals(filterValue, Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                FilterLocalTrainService = true;
+            }
+            else if (string.Equals(filterValue, Boolean.FalseString, StringComparison.OrdinalIgnoreCase))
+            {
+                FilterLocalTrainService = false;
+            }
+            else if (string.IsNullOrEmpty(filterValue))
+            {
+                success = false;
+                FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
+                string errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                        Properties.Resources.ConfigurationErrorMissingParameter,
+                                        ParameterNameFilterLocalTrainService,
+                                        (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString));
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
+            }
+            else
+            {
+                success = false;
+                FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
+
+                string errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                        Properties.Resources.ConfigurationErrorInvalidBooleanValue,
+                                        filterValue,
+                                        ParameterNameFilterLocalTrainService,
+                                        (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString),
+                                        Boolean.TrueString,
+                                        Boolean.FalseString);
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
+            }
+
+            return success;
         }
     }
 }

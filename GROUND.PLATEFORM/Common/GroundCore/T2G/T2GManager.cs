@@ -112,7 +112,7 @@ namespace PIS.Ground.Core.T2G
 			_fileDistributionEventHandlers = new Dictionary<string, EventHandler<FileDistributionStatusArgs>>();
 
 			_sessionData = new T2GSessionData();
-			_localDataStorage = new T2GLocalDataStorage(_sessionData);
+			_localDataStorage = new T2GLocalDataStorage(_sessionData, null);
 
 			if (!string.IsNullOrEmpty(ServiceConfiguration.T2GServiceNotificationUrl))
 			{
@@ -657,11 +657,18 @@ namespace PIS.Ground.Core.T2G
 			return result;
 		}
 
-		/// <summary>Check the element is online.</summary>
-		/// <param name="elementNumber">element number.</param>
-		/// <param name="IsOnline">[out] The online status as a boolean. True if online, False otherwise.</param>
-		/// <returns>Status of request to T2G. To check to know if everything was allright or if T2G was offline or element unknow.</returns>
-		public T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool isOnline)
+        /// <summary>Verify if a system is online or not.</summary>
+        /// <param name="elementNumber">The system identifier to query.</param>
+        /// <param name="IsOnline">[out] Online status on the train. In case of error, value is forced to false.</param>
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        public T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool isOnline)
 		{
 			T2GManagerErrorEnum lReturn = T2GManagerErrorEnum.eFailed;
 
@@ -669,14 +676,13 @@ namespace PIS.Ground.Core.T2G
 
 			if (T2GServerConnectionStatus)
 			{
-				//Check if element exists
-				if (_localDataStorage.ElementExists(elementNumber))
-				{
-					//Get connexion status of element.
-					isOnline = _localDataStorage.IsElementOnline(elementNumber);
-
-					lReturn = T2GManagerErrorEnum.eSuccess;
-				}
+                // Get connection status of element first to improve speed when system is online.
+                // Then, check if the element exist.
+                isOnline = _localDataStorage.IsElementOnline(elementNumber);
+                if (isOnline || _localDataStorage.ElementExists(elementNumber))
+                {
+                    lReturn = T2GManagerErrorEnum.eSuccess;
+                }
 				else
 				{
 					lReturn = T2GManagerErrorEnum.eElementNotFound;
@@ -707,45 +713,55 @@ namespace PIS.Ground.Core.T2G
 			return lIsOnlineAndUpToDate;
 		}
 
-		/// <summary>To Get the Service Information.</summary>
-		/// <param name="strSystemId">System Id.</param>
-		/// <param name="intServiceId">Service ID.</param>
-		/// <param name="objSer">[out] The object ser.</param>
-		/// <returns>ServiceInfo Data.</returns>
+		/// <summary>Get the information on a specific service on a specific train. Service shall be available.</summary>
+        /// <param name="systemId">The system identifier to retrieve the information.</param>
+        /// <param name="serviceId">The service identifier to retrieve information on</param>
+        /// <param name="serviceDataResult">[out] Information on the service retrieve. It's never null.</param>
+		/// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eServiceInfoNotFound</term><description>Service is unknown or it is not available..</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
 		public T2GManagerErrorEnum GetAvailableServiceData(string systemId, int serviceId, out ServiceInfo serviceDataResult)
 		{
 			T2GManagerErrorEnum lReturn = T2GManagerErrorEnum.eFailed;
 
-			serviceDataResult = new ServiceInfo(); // always return an object
+            serviceDataResult = null;
 
-			if (T2GServerConnectionStatus)
-			{
-				if (_localDataStorage.ElementExists(systemId))
-				{
-					ServiceInfo service = _localDataStorage.GetAvailableServiceData(systemId, serviceId);
+            if (T2GServerConnectionStatus)
+            {
+                // By default, assume that system exist to speed up expected behavior
+                ServiceInfo service = _localDataStorage.GetAvailableServiceData(systemId, serviceId);
+                if (object.ReferenceEquals(service, null))
+                {
+                    lReturn = _localDataStorage.ElementExists(systemId) ? T2GManagerErrorEnum.eServiceInfoNotFound : T2GManagerErrorEnum.eElementNotFound;
+                }
+                else if (service.IsAvailable)
+                {
+                    serviceDataResult = service; // Copy reference, service info immutable
 
-					if (service != null && service.IsAvailable)
-					{
-						serviceDataResult = service; // Copy reference, service info immutable
+                    lReturn = T2GManagerErrorEnum.eSuccess;
 
-						lReturn = T2GManagerErrorEnum.eSuccess;
+                }
+                else
+                {
+                    lReturn = T2GManagerErrorEnum.eServiceInfoNotFound;
+                }
+            }
+            else
+            {
+                lReturn = T2GManagerErrorEnum.eT2GServerOffline;
+            }
 
-					}
-					else
-					{
-						lReturn = T2GManagerErrorEnum.eServiceInfoNotFound;
-					}
-				}
-				else
-				{
-					lReturn = T2GManagerErrorEnum.eElementNotFound;
-				}
-			}
-			else
-			{
-				lReturn = T2GManagerErrorEnum.eT2GServerOffline;
-			}
-
+            if (lReturn != T2GManagerErrorEnum.eSuccess)
+            {
+                // Always return a valid object.
+                serviceDataResult = new ServiceInfo();
+            }
 			return lReturn;
 		}
 	}
