@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="IT2GManager.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -50,11 +50,18 @@ namespace PIS.Ground.Core.T2G
 			get;
 		}
 
-		/// <summary>Is element online.</summary>
-		/// <param name="elementNumber">The element number.</param>
-		/// <param name="IsOnline">[out] The is online.</param>
-		/// <returns>T2GManagerErrorEnum.</returns>
-		T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool IsOnline);
+		/// <summary>Verify if a system is online or not.</summary>
+		/// <param name="elementNumber">The system identifier to query.</param>
+		/// <param name="IsOnline">[out] Online status on the train. In case of error, value is forced to false.</param>
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool IsOnline);
 
 		/// <summary>
 		/// Query if 'elementNumber' is online and pis baseline information is up to date.
@@ -63,12 +70,20 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>true if element is online and pis baseline information is up to date, false if not.</returns>
 		bool IsElementOnlineAndPisBaselineUpToDate(string elementNumber);
 
-		/// <summary>Gets available service data.</summary>
-		/// <param name="strSystemId">Identifier for the system.</param>
-		/// <param name="intServiceId">Identifier for the int service.</param>
-		/// <param name="objSer">[out] The object ser.</param>
-		/// <returns>T2GManagerErrorEnum.</returns>
-		T2GManagerErrorEnum GetAvailableServiceData(string strSystemId, int intServiceId, out PIS.Ground.Core.Data.ServiceInfo objSer);
+        /// <summary>Get the information on a specific service on a specific train. Service shall be available.</summary>
+        /// <param name="systemId">The system identifier to retrieve the information.</param>
+        /// <param name="serviceId">The service identifier to retrieve information on</param>
+        /// <param name="serviceDataResult">[out] Information on the service retrieve. It's never null.</param>
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eServiceInfoNotFound</term><description>Service is unknown or it is not available..</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        T2GManagerErrorEnum GetAvailableServiceData(string strSystemId, int intServiceId, out PIS.Ground.Core.Data.ServiceInfo objSer);
 
 		/// <summary>Gets available element data by element number.</summary>
 		/// <param name="elementNumber">The element number.</param>

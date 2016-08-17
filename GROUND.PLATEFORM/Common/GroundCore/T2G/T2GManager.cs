@@ -657,11 +657,18 @@ namespace PIS.Ground.Core.T2G
 			return result;
 		}
 
-		/// <summary>Check the element is online.</summary>
-		/// <param name="elementNumber">element number.</param>
-		/// <param name="IsOnline">[out] The online status as a boolean. True if online, False otherwise.</param>
-		/// <returns>Status of request to T2G. To check to know if everything was allright or if T2G was offline or element unknow.</returns>
-		public T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool isOnline)
+        /// <summary>Verify if a system is online or not.</summary>
+        /// <param name="elementNumber">The system identifier to query.</param>
+        /// <param name="IsOnline">[out] Online status on the train. In case of error, value is forced to false.</param>
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        public T2GManagerErrorEnum IsElementOnline(string elementNumber, out bool isOnline)
 		{
 			T2GManagerErrorEnum lReturn = T2GManagerErrorEnum.eFailed;
 
@@ -706,16 +713,24 @@ namespace PIS.Ground.Core.T2G
 			return lIsOnlineAndUpToDate;
 		}
 
-		/// <summary>To Get the Service Information.</summary>
-		/// <param name="strSystemId">System Id.</param>
-		/// <param name="intServiceId">Service ID.</param>
-		/// <param name="objSer">[out] The object ser.</param>
-		/// <returns>ServiceInfo Data.</returns>
+		/// <summary>Get the information on a specific service on a specific train. Service shall be available.</summary>
+        /// <param name="systemId">The system identifier to retrieve the information.</param>
+        /// <param name="serviceId">The service identifier to retrieve information on</param>
+        /// <param name="serviceDataResult">[out] Information on the service retrieve. It's never null.</param>
+		/// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Service retrieved successfully and it is available</description></item>
+        /// <item><term>T2GManagerErrorEnum.eServiceInfoNotFound</term><description>Service is unknown or it is not available..</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried system is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
 		public T2GManagerErrorEnum GetAvailableServiceData(string systemId, int serviceId, out ServiceInfo serviceDataResult)
 		{
 			T2GManagerErrorEnum lReturn = T2GManagerErrorEnum.eFailed;
 
-			serviceDataResult = new ServiceInfo(); // always return an object
+            serviceDataResult = null;
 
             if (T2GServerConnectionStatus)
             {
@@ -742,6 +757,11 @@ namespace PIS.Ground.Core.T2G
                 lReturn = T2GManagerErrorEnum.eT2GServerOffline;
             }
 
+            if (lReturn != T2GManagerErrorEnum.eSuccess)
+            {
+                // Always return a valid object.
+                serviceDataResult = new ServiceInfo();
+            }
 			return lReturn;
 		}
 	}

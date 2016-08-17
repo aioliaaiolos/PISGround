@@ -7,20 +7,20 @@
 // </copyright>
 //---------------------------------------------------------------------------------------------------
 using System;
-using System.Configuration;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.ServiceModel;
+using System.Threading;
+using LiveVideoControl;
+using PIS.Ground.Common;
 using PIS.Ground.Core.Common;
 using PIS.Ground.Core.Data;
 using PIS.Ground.Core.LogMgmt;
 using PIS.Ground.Core.SessionMgmt;
 using PIS.Ground.Core.T2G;
-using System.Globalization;
-using LiveVideoControl;
-using PIS.Ground.Core.Utility;
-using PIS.Ground.Common;
-using System.Threading;
 
 namespace PIS.Ground.LiveVideoControl
 {
@@ -69,10 +69,10 @@ namespace PIS.Ground.LiveVideoControl
 		/// <summary>The dictionary with the latest url sent on START command. In case of STOP the value is removed.</summary>
 		private static Dictionary<TargetAddressType, string> _dicVideoHistory = new Dictionary<TargetAddressType, string>();
 
-		/// <summary>The dictionary video history with the latest sent status. This is used to avoid sending multiple.
-		///          START command to live video. It is reset in case the service is off.
+		/// <summary>The dictionary video history with the latest service sent. This is used to avoid sending multiple and detect current service switch.
+		///          START command to live video. It is reset in case the service is off or is switched.
 		/// </summary>
-		private static Dictionary<TargetAddressType, bool> _dicVideoHistorySentStatus = new Dictionary<TargetAddressType, bool>();
+		private static Dictionary<TargetAddressType, ServiceInfo> _dicVideoHistorySentService = new Dictionary<TargetAddressType, ServiceInfo>();
 
 		#endregion
 
@@ -240,7 +240,8 @@ namespace PIS.Ground.LiveVideoControl
 					target.Type = AddressTypeEnum.Element;
 					target.Id = args.SystemInformation.SystemId;
 
-					if (_isAutomaticMode == true)
+                    string automaticModeUrl;
+					if (GetAutomaticMode(out automaticModeUrl) == true)
 					{
 						LogManager.WriteLog(
 							TraceType.INFO,
@@ -250,13 +251,13 @@ namespace PIS.Ground.LiveVideoControl
 							EventIdEnum.LiveVideoControl);
 
 						LiveVideoControlResult result =
-							SendStartStreamingCommand(Guid.Empty, target, _configuration.AutomaticModeURL);
+                            SendStartStreamingCommand(Guid.Empty, target, automaticModeUrl);
 
 						if (result.ResultCode != LiveVideoControlErrorEnum.RequestAccepted)
 						{
 							LogManager.WriteLog(TraceType.ERROR,
 								"Problem sending a start command with url "
-								+ _configuration.AutomaticModeURL
+                                + automaticModeUrl
 								+ " to train "
 								+ target.Id
 								+ ". Error: "
@@ -269,31 +270,21 @@ namespace PIS.Ground.LiveVideoControl
 					else
 					{
 						// Manual Mode, resend the latest Start command if available
-						if (_dicVideoHistory.ContainsKey(target) && _dicVideoHistorySentStatus.ContainsKey(target))
+                        ServiceInfo lastSentService;
+                        if (_dicVideoHistory.ContainsKey(target) && _dicVideoHistorySentService.TryGetValue(target, out lastSentService))
 						{
-							bool lServiceLiveVideoControlServerAvailable = true;
+                            ServiceInfo foundService = (args.SystemInformation.ServiceList != null) ? args.SystemInformation.ServiceList.FirstOrDefault(s => s.ServiceId == (ushort)eServiceID.eSrvSIF_LiveVideoControlServer && s.IsAvailable): null;
+                            bool lServiceLiveVideoControlServerAvailable = foundService != null;
 
-							if (args.SystemInformation.ServiceList != null)
-							{
-								// Checking if LiveVideo service on the Element is available
-								foreach (ServiceInfo lServiceInfo in args.SystemInformation.ServiceList)
-								{
-									if (lServiceInfo.IsAvailable == false && lServiceInfo.ServiceId == (ushort)eServiceID.eSrvSIF_LiveVideoControlServer)
-									{
-										lServiceLiveVideoControlServerAvailable = false;
-										// In case of not available, reset the resend flag to send
-										// the start command again when the service becomes available
-										if (_dicVideoHistorySentStatus[target] == true)
-										{
-											_dicVideoHistorySentStatus[target] = false;
-										}
-									}
-								}
-							}
+                            // If service is not available, force the sent status to value false.
+                            if (!lServiceLiveVideoControlServerAvailable && lastSentService != null)
+                            {
+                                _dicVideoHistorySentService[target] = null;
+                            }
 
 							// Avoiding sending multiple start notifications.
 							// The LiveVideoService have to be online
-							if (_dicVideoHistorySentStatus[target] == false && lServiceLiveVideoControlServerAvailable == true)
+							if (lServiceLiveVideoControlServerAvailable == true && (lastSentService == null || !foundService.Equals(lastSentService)))
 							{
 
 								LogManager.WriteLog(
@@ -305,8 +296,9 @@ namespace PIS.Ground.LiveVideoControl
 
 								LiveVideoControlResult result =
 									SendStartStreamingCommand(Guid.Empty, target, _dicVideoHistory[target]);
-								// Setting the flag that the start command was already sent
-								_dicVideoHistorySentStatus[target] = true;
+								
+                                // Setting the flag that the start command was already sent
+                                _dicVideoHistorySentService[target] = foundService;
 
 								if (result.ResultCode != LiveVideoControlErrorEnum.RequestAccepted)
 								{
@@ -469,26 +461,17 @@ namespace PIS.Ground.LiveVideoControl
 							target.Type = AddressTypeEnum.Element;
 							target.Id = element.ElementNumber;
 
-							if (_dicVideoHistory.ContainsKey(target))
-							{
-								_dicVideoHistory[target] = url;
-							}
-							else
-							{
-								_dicVideoHistory.Add(target, url);
-							}
-
-							if (_dicVideoHistorySentStatus.ContainsKey(target))
-							{
-								_dicVideoHistorySentStatus[target] = true;
-							}
-							else
-							{
-								_dicVideoHistorySentStatus.Add(target, true);
-							}
+							_dicVideoHistory[target] = url;
+                            _dicVideoHistorySentService[target] = null;
 
 							if (element.OnlineStatus == true && element.MissionState == MissionStateEnum.MI)
 							{
+                                ServiceInfo availableService;
+                                if (_t2gManager.GetAvailableServiceData(element.ElementNumber, (int)eServiceID.eSrvSIF_LiveVideoControlServer, out availableService) == T2GManagerErrorEnum.eSuccess)
+                                {
+                                    _dicVideoHistorySentService[target] = availableService;
+                                }
+
 								SendStartStreamingCommand(Guid.Empty, target, url);
 							}
 						}
@@ -701,23 +684,8 @@ namespace PIS.Ground.LiveVideoControl
 			{
 				if (GetAutomaticMode(out automaticModeURL) == false)
 				{
-					if (_dicVideoHistory.ContainsKey(targetAddress))
-					{
-						_dicVideoHistory[targetAddress] = url;
-					}
-					else
-					{
-						_dicVideoHistory.Add(targetAddress, url);
-					}
-
-					if (_dicVideoHistorySentStatus.ContainsKey(targetAddress))
-					{
-						_dicVideoHistorySentStatus[targetAddress] = true;
-					}
-					else
-					{
-						_dicVideoHistorySentStatus.Add(targetAddress, true);
-					}
+					_dicVideoHistory[targetAddress] = url;
+					_dicVideoHistorySentService[targetAddress] = null;
 
 					result = SendStartStreamingCommand(
 						sessionId,
@@ -776,6 +744,15 @@ namespace PIS.Ground.LiveVideoControl
 						List<RequestContext> newRequests = new List<RequestContext>();
 						foreach (AvailableElementData element in elements)
 						{
+                            if (_dicVideoHistorySentService.ContainsKey(targetAddress))
+                            {
+                                ServiceInfo availableService;
+                                if (_t2gManager.GetAvailableServiceData(element.ElementNumber, (int)eServiceID.eSrvSIF_LiveVideoControlServer, out availableService) == T2GManagerErrorEnum.eSuccess)
+                                {
+                                    _dicVideoHistorySentService[targetAddress] = availableService;
+                                }
+                            }
+
 							LiveVideoControlService.SendNotificationToGroundApp(requestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.LiveVideoControlDistributionProcessing, element.ElementNumber);
 							ProcessStartVideoStreamingCommandRequestContext request = new ProcessStartVideoStreamingCommandRequestContext(
 								element.ElementNumber,
@@ -830,7 +807,7 @@ namespace PIS.Ground.LiveVideoControl
 			result.ResultCode = LiveVideoControlErrorEnum.RequestAccepted;
 
 			_dicVideoHistory.Remove(targetAddress);
-			_dicVideoHistorySentStatus.Remove(targetAddress);
+			_dicVideoHistorySentService.Remove(targetAddress);
 
 			if (_sessionManager.IsSessionValid(sessionId))
 			{
