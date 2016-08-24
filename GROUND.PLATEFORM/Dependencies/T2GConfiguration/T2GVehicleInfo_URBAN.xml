@@ -30,14 +30,14 @@
 		</Trigger>
 	</TriggerList>
 	<MessageList>
-		<Message id="PIS.LOC" trigger="triggerLoc">
+		<Message id="PIS.LOC" trigger="triggerLoc" startInhibited="false">
 			<Field id="Timestamp" variableId="TIME"/>
 			<Field id="LastStopStationId" variableId="Pis.Output.LastStationCode"/>
 			<Field id="NextStopStationId" variableId="Pis.Input.NextStationCode"/>
 			<Field id="LastStopDistance" variableId="LMT.Output.SegmentDistanceTraveled"/>
 			<Field id="NextStopDistance" variableId="LMT.Output.SegmentRemainingDistance"/>
 		</Message>
-		<Message id="PIS.MISSION" trigger="triggerMission">
+		<Message id="PIS.MISSION" trigger="triggerMission" startInhibited="false">
 			<Field id="Type" variableId="LMT.Output.MissionType"/>
 			<Field id="Number" variableId="LMT.Output.ServiceNumber"/>
 			<Field id="FirstStation" variableId="LMT.Input.OriginStationId"/>
@@ -49,7 +49,7 @@
 			<Field id="OperatorCode" variableId="LMT.Output.MissionCode"/>
 			<Field id="CommercialNumber" variableId="LMT.Output.MissionCode"/>
 		</Message>
-		<Message id="PIS.BASELINE" trigger="triggerBaseline">
+		<Message id="PIS.BASELINE" trigger="triggerBaseline" startInhibited="false">
 			<Field id="Archived Valid Out" variableId="Baseline.Archived.Valid.Out"/>
 			<Field id="Archived Version Out" variableId="Baseline.Archived.Version.Out"/>
 			<Field id="Archived Version PisBase Out" variableId="Baseline.Archived.Version.PisBase.Out"/>
@@ -80,11 +80,11 @@
 			<Field id="Usb Deploy Command In" variableId="Baseline.Usb.Deploy.Command.In"/>
 			<Field id="Usb Deploy Response Out" variableId="Baseline.Usb.Deploy.Response.Out"/>
 		</Message>
-		<Message id="PIS.VERSION" trigger="triggerVersion">
+		<Message id="PIS.VERSION" trigger="triggerVersion" startInhibited="false">
 			<Field id="Version PIS Software" variableId="Version.PIS.Software"/>
 		</Message>		
 	</MessageList>
-	<ServiceList>			
+	<ServiceList filterLocalServicesOnly="false">			
 		<Service id="1317" description="PIS Web Server"/>		
 		<Service id="1900" description="PIS SIF DataPackage Server"/>
 		<Service id="1901" description="PIS SIF InstantMessage Server"/>

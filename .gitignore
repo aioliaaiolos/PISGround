@@ -1,3 +1,4 @@
+*.bak
 *Log.txt
 summary_tests.log
 Ground_SourceCode*.zip

@@ -28,7 +28,7 @@
 		</Trigger>
 	</TriggerList>
 	<MessageList>
-		<Message id="SIVNG.LOC" trigger="triggerLoc" inhibitionStateVariable="T2G-MSG-LOC-INHIBITION-STATE">
+		<Message id="SIVNG.LOC" trigger="triggerLoc" inhibitionStateVariable="T2G-MSG-LOC-INHIBITION-STATE" startInhibited="false">
 			<Field id="Timestamp" variableId="DateTime.UTC"/>
 			<Field id="GPSTimestamp" variableId="LMT.Output.GPSDateTime"/>
 			<Field id="Longitude" variableId="LMT.Input.GPSLongitude"/>
@@ -46,7 +46,7 @@
 			<Field id="LeavingStation" variableId="Mission.LeavingStation"/>
 			<Field id="CommercialNumber" variableId="Mission.SegmentCommercialNumber"/>
 		</Message>	
-		<Message id="SIVNG.MISSION" trigger="triggerMission" inhibitionStateVariable="T2G-MSG-MISSION-INHIBITION-STATE">
+		<Message id="SIVNG.MISSION" trigger="triggerMission" inhibitionStateVariable="T2G-MSG-MISSION-INHIBITION-STATE" startInhibited="false">
 			<Field id="Type" variableId="Mission.Type"/>
 			<Field id="Number" variableId="Mission.TrainNumber"/>
 			<Field id="OperatorCode" variableId="Mission.OperatorID"/>
@@ -63,7 +63,7 @@
 			<Field id="Delay" variableId="Mission.Delay"/>
 			<Field id="State" variableId="LMT.State"/>
 		</Message>
-		<Message id="PIS.BASELINE" trigger="triggerBaseline">
+		<Message id="PIS.BASELINE" trigger="triggerBaseline" startInhibited="false">
 			<Field id="Archived Valid Out" variableId="Baseline.Archived.Valid.Out"/>
 			<Field id="Archived Version Out" variableId="Baseline.Archived.Version.Out"/>
 			<Field id="Archived Version PisBase Out" variableId="Baseline.Archived.Version.PisBase.Out"/>
@@ -95,7 +95,7 @@
 			<Field id="Usb Deploy Response Out" variableId="Baseline.Usb.Deploy.Response.Out"/>
 		</Message>
 	</MessageList>
-	<ServiceList>			
+	<ServiceList filterLocalServicesOnly="false">			
 		<Service id="1317" description="PIS Web Server"/>		
 		<Service id="1900" description="PIS SIF DataPackage Server"/>
 		<Service id="1901" description="PIS SIF InstantMessage Server"/>
