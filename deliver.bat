@@ -1,9 +1,9 @@
 ::=====================================================================================
-:: File name      : 					deliver.bat
-:: MakeFile name  : 
-:: Description    : 	   move the package folders to GROUND_DELIVERY
-:: Created        :						  2015-09-30
-:: Updated        :						  2016-07-08
+:: File name      : deliver.bat
+:: Description    : Package the source code, PIS-Ground server setup(URBAN and SIVENG),
+::                : and SDK (URBAN and SIVENG).
+::                : Copy all packages into the GROUND_DELIVERY path.
+:: Updated        :	2016-09-07
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -20,8 +20,8 @@ SET SRC_GroundServer_Requisites_x86Zip=%VOUTE_PATH%\PIS\GroundServer\%GroundServ
 SET GROUND_TEST_RESULTS_PATH=%ROOT_PATH%GROUND_DELIVERY\UnitTests
 SET GROUND_TEST_RESULTS_FOLDER=%ROOT_PATH%GROUND_TEST_RESULTS
 SET T2GVEHICLEINFOSIVENG_AND_T2GVEHICLEINFOURBAN_PATH=%ROOT_PATH%GROUND_DELIVERY
-SET T2GVEHICLEINFOSIVENG_FILE=%ROOT_PATH%GROUND.PLATEFORM\Dependencies\T2GConfiguration\T2GVehicleInfo_SIVENG.xml
-SET T2GVEHICLEINFOURBAN_FILE=%ROOT_PATH%GROUND.PLATEFORM\Dependencies\T2GConfiguration\T2GVehicleInfo_URBAN.xml
+SET T2GVEHICLEINFOSIVENG_FILE=%ROOT_PATH%GROUND.PLATEFORM\Setup\T2GConfiguration\T2GVehicleInfo_SIVENG.xml
+SET T2GVEHICLEINFOURBAN_FILE=%ROOT_PATH%GROUND.PLATEFORM\Setup\T2GConfiguration\T2GVehicleInfo_URBAN.xml
 
 ::=====================================================================================
 :: CHECK REQUIREMENTS
