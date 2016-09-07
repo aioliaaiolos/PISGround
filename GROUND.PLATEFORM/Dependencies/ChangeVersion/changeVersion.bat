@@ -1,61 +1,67 @@
 ::=====================================================================================
 :: File name      : 					changeVersion.bat
-:: Description    : 	copy all files from the voute into the source code
-::				  : 				   copyVoute.bat				
-:: Created        :						  ????
-:: Updated        :						  2016-07-14
+:: Description    : 	This script update the version number in every setup project*Setup
+::                :     and AssemblyInfo.cs file.
+:: Updated        :						  2016-08-29
 ::=====================================================================================
 @echo off
 SETLOCAL
-set SCRIPT_PATH=%~dp0
+setlocal EnableDelayedExpansion
 
-if "%VERSION_NUMBER%"=="" call %SCRIPT_PATH%..\..\..\config.bat version_number 
+set "SCRIPT_PATH=%~dp0"
 
-SET ERROR_CODE=0
+if "%VERSION_NUMBER%"=="" call "%SCRIPT_PATH%..\..\..\config.bat" version_number 
+
+SET EXIT_CODE=0
 
 if "%SETUP_VERSION%"=="" (
 	echo Variable SETUP_VERSION not defined
-	SET ERROR_CODE=1
+	SET EXIT_CODE=1
 	goto :End
 )
 
 if "%VERSION_NUMBER%"=="" (
 	echo Variable VERSION_NUMBER not defined
-	SET ERROR_CODE=2
+	SET EXIT_CODE=2
+	goto :End
+)
+
+if "%T2G_BUILD_NUMBER%" == "" (
+	echo Variable T2G_BUILD_NUMBER not defined
+	SET EXIT_CODE=3
 	goto :End
 )
 
 if "%SETUP_PACKAGE_CODE_GUID%" == "" (
 	echo Variable SETUP_PACKAGE_CODE_GUID not defined
-	SET ERROR_CODE=4
+	SET EXIT_CODE=4
 	goto :End
 )
 
-
 set WORKING_DIR=%SCRIPT_PATH%..\..
 
-for /f %%f in ('dir "%WORKING_DIR%\*Setup.vdproj" /s/b') do (
+for /f "delims=" %%f in ('dir "%WORKING_DIR%\*Setup.vdproj" /s/b') do (
 	echo Update file "%%f"
-	cscript /NoLogo  "%SCRIPT_PATH%\changeSetupVersion.vbs" "%%f" %SETUP_VERSION% %SETUP_PACKAGE_CODE_GUID%
+	cscript /NoLogo /B "%SCRIPT_PATH%\changeSetupVersion.vbs" "%%f" %SETUP_VERSION% %SETUP_PACKAGE_CODE_GUID%
 	if ERRORLEVEL 1 (
-		echo Updating the version on file "%%f" FAILED.
-		SET ERROR_CODE=5
+		echo Updating the version on file "%%f" FAILED with error !ERRORLEVEL!.
+		SET EXIT_CODE=5
 		goto :End
 	)
 )
 
-for /f %%f in ('dir "%WORKING_DIR%\AssemblyInfo.cs" /s/b') do (
+for /f "delims=" %%f in ('dir "%WORKING_DIR%\AssemblyInfo.cs" /s/b') do (
 	echo Update file "%%f"
-	cscript /NoLogo /B "%SCRIPT_PATH%\changeAssemblyVersion.vbs" "%%f" %VERSION_NUMBER%
-	if ERRORLEVEL 1 (
-		echo Updating the version on file "%%f" FAILED.
-		SET ERROR_CODE=6
+	cscript /Nologo /B "%SCRIPT_PATH%\changeAssemblyVersion.vbs" "%%f" %VERSION_NUMBER%
+	if ERRORLEVEL 1 ( 
+		echo Updating the version on file "%%f" FAILED with error !ERRORLEVEL!.
+		SET EXIT_CODE=6
 		goto :End
 	)
 )
 :End
 
-if "%EXIT_CODE%" == "0" echo Success
-if not "%EXIT_CODE%" == "0" echo changeVersion fail with error: %EXIT_CODE%
+if "%EXIT_CODE%" == "0" echo %~nx0 succeeded
+if not "%EXIT_CODE%" == "0" echo %~nx0 failed with error: %EXIT_CODE%
 
-exit /B %ERROR_CODE%
+exit /B %EXIT_CODE%
