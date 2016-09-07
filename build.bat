@@ -1,9 +1,8 @@
 ::=====================================================================================
-:: File name      : 					build.bat
-:: Description    : 			    build GROUND project
-::				  : 			execute PISGround.sln project					
-:: Created        :						  2015-09-30
-:: Updated        :						  2016-07-14
+:: File name      : build.bat
+:: Description    : build GROUND project (PISGround.sln)
+::				  : Before building the project, version number is updated into the script.
+:: Updated        :	2016-09-07
 ::
 :: Parameters     :   /quick  Do not force rebuild
 ::=====================================================================================
@@ -36,8 +35,8 @@ SET BUILD_PARAM=/Build "Release"
 if /I not "%1" == "/quick" SET BUILD_PARAM=/Rebuild "Release"
 
 echo Update version number
-echo execute script "%CURRENT_PATH%GROUND.PLATEFORM\Dependencies\ChangeVersion\changeVersion.bat"
-call "%CURRENT_PATH%GROUND.PLATEFORM\Dependencies\ChangeVersion\changeVersion.bat" > "%~dp0buildLog.txt" 2>&1
+echo execute script "%CURRENT_PATH%GROUND.PLATEFORM\Dependencies\Util\changeVersion.bat"
+call "%CURRENT_PATH%GROUND.PLATEFORM\Util\ChangeVersion\changeVersion.bat" > "%~dp0buildLog.txt" 2>&1
 if ERRORLEVEL 1 (
 	echo Failed to update version number in files
 	SET EXIT_CODE=1
