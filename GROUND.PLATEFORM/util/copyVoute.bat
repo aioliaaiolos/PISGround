@@ -1,7 +1,7 @@
 ::=====================================================================================
 :: File name      : copyVoute.bat
 :: Description    : copy all files from the voute into the source code directory
-:: Updated        :	2016-09-08
+:: Updated        :	2016-09-09
 ::=====================================================================================
 @echo off
 
@@ -279,7 +279,7 @@ if ERRORLEVEL 1 (
 )
 
 echo Copy and Unzip "%T2GClientDelivery_ZIPFilename%" to "%T2G_DESTINATION_PATH%"
-call :DoCopy "%SRC_T2GClientDelivery_ZIP%%" "%T2G_DESTINATION_PATH%" || SET EXIT_CODE=37 && goto :End
+call :DoCopy "%SRC_T2GClientDelivery_ZIP%" "%T2G_DESTINATION_PATH%" || SET EXIT_CODE=37 && goto :End
 
 ::If you got the error 38, verify the version of 7-zip. Version 15.14 and over is required.
 "%ZIP_PATH%" x "%T2GClientDelivery_ZIPFilename%" -o. -aoa -bb3							
@@ -309,7 +309,7 @@ if ERRORLEVEL 1 (
 )
 
 echo Copy and Unzip "%PISEmbeddedSDK_ZIPFileName%" to "%PISEmdededSDK_DESTINATION_PATH%"
-call :DoCopy "%SRC_PISEmbeddedSDK_ZIP%%" "%PISEmdededSDK_DESTINATION_PATH%" || SET EXIT_CODE=42 && goto :End
+call :DoCopy "%SRC_PISEmbeddedSDK_ZIP%" "%PISEmdededSDK_DESTINATION_PATH%" || SET EXIT_CODE=42 && goto :End
 
 ::If you got the error 43, verify the version of 7-zip. Version 15.14 and over is required.
 "%ZIP_PATH%" x "%PISEmbeddedSDK_ZIPFileName%" -o. -aoa -bb3							
