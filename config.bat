@@ -3,7 +3,7 @@
 :: Description    : 	download all files necessary to build GROUND project
 ::				  : 				   copyVoute.bat
 :: Created        :						  2015-10-07
-:: Updated        :						  2016-08-16
+:: Updated        :						  2016-08-08
 ::=====================================================================================
 @echo off
 
@@ -60,7 +60,7 @@ if NOT EXIST "%ZIP_PATH%" (
 
 set WORKING_DIR=%~dp0
 
-set BUILD_PATH=%WORKING_DIR%GROUND_DELIVERY
+set DELIVER_PATH=%WORKING_DIR%GROUND_DELIVERY
 
 set CONF_BUILD=RELEASE
 

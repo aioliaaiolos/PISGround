@@ -3,7 +3,7 @@
 :: Description    : Package the source code, PIS-Ground server setup(URBAN and SIVENG),
 ::                : and SDK (URBAN and SIVENG).
 ::                : Copy all packages into the GROUND_DELIVERY path.
-:: Updated        :	2016-09-07
+:: Updated        :	2016-09-08
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -34,8 +34,8 @@ if "%VERSION_NUMBER%" == "" (
 	goto :End
 )
 
-if "%BUILD_PATH%" == "" (
-	echo Variable BUILD_PATH not set
+if "%DELIVERY_PATH%" == "" (
+	echo Variable DELIVERY_PATH not set
 	SET EXIT_CODE=2
 	goto :End
 )
@@ -52,7 +52,7 @@ if "%Ground_SourceCode_ZIPFilename%" == "" (
 	goto :End
 )
 
-set TARGET_SOURCE_DIR=%BUILD_PATH%\GROUND_SOURCE_CODE
+set TARGET_SOURCE_DIR=%DELIVERY_PATH%\GROUND_SOURCE_CODE
 
 SET VCVARSFILE=%ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat
 
@@ -111,26 +111,26 @@ if not exist "%SRC_GroundServer_Requisites_x86Zip%" (
 ::=====================================================================================
 
 echo Create and emtpy output directories
-if exist "%BUILD_PATH%" (
-	rmdir /S /Q "%BUILD_PATH%"
+if exist "%DELIVERY_PATH%" (
+	rmdir /S /Q "%DELIVERY_PATH%"
 	if ERRORLEVEL 1 (
-		echo Cannot empty the directory "%BUILD_PATH%"
+		echo Cannot empty the directory "%DELIVERY_PATH%"
 		SET EXIT_CODE=13
 		goto :End
 	)
 )
 
-mkdir "%BUILD_PATH%"
+mkdir "%DELIVERY_PATH%"
 if ERRORLEVEL 1 (
-	echo Cannot create the directory "%BUILD_PATH%"
+	echo Cannot create the directory "%DELIVERY_PATH%"
 	SET EXIT_CODE=14
 	goto :End
 )
 
-if not exist %BUILD_PATH% (
-	mkdir %BUILD_PATH%
+if not exist %DELIVERY_PATH% (
+	mkdir %DELIVERY_PATH%
 	if ERRORLEVEL 1 (
-		echo Cannot create the directory "%BUILD_PATH%"
+		echo Cannot create the directory "%DELIVERY_PATH%"
 		SET EXIT_CODE=15
 		goto :End
 	)
@@ -155,17 +155,17 @@ if ERRORLEVEL 1 (
 ::=====================================================================================
 echo copy PIS-Ground requisite files
 
-xcopy "%SRC_GroundServer_RequisitesZip%" "%BUILD_PATH%" /Y
+xcopy "%SRC_GroundServer_RequisitesZip%" "%DELIVERY_PATH%" /Y
 if ERRORLEVEL 1 (
 	SET EXIT_CODE=18
 	goto :End
 )
-xcopy "%SRC_GroundServer_Requisites_x64Zip%" "%BUILD_PATH%" /Y
+xcopy "%SRC_GroundServer_Requisites_x64Zip%" "%DELIVERY_PATH%" /Y
 if ERRORLEVEL 1 ( 
 	SET EXIT_CODE=19
 	goto :End
 )	
-xcopy "%SRC_GroundServer_Requisites_x86Zip%" "%BUILD_PATH%" /Y
+xcopy "%SRC_GroundServer_Requisites_x86Zip%" "%DELIVERY_PATH%" /Y
 if ERRORLEVEL 1 ( 
 	SET EXIT_CODE=20
 	goto :End
@@ -192,7 +192,7 @@ if ERRORLEVEL 1 (
 
 echo Package URBAN
 echo Package URBAN >> "%~dp0\deliverLog.txt"
-call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageURBAN.bat" "%WORKING_DIR%GROUND.PLATEFORM\Setup\bin\release" "%BUILD_PATH%\" %VERSION_NUMBER%  >> "%~dp0\deliverLog.txt" 2>&1
+call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageURBAN.bat" "%WORKING_DIR%GROUND.PLATEFORM\Setup\bin\release" "%DELIVERY_PATH%\" %VERSION_NUMBER%  >> "%~dp0\deliverLog.txt" 2>&1
 IF ERRORLEVEL 1 (
 	echo PackageURBAN.bat Failed >> "%~dp0\deliverLog.txt"
 	set EXIT_CODE=24
@@ -200,7 +200,7 @@ IF ERRORLEVEL 1 (
 
 echo Package SIVENG
 echo Package SIVENG >> "%~dp0\deliverLog.txt"
-call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageSIVENG.bat" "%WORKING_DIR%GROUND.PLATEFORM\Setup\bin\release" "%BUILD_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
+call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageSIVENG.bat" "%WORKING_DIR%GROUND.PLATEFORM\Setup\bin\release" "%DELIVERY_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
 IF ERRORLEVEL 1 (
 	echo PackageSIVENG.bat Failed >> "%~dp0\deliverLog.txt"
 	set EXIT_CODE=11
@@ -208,7 +208,7 @@ IF ERRORLEVEL 1 (
 
 echo Package URBAN SDK
 echo Package URBAN SDK >> "%~dp0\deliverLog.txt"
-call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageURBAN_SDK.bat" "%WORKING_DIR%GROUND.PLATEFORM"\WSDL\ "%BUILD_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
+call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageURBAN_SDK.bat" "%WORKING_DIR%GROUND.PLATEFORM"\WSDL\ "%DELIVERY_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
 IF ERRORLEVEL 1 (
 	echo PackageURBAN_SDK.bat Failed >> "%~dp0\deliverLog.txt"
 	set EXIT_CODE=12
@@ -216,7 +216,7 @@ IF ERRORLEVEL 1 (
 
 echo Package SIVENG SDK
 echo Package SIVENG SDK >> "%~dp0\deliverLog.txt"
-call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageSIVENG_SDK.bat" "%WORKING_DIR%GROUND.PLATEFORM"\WSDL\ "%BUILD_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
+call "%WORKING_DIR%GROUND.PLATEFORM\Configuration\PackageSIVENG_SDK.bat" "%WORKING_DIR%GROUND.PLATEFORM"\WSDL\ "%DELIVERY_PATH%\" %VERSION_NUMBER% >> "%~dp0\deliverLog.txt" 2>&1
 IF ERRORLEVEL 1 (
 	echo PackageSIVENG_SDK.bat Failed >> "%~dp0\deliverLog.txt"
 	set EXIT_CODE=13
@@ -230,11 +230,11 @@ if not "%EXIT_CODE%" == "0" goto :End
 echo Create the zip file that contains the source code			
 			
 echo Create Ground source 
-"%ZIP_PATH%" a "%BUILD_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip" -xr@"%ROOT_PATH%GROUND.PLATEFORM\util\excludeFileList.txt" >> "%~dp0\deliverLog.txt" 2>&1
+"%ZIP_PATH%" a "%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip" -xr@"%ROOT_PATH%GROUND.PLATEFORM\util\excludeFileList.txt" >> "%~dp0\deliverLog.txt" 2>&1
 if ERRORLEVEL 1 SET EXIT_CODE=14
 
 :: When 7Zip fails, a .zip.tmp file might remains
-IF EXIST "%BUILD_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip.tmp" DEL "%BUILD_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip.tmp"
+IF EXIST "%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip.tmp" DEL "%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%.zip.tmp"
 
 if not "%EXIT_CODE%" == "0" goto :End
 
