@@ -28,14 +28,13 @@ if "%ARGS_COUNT%" GEQ 10 (
 
 if %ARGS_COUNT% GEQ 5 goto :Ok
 
-echo USAGE: %0 directory namespace csfile configfile wsdlfiles [keepConfig] [extra parameters]
+echo USAGE: %0 directory namespace csfile configfile [keepConfig] wsdlfiles
 echo directory The path where output files shall be saved
 echo namespace The wsdl namespace to pass as argument to svcutil.exe method
 echo csfile The name of the destination source file (c# file)
 echo configfile The name of the destination config file (.config)
-echo wsdlfiles One or more filename that describe the wsdl.
 echo keepConfig When keepConfig is specified at the end, the configuration file is keep after generation. By defaut, configuration file is not kept.
-echo extra parameters to pass to command svcutil.exe. Up to 4 parameters can be specified
+echo wsdlfiles One or more filename that describe the wsdl. Up to 5 files can be specified
 SET EXIT_CODE=3
 goto :End
 
@@ -48,16 +47,17 @@ SET "CONFIGFILE=%~4"
 
 SET KEEPCONFIG=N
 
-IF /I "%~6" == "keepConfig" (
+IF /I "%~5" == "keepConfig" (
 	SET KEEPCONFIG=Y
 )
 
+cd /D "%DIRECTORY%" || echo Cannot move to directory "%DIRECTORY%" || SET EXIT_CODE=4 && goto :End
 @IF "%KEEPCONFIG%" == "Y" (
-	echo RUN: "%SVCUTIL%" /directory:"%DIRECTORY%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %5 %7 %8 %9
-	"%SVCUTIL%" /directory:"%DIRECTORY%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %5 %7 %8 %9
+	echo RUN: "%SVCUTIL%" /directory:"%DIRECTORY%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %6 %7 %8 %9
+	"%SVCUTIL%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %6 %7 %8 %9
 ) else (
 	echo RUN: "%SVCUTIL%" /directory:"%DIRECTORY%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %5 %6 %7 %8 %9
-	"%SVCUTIL%" /directory:"%DIRECTORY%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %5 %6 %7 %8 %9
+	"%SVCUTIL%" /language:cs /namespace:*,%NAMESPACE% /targetClientVersion:Version35 /out:%CSFILE%.temp /config:%CONFIGFILE%.temp %5 %6 %7 %8 %9
 )
 
 IF NOT ERRORLEVEL 1  goto CopyStep

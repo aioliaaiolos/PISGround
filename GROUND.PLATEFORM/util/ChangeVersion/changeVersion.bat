@@ -32,7 +32,7 @@ if "%SETUP_PACKAGE_CODE_GUID%" == "" (
 	goto :End
 )
 
-set WORKING_DIR=%SCRIPT_PATH%..\..
+set "WORKING_DIR=%SCRIPT_PATH%..\.."
 
 for /f "delims=" %%f in ('dir "%WORKING_DIR%\*Setup.vdproj" /s/b') do (
 	echo Update file "%%f"

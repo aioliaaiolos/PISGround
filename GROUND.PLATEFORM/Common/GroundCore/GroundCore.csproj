@@ -204,9 +204,9 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>call "$(ProjectDir)T2G\GenerateWebServicesProxy.bat"  $(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL 2&gt;&amp;1
+    <PreBuildEvent>call "$(ProjectDir)T2G\GenerateWebServicesProxy.bat"  "$(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL" 2&gt;&amp;1
 
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Ground.GroundCore.AppGround AppGroundClient.cs AppGroundClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd 
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Clients" PIS.Ground.GroundCore.AppGround AppGroundClient.cs AppGroundClient.config "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\AppGround\AppGround.wsdl" "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd" "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd"
 </PreBuildEvent>
   </PropertyGroup>
 </Project>
