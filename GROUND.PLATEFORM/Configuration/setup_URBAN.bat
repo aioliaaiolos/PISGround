@@ -1,9 +1,8 @@
 ::=====================================================================================
-:: File name      : 		setup_URBAN.bat
-:: MakeFile name  : 
+:: File name      : setup_URBAN.bat
 :: Description    : Script that install PIS-GROUND for URBAN platform
 ::				  : 	
-:: Update         :			   2016-02-26			
+:: Update         :	2016-09-09			
 ::=====================================================================================
 SETLOCAL
 SET APPPOOLNAME="PIS-GROUND"
