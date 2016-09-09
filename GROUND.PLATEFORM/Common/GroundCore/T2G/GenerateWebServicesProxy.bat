@@ -37,12 +37,6 @@ CALL ..\..\..\WSDL\GenerateOneProxy.bat "%~dp0generated" PIS.Ground.Core.T2G.Web
 CALL ..\..\..\WSDL\GenerateOneProxy.bat "%~dp0generated" PIS.Ground.Core.T2G.WebServices.Maintenance MaintenanceClient.cs MaintenanceClient.config "%T2G_WSDL_PATH%\T2GMaintenance.wsdl" /a || echo Failed to generate client for T2G Maintenance. && SET EXIT_CODE=5 && goto :End
 CALL ..\..\..\WSDL\GenerateOneProxy.bat "%~dp0generated" PIS.Ground.Core.T2G.WebServices.VehicleInfo VehiculeInfoClient.cs VehiculeInfoClient.config "%T2G_WSDL_PATH%\T2GVehicleInfo.wsdl" /a || echo Failed to generate client for T2G Vehicle-Info. && SET EXIT_CODE=6 && goto :End
 
-
-REM CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.FileTransfer "%T2G_WSDL_PATH%\T2GFileTransfer.wsdl" FileTransferClient || echo Failed to generate client for T2G FileTranser. && SET EXIT_CODE=3 && goto :End
-REM CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.Identification "%T2G_WSDL_PATH%\T2GIdentification.wsdl" IdentificationClient || echo Failed to generate client for T2G Identification. && SET EXIT_CODE=4 && goto :End
-REM CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.Maintenance "%T2G_WSDL_PATH%\T2GMaintenance.wsdl" MaintenanceClient || echo Failed to generate client for T2G Maintenance. && SET EXIT_CODE=5 && goto :End
-REM CALL GenerateServiceProxy.bat PIS.Ground.Core.T2G.WebServices.VehicleInfo "%T2G_WSDL_PATH%\T2GVehicleInfo.wsdl" VehiculeInfoClient || echo Failed to generate client for T2G Vehicle-Info. && SET EXIT_CODE=6 && goto :End
-
 CALL "%VCVARSFILE%"
 cd /D "%~dp0" || echo Cannot move to directory "%~dp0" && SET EXIT_CODE=7 && goto :End
 
