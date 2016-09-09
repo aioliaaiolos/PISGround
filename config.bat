@@ -33,15 +33,15 @@ SET SETUP_PACKAGE_CODE_GUID={C8192351-EC42-4750-B1B2-EC290F2F8B9C}
 :: Version of the pre-requisite files to deliver PIS-Ground
 set REQUESITE_VERSION=5.8.0.9
 
-set T2GClientDelivery_ZIPFilename=T2GClientDelivery1.0.12.0
-set Ground_SourceCode_ZIPFilename=Ground_SourceCode%VERSION_NUMBER%
-set Ground_Dependencies_ZIPFilename=PISGroundDependencies_V5_16_8
+set T2GClientDelivery_ZIPFilename=T2GClientDelivery1.0.12.0.zip
+set Ground_SourceCode_ZIPFilename=Ground_SourceCode%VERSION_NUMBER%.zip
+set Ground_Dependencies_ZIPFilename=PISGroundDependencies_V5_16_8.zip
 set GroundServer_Requisites_PrefixFileName=MT92-2PIS010010-PIS2G-Ground_Server-REQUISITES-
-set GroundServer_Requisites_ZIPFileName=%GroundServer_Requisites_PrefixFileName%V%REQUESITE_VERSION%
-set GroundServer_Requisites_x64_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x64-V%REQUESITE_VERSION%
-set GroundServer_Requisites_x86_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x86-V%REQUESITE_VERSION%
-set Groundserver_TestPackages_ZIPFileName=PISGroundIntegrationTestsPackages_V5.16.0
-set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.3.0
+set GroundServer_Requisites_ZIPFileName=%GroundServer_Requisites_PrefixFileName%V%REQUESITE_VERSION%.zip
+set GroundServer_Requisites_x64_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x64-V%REQUESITE_VERSION%.zip
+set GroundServer_Requisites_x86_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x86-V%REQUESITE_VERSION%.zip
+set Groundserver_TestPackages_ZIPFileName=PISGroundIntegrationTestsPackages_V5.16.0.zip
+set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.3.0.zip
 
 ::=====================================================================================
 :: Updatable section - END
