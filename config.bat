@@ -7,7 +7,7 @@
 ::                : When invoked with a parameter, this script set environment variables 
 ::                : that define the configuration. Configuration includes version number 
 ::				  : and dependent package.			   
-:: Updated        :	2016-08-08
+:: Updated        :	2016-09-09
 ::=====================================================================================
 @echo off
 
@@ -49,7 +49,7 @@ set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.3.0.zip
 
 SET EXIT_CODE=0
 set "WORKING_DIR=%~dp0"
-set "DELIVER_PATH=%WORKING_DIR%GROUND_DELIVERY"
+set "DELIVERY_PATH=%WORKING_DIR%GROUND_DELIVERY"
 
 set "VOUTE_PATH=\\srvsiefnp01\sfsla1nas1\eng\Electrical\Release VERSION\Software\Libs"
 
