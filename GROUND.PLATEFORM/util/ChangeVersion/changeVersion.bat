@@ -1,8 +1,8 @@
 ::=====================================================================================
-:: File name      : 					changeVersion.bat
-:: Description    : 	This script update the version number in every setup project*Setup
-::                :     and AssemblyInfo.cs file.
-:: Updated        :						  2016-08-29
+:: File name      : ChangeVersion.bat
+:: Description    :	This script update the version number in every setup project*Setup
+::                : and AssemblyInfo.cs file.
+:: Updated        : 2016-09-09
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -26,15 +26,9 @@ if "%VERSION_NUMBER%"=="" (
 	goto :End
 )
 
-if "%T2G_BUILD_NUMBER%" == "" (
-	echo Variable T2G_BUILD_NUMBER not defined
-	SET EXIT_CODE=3
-	goto :End
-)
-
 if "%SETUP_PACKAGE_CODE_GUID%" == "" (
 	echo Variable SETUP_PACKAGE_CODE_GUID not defined
-	SET EXIT_CODE=4
+	SET EXIT_CODE=3
 	goto :End
 )
 
@@ -45,7 +39,7 @@ for /f "delims=" %%f in ('dir "%WORKING_DIR%\*Setup.vdproj" /s/b') do (
 	cscript /NoLogo /B "%SCRIPT_PATH%\changeSetupVersion.vbs" "%%f" %SETUP_VERSION% %SETUP_PACKAGE_CODE_GUID%
 	if ERRORLEVEL 1 (
 		echo Updating the version on file "%%f" FAILED with error !ERRORLEVEL!.
-		SET EXIT_CODE=5
+		SET EXIT_CODE=4
 		goto :End
 	)
 )
@@ -55,7 +49,7 @@ for /f "delims=" %%f in ('dir "%WORKING_DIR%\AssemblyInfo.cs" /s/b') do (
 	cscript /Nologo /B "%SCRIPT_PATH%\changeAssemblyVersion.vbs" "%%f" %VERSION_NUMBER%
 	if ERRORLEVEL 1 ( 
 		echo Updating the version on file "%%f" FAILED with error !ERRORLEVEL!.
-		SET EXIT_CODE=6
+		SET EXIT_CODE=5
 		goto :End
 	)
 )
