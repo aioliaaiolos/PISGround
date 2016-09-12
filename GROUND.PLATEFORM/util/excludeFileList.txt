@@ -1,7 +1,7 @@
 configLog.txt
 buildLog.txt
 deliverLog.txt
-execute_testLog.txt
+executeTestLog.txt
 *.ncb
 *.pdb
 *.csproj.user
@@ -23,5 +23,6 @@ T2G_DELIVERY\T2G.CLIENT.DELIVERY\lib\
 T2G_DELIVERY\T2G.CLIENT.DELIVERY\include\
 GROUND_TEST_RESULTS\
 GROUND_DELIVERY\
+REBUILD_TEST\
 .gitignore
 .git\

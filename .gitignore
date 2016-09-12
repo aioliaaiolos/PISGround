@@ -15,5 +15,6 @@ summary_tests.log
 /PISEmbeddedSDK/
 /GROUND_TEST_RESULTS/
 /GROUND_DELIVERY/
+/REBUILD_TEST/
 obj/
 bin/
