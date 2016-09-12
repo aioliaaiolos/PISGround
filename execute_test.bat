@@ -2,7 +2,7 @@
 :: File name      : execute_test.bat
 :: Description    : Execute automated tests of PIS-Ground projects
 ::				  : 	compile all unit test files 
-:: Update         :	2016-09-09			
+:: Update         :	2016-09-12			
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -12,7 +12,7 @@ SET EXIT_CODE=0
 
 call "%~dp0\config.bat" WORKING_DIR 
 
-TYPE NUL > "%~dp0execute_testLog.txt"
+TYPE NUL > "%~dp0executeTestLog.txt"
 	
 ::=====================================================================================
 :: CHECK REQUIREMENTS
