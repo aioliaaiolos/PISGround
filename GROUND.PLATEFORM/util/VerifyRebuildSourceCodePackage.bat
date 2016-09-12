@@ -23,7 +23,7 @@ SET "TEMP_DIR=%WORKING_DIR%REBUILD_TEST"
 ::=====================================================================================
 echo Verify conditions to be able to check that source code package can be rebuild
 
-SET "SRC_ZIP_FILE=%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%" 
+SET "SRC_ZIP_FILE=%TARGET_SOURCE_DIR%\%Ground_SourceCode_ZIPFilename%" 
 
 IF NOT EXIST "%SRC_ZIP_FILE%" (
 	echo Source code package file does not exist at this location: "%SRC_ZIP_FILE%"
