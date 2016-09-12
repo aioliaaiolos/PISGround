@@ -2,7 +2,7 @@
 :: File name      : PackageURBAN_SDK.bat
 :: Description    : Create the PIS-Ground SDK package for URBAN platform
 ::				  : 	
-:: Update         :	2016-09-09			
+:: Update         :	2016-09-12	
 ::=====================================================================================
 @echo off
 
@@ -165,10 +165,10 @@ SETLOCAL
 
 echo Copy directory "%~1" to "%~2"
 echo -----------------------------
-@echo on
-xcopy /E /V /I /Y /EXCLUDE:.gitignore "%~1" "%~2" || echo Failed to copy directory "%~1" to "%~2"
-@echo off
-SET RETCODE=%ERRORLEVEL%
+echo Run: xcopy /E /V /I /Y "%~1" "%~2"
+xcopy /E /V /I /Y "%~1" "%~2" || echo Failed to copy directory "%~1" to "%~2" && SET RETCODE=1
+
+for %%F in ('DIR /B /S "%~2\.gitignore") do call :DoDeleteFile "%%F"
+
 echo -----------------------------
 ENDLOCAL & exit /B %RETCODE%
-
