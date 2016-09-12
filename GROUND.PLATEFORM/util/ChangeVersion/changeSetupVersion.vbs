@@ -2,9 +2,7 @@
 ''  Update the version number of an MSI setup project
 ''  and update relevant GUIDs
 ''  
-''  Hans-Jürgen Schmidt / 2007.12.19
-''  Last Updated: 2016.07.14
-''  
+''  Last Updated: 2016.08.29
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 set a = wscript.arguments
 if a.count < 3 or a.count > 4 then 
@@ -49,7 +47,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	set re = new regexp
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create regular expression object"
-		wscript.quit 10
+		wscript.quit 2
 	end if 
 
 	re.global = true
@@ -60,7 +58,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	If m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The new version to set does not follow that format: 1.2.0000")
 		wscript.StdErr.WriteLine("-- New version value is '" & CStr(newVersion) & "'")
-		wscript.quit 11
+		wscript.quit 3
 	End If
 
 	' Validate the package code guid
@@ -69,7 +67,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	If m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The new package code guid to set does not follow that format: {00000000-1111-2222-3333-444444444444}")
 		wscript.StdErr.WriteLine("-- New package code guid value is '" & CStr(newPackageCodeGuid) & "'")
-		wscript.quit 11
+		wscript.quit 4
 	End If
 
 	' Update the product code guid only if specified
@@ -80,7 +78,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 		If m.Count <> 1 then
 			wscript.StdErr.WriteLine("-- The new product code guid to set does not follow that format: {00000000-1111-2222-3333-444444444444}")
 			wscript.StdErr.WriteLine("-- New product code guid value is '" & CStr(newProductCodeGuid) & "'")
-			wscript.quit 11
+			wscript.quit 5
 		End If
 	End If
 	
@@ -89,10 +87,10 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	
 	If m.Count = 0 then
 		wscript.StdErr.WriteLine("-- The file does not contain ProductVersion to replace")
-		wscript.quit 11
+		wscript.quit 6
 	ElseIf m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The file contains more than one ProductVersion to replace")
-		wscript.quit 11
+		wscript.quit 7
 	End If
 	
 	
@@ -106,10 +104,10 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 		set m = re.Execute(newFileContent)
 		If m.Count = 0 then
 			wscript.StdErr.WriteLine("-- The file does not contain ProductCode to replace")
-			wscript.quit 11
+			wscript.quit 8
 		ElseIf m.Count <> 1 then
 			wscript.StdErr.WriteLine("-- The file contains more than one ProductCode to replace")
-			wscript.quit 11
+			wscript.quit 9
 		End If
 			
 		newFileContent = re.replace(newFileContent, "$1" & newProductCodeGuid & """")
@@ -120,7 +118,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion, ByVal newPackageCod
 	set m = re.Execute(newFileContent)
 	If m.Count = 0 then
 		wscript.StdErr.WriteLine("-- The file does not contain PackageCode to replace")
-		wscript.quit 11
+		wscript.quit 10
 	ElseIf m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The file contains more than one PackageCode to replace")
 		wscript.quit 11
@@ -143,7 +141,7 @@ Function ReadFileContent(ByVal fileName)
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create file system object:" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 2
+		wscript.quit 13
 	end if
 	
 	Set f = fso.OpenTextFile(fileName)
@@ -151,7 +149,7 @@ Function ReadFileContent(ByVal fileName)
 	if Err.Number <> 0 then
 		set fso = Nothing
 		wscript.StdErr.WriteLine "Cannot open file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 3
+		wscript.quit 14
 	end if
 	
 	fileContent = f.ReadAll
@@ -161,12 +159,12 @@ Function ReadFileContent(ByVal fileName)
 	set fso = Nothing
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Error while reading file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 3
+		wscript.quit 15
 	end if
 	
 	if fileContent = "" then
 		wscript.Echo "File '" & CStr(fileName) & "' is empty. Version number cannot be updated."
-		wscript.quit 3
+		wscript.quit 16
 	end if
 	
 	ReadFileContent = fileContent
@@ -178,14 +176,14 @@ Sub WriteFileContent(ByVal fileName, ByVal newContent)
 
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create file system object:" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 5
+		wscript.quit 17
 	end if
 	
 	set f = fso.CreateTextfile(fileName, true)
 	if Err.Number <> 0 then
 		set fso = Nothing
 		wscript.StdErr.WriteLine "Cannot create file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 6
+		wscript.quit 18
 	end if
 	
 	f.write(newContent)
@@ -195,6 +193,6 @@ Sub WriteFileContent(ByVal fileName, ByVal newContent)
 	
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Error while writing file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 6
+		wscript.quit 19
 	end if
 End Sub

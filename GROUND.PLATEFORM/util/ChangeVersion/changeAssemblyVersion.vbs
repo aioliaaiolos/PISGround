@@ -1,8 +1,7 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ''  Update the version number of an Assembly.info
 ''  
-''  Created by Sylvain Barbot 2013.12.20
-''  Last update 2016.03.01
+''  Last update 2016.08.29
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 set a = wscript.arguments
 set a = wscript.arguments
@@ -38,7 +37,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion)
 	set re = new regexp
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create regular expression object"
-		wscript.quit 10
+		wscript.quit 2
 	end if 
 	
 	re.global = true
@@ -49,7 +48,7 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion)
 	If m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The new version to set does not follow that format: 1.2.3.4")
 		wscript.StdErr.WriteLine("-- New version value is '" & CStr(newVersion) & "'")
-		wscript.quit 11
+		wscript.quit 3
 	End If
 	
 	
@@ -60,10 +59,10 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion)
 	
 	If m.Count = 0 then
 		wscript.StdErr.WriteLine("-- The file does not contain AssemblyVersion to replace")
-		wscript.quit 11
+		wscript.quit 4
 	ElseIf m.Count <> 1 then
 		wscript.StdErr.WriteLine("-- The file contains more than one AssemblyVersion to replace")
-		wscript.quit 11
+		wscript.quit 5
 	End If
 	
 	
@@ -74,18 +73,18 @@ Function ReplaceVersion(ByVal fileContent, ByVal newVersion)
 	
 	set m = re.Execute(newFileContent)
 	If m.Count = 0 then
-		wscript.StdErr.WriteLine("-- The file does not contain ProductCode to replace")
-		wscript.quit 11
+		wscript.StdErr.WriteLine("-- The file does not contain AssemblyFileVersion to replace")
+		wscript.quit 6
 	ElseIf m.Count <> 1 then
-		wscript.StdErr.WriteLine("-- The file contains more than one ProductCode to replace")
-		wscript.quit 11
+		wscript.StdErr.WriteLine("-- The file contains more than one AssemblyFileVersion to replace")
+		wscript.quit 7
 	End If
 	
 	newFileContent = re.replace(newFileContent, "$1" & newVersion & """)")
 	
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Unexpected error while replacing version number in the original file: " & err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 12
+		wscript.quit 8
 	end if
 	
 	ReplaceVersion = newFileContent
@@ -99,7 +98,7 @@ Function ReadFileContent(ByVal fileName)
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create file system object:" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 2
+		wscript.quit 9
 	end if
 	
 	Set f = fso.OpenTextFile(fileName)
@@ -107,7 +106,7 @@ Function ReadFileContent(ByVal fileName)
 	if Err.Number <> 0 then
 		set fso = Nothing
 		wscript.StdErr.WriteLine "Cannot open file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 3
+		wscript.quit 10
 	end if
 	
 	fileContent = f.ReadAll
@@ -117,12 +116,12 @@ Function ReadFileContent(ByVal fileName)
 	set fso = Nothing
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Error while reading file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 3
+		wscript.quit 11
 	end if
 	
 	if fileContent = "" then
 		wscript.Echo "File '" & CStr(fileName) & "' is empty. Version number cannot be updated."
-		wscript.quit 3
+		wscript.quit 12
 	end if
 	
 	ReadFileContent = fileContent
@@ -134,14 +133,14 @@ Sub WriteFileContent(ByVal fileName, ByVal newContent)
 
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Cannot create file system object:" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 5
+		wscript.quit 13
 	end if
 	
 	set f = fso.CreateTextfile(fileName, true)
 	if Err.Number <> 0 then
 		set fso = Nothing
 		wscript.StdErr.WriteLine "Cannot create file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 6
+		wscript.quit 14
 	end if
 	
 	f.write(newContent)
@@ -151,6 +150,6 @@ Sub WriteFileContent(ByVal fileName, ByVal newContent)
 	
 	if Err.Number <> 0 then
 		wscript.StdErr.WriteLine "Error while writing file '" & CStr(fileName) & "':" & Err.Description & "(" & CStr(Err.Number) & ")"
-		wscript.quit 6
+		wscript.quit 15
 	end if
 End Sub
