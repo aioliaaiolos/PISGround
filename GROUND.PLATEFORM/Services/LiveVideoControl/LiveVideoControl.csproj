@@ -114,9 +114,9 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PreBuildEvent>call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir)Clients PIS.Train.LiveVideoControl LiveVideoControlTrainClient.cs LiveVideoControlTrainClient.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Train\LiveVideoControl.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd
+    <PreBuildEvent>call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Clients" PIS.Train.LiveVideoControl LiveVideoControlTrainClient.cs LiveVideoControlTrainClient.config "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Train\LiveVideoControl.wsdl" "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd"
 
-call "$(SolutionDir)WSDL\GenerateOneProxy.bat" $(ProjectDir) PIS.Ground.LiveVideoControl.Notification INotificationGroundService.cs NotificationGroundService.config $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd $(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)" PIS.Ground.LiveVideoControl.Notification INotificationGroundService.cs NotificationGroundService.config "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Ground\NotificationGround.wsdl" "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd" "$(SolutionDir)..\PISEmbeddedSDK\SIF\wsdl\Schema\Notification.xsd"
 </PreBuildEvent>
   </PropertyGroup>
 </Project>

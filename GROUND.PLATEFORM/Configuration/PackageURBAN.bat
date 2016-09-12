@@ -1,91 +1,137 @@
 ::=====================================================================================
 :: File name      : 		PackageURBAN.bat
-:: MakeFile name  : 
 :: Description    : Create the PIS-Ground setup package for URBAN platform
-::				  : 	
-:: Update         :			   2016-02-26			
+:: Update         :			   2016-09-09		
 ::=====================================================================================
 @echo off
 
 SETLOCAL
+SETLOCAL EnableDelayedExpansion
 
-set ZIP_PATH=%ProgramFiles(x86)%\7-Zip\7z.exe
-IF NOT EXIST "%ZIP_PATH%" set ZIP_PATH=C:\Program Files (x86)\7-Zip\7z.exe
-IF NOT EXIST "%ZIP_PATH%" set ZIP_PATH=%ProgramFiles%\7-Zip\7z.exe
+SET EXIT_CODE=0
+
+if "%~1"=="" goto error
+if "%~2"=="" goto error
+if "%~3"=="" goto error
+
+SET "DEST_PATH=%~1\urban"
+SET "SRC_PATH=%~1"
+SET "ZIPFILENAME=%~2\MT92-2PIS010010-PIS2G-Ground_Server-V%3_urban.zip"
+
+
+set "ZIP_PATH=%ProgramFiles(x86)%\7-Zip\7z.exe"
+IF NOT EXIST "%ZIP_PATH%" set "ZIP_PATH=C:\Program Files (x86)\7-Zip\7z.exe"
+IF NOT EXIST "%ZIP_PATH%" set "ZIP_PATH=%ProgramFiles%\7-Zip\7z.exe"
 if NOT EXIST "%ZIP_PATH%" (	
 	echo 7-zip is not installed.
-	exit /B 20
+	SET EXIT_CODE=1
+	goto :End
 )
 
-if "%1"=="" goto error
-if "%2"=="" goto error
-if "%3"=="" goto error
+call :DoDeleteFile "%ZIPFILENAME%" || SET EXIT_CODE=2 && goto :End
 
+call :DoDeleteDir "%DEST_PATH%" || SET EXIT_CODE=3 && goto :End
 
-if EXIST "%2\MT92-2PIS010010-PIS2G-Ground_Server-V%3_urban.zip" (
-	DEL "%2\MT92-2PIS010010-PIS2G-Ground_Server-V%3_urban.zip"
-	if ERRORLEVEL 1 (
-		echo Cannot delete previous package: "%2\MT92-2PIS010010-PIS2G-Ground_Server-V%3_urban.zip"
-		exit /B 3
-	)
-)
-
-IF EXIST "%1\urban" (
-	rmdir /S /Q %1\urban
-	if ERRORLEVEL 1 (
-		echo Cannot remove the directory: "%1\urban"
-		exit /B 2
-	)
-)
-
-mkdir %1\urban
+mkdir "%DEST_PATH%"
 if ERRORLEVEL 1 (
-	echo Cannot create the directory: "%1\urban"
-	exit /B 2
+	echo Cannot create the directory: "%DEST_PATH%"
+	SET EXIT_CODE=4
+	goto :End
 )
+
+
+SET "FILE_LIST=DatapackageSetup.msi InfotainmentJournalingSetup.msi LiveVideoControlSetup.msi RemoteDataStoreSetup.msi"
+SET "FILE_LIST=%FILE_LIST% MaintenanceSetup.msi InstantMessageSetup.msi  RealTimeSetup.msi"
 
 SET "MISSINGFILES="
-xcopy /y %1\DatapackageSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%DatapackageSetup.msi "
-xcopy /y %1\InfotainmentJournalingSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%InfotainmentJournalingSetup.msi "
-xcopy /y %1\LiveVideoControlSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%LiveVideoControlSetup.msi "
-xcopy /y %1\RemoteDataStoreSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%RemoteDataStoreSetup.msi "
-echo f |xcopy /y %1\MissionUrbanSetup.msi %1\urban\MissionSetup.msi
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%MissionUrbanSetup.msi "
-xcopy /y %1\MaintenanceSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%MaintenanceSetup.msi "
-xcopy /y %1\InstantMessageSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%InstantMessageSetup.msi "
-echo f | xcopy /y %1\SessionUrbanSetup.msi %1\urban\SessionSetup.msi
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%SessionUrbanSetup.msi "
-xcopy /y %1\RealTimeSetup.msi %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%RealTimeSetup.msi "
-xcopy /Y "%~dp0setup_URBAN.bat" %1\urban\
-IF ERRORLEVEL 1 SET "MISSINGFILES=%MISSINGFILES%setup_URBAN.bat "
 
-IF "%MISSINGFILES%" neq "" GOTO CopyError
+for %%f in (%FILE_LIST%) do (
+	call :DoCopy "%SRC_PATH%\%%f" "%DEST_PATH%" || SET "MISSINGFILES=!MISSINGFILES!%%f "
+)
 
-"%ZIP_PATH%" a -r "%2\MT92-2PIS010010-PIS2G-Ground_Server-V%3_urban.zip" "%1\urban\*"
-IF ERRORLEVEL 1 GOTO ZipError
+call :DoCopy "%SRC_PATH%\MissionUrbanSetup.msi" "%DEST_PATH%\MissionSetup.msi" || SET "MISSINGFILES=%MISSINGFILES%MissionUrbanSetup.msi "
+call :DoCopy "%SRC_PATH%\SessionUrbanSetup.msi" "%DEST_PATH%\SessionSetup.msi" || SET "MISSINGFILES=%MISSINGFILES%SessionUrbanSetup.msi "
 
-rmdir /s /q %1\urban
+call :DoCopy "%~dp0setup_URBAN.bat" "%DEST_PATH%" || SET "MISSINGFILES=%MISSINGFILES%setup_URBAN.bat"
+
+IF "%MISSINGFILES%" neq "" (
+	echo ERROR: Some required files are missing or cannot be copied : %MISSINGFILES%
+	SET EXIT_CODE=5
+	goto :End
+)
+
+"%ZIP_PATH%" a -r "%ZIPFILENAME%" "%DEST_PATH%\*"
+IF ERRORLEVEL 1 (
+	echo Error while creating the archive file^("%ZIPFILENAME%"^)
+	SET EXIT_CODE=6
+	goto :End
+)
+
+call :DoDeleteDir "%DEST_PATH%"
 
 goto end
 
 :error
-echo syntax should be : PackageURBAN.bat "release directory path" "output directory path" "version" 
-exit /B 1
-
-:CopyError
-echo ERROR: Some required files are missing or cannot be copied : %MISSINGFILES%
-exit /B 2
-
-:ZipError
-echo Error while creating the archive file(Zip file)
-exit /B 3
+echo syntax should be : %~nx0 "release directory path" "output directory path" "version" 
+SET EXIT_CODE=7
+goto :End
 
 :end
-exit /B 0
+if "%EXIT_CODE%"=="0" echo %~nx0 succeeded
+if not "%EXIT_CODE%"=="0" echo %~nx0 failed with the EXIT_CODE : %EXIT_CODE%
+
+exit /B %EXIT_CODE%
+
+::=====================================================================================
+:: FUNCTION DoDeleteFile
+:: Delete a file
+:: Parameter: - name of the file to delete
+:: Return: 0 on success, 1 on failure
+::=====================================================================================
+:DoDeleteFile
+SETLOCAL
+SET RETCODE=0
+
+if exist "%~1" (
+	echo Delete file "%~1"
+	DEL /F /S /Q "%~1" 1>NUL
+	RMDIR /S /Q "%~1" 
+	IF ERRORLEVEL 1 (
+		echo Cannot remove file "%~1"
+		SET RETCODE=1
+	)
+)
+ENDLOCAL && EXIT /B %RETCODE%
+
+::=====================================================================================
+:: FUNCTION DoCopy
+:: Copy a file. On failure, proper error message is generated
+:: Parameter2: 1. name of the file to copy
+::             2. destination  
+:: Return: 0 on success, 1 on failure
+::=====================================================================================
+:DoCopy
+echo Copy "%~1" to "%~2"
+copy /B /V /Y "%~1" "%~2" || echo Failed to copy "%~1" to "%~2"
+exit /B %ERRORLEVEL%
+
+::=====================================================================================
+:: FUNCTION DoDeleteDir
+:: Delete a directory and all if content if exist.
+:: Parameter: - name of the directory to delete
+:: Return: 0 on success, 1 on failure
+::=====================================================================================
+:DoDeleteDir
+SETLOCAL
+SET RETCODE=0
+
+if exist "%~1" (
+	echo Delete directory "%~1"
+	DEL /F /S /Q "%~1" 1>NUL
+	RMDIR /S /Q "%~1" 
+	IF ERRORLEVEL 1 (
+		echo Cannot remove directory "%~1"
+		SET RETCODE=1
+	)
+)
+ENDLOCAL && EXIT /B %RETCODE%
