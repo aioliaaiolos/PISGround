@@ -56,10 +56,23 @@ IF ERRORLEVEL 1 (
 :: Verify required files
 ::=====================================================================================
 SET "REQUIRED_DIRS=GROUND.PLATEFORM GROUND.PLATEFORM\util GROUND.PLATEFORM\Common GROUND.PLATEFORM\WSDL PISEmbeddedSDK PISEmbeddedSDK\CONFIG PISEmbeddedSDK\URBAN PISEmbeddedSDK\SIF T2G_DELIVERY T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL"
-for %%D in (%REQUIRED_DIRS%) do if not exist "%TEMP_DIR%\%%D" echo Source code package is invalid: required directory "%%D" does not exist in archive file "%SRC_ZIP_FILE%".&& SET EXIT_CODE=6 && goto :End
+for %%D in (%REQUIRED_DIRS%) do (
+	if not exist "%TEMP_DIR%\%%D" ( 
+		echo Source code package is invalid: required directory "%%D" does not exist in archive file "%SRC_ZIP_FILE%".
+		SET EXIT_CODE=6 
+		goto :End
+	)
+)
 
 SET "REQUIRED_FILES=build.bat config.bat deliver.bat execute_test.bat GROUND.PLATEFORM\PISGround.sln PISEmbeddedSDK\SIF\wsdl\Schema\Common.xsd "
-for %%F in (%REQUIRED_FILES%) do if not exist "%TEMP_DIR%\%%F" echo Source code package is invlaid: required file "%%F does not exist in archive file "%SRC_ZIP_FILE%". && SET EXIT_CODE=7 && goto :End
+for %%F in (%REQUIRED_FILES%) do (
+	if not exist "%TEMP_DIR%\%%F" ( 
+		echo Source code package is invlaid: required file "%%F does not exist in archive file "%SRC_ZIP_FILE%".
+		SET EXIT_CODE=7
+		goto :End
+	)
+)
+
 
 ::=====================================================================================
 :: Call the build script

@@ -201,10 +201,12 @@ if not "%EXIT_CODE%" == "0" goto :End
 	echo Creating the zip file that contains the source code...>CON
 	echo Create the zip file that contains the source code			
 				
+	cd /D "%ROOT_PATH%" || echo Cannot move to directory "%ROOT_PATH%" && SET EXIT_CODE=27 && goto :End
+				
 	"%ZIP_PATH%" a "%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%" -xr@"%ROOT_PATH%GROUND.PLATEFORM\util\excludeFileList.txt"
 	if ERRORLEVEL 1 (
 		echo Failed to create the zip file "%DELIVERY_PATH%\GROUND_SOURCE_CODE\%Ground_SourceCode_ZIPFilename%"
-		SET EXIT_CODE=27
+		SET EXIT_CODE=28
 	)
 
 	:: When 7Zip fails, a .zip.tmp file might remains
