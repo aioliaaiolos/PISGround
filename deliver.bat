@@ -3,7 +3,7 @@
 :: Description    : Package the source code, PIS-Ground server setup(URBAN and SIVENG),
 ::                : and SDK (URBAN and SIVENG).
 ::                : Copy all packages into the GROUND_DELIVERY path.
-:: Updated        :	2016-09-09
+:: Updated        :	2016-09-12
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -216,8 +216,8 @@ if not "%EXIT_CODE%" == "0" goto :End
 :End
 IF "%EXIT_CODE%"=="0" (
 	if NOT EXIST "%VOUTE_PATH%" (
-		echo WARNING: Requisites files where not copied from the voute path because the folder "%VOUTE_PATH%" does not exist.
-		echo Ignore this problem if you perform a rebuild from a delivery source code package or you don't have access to the company network.
+		echo WARNING: Requisites files where not copied from the voute path because the folder "%VOUTE_PATH%" does not exist. >> "%~dp0deliverLog.txt"
+		echo Ignore this problem if you perform a rebuild from a delivery source code package or you don't have access to the company network. >> "%~dp0deliverLog.txt"
 	)
 )
  
