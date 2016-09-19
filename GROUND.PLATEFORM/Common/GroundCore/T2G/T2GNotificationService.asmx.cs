@@ -32,7 +32,7 @@ namespace PIS.Ground.Core.T2G.WebServices.Notification
         {
             if (Thread.CurrentThread.Name == null)
             {
-                Thread.CurrentThread.Name = (ServiceConfiguration.T2GApplicationId??String.Empty) + ".NotificationService";
+                Thread.CurrentThread.Name = (ServiceConfiguration.RunningServiceName??String.Empty) + ".NotificationService";
             }
         }
 

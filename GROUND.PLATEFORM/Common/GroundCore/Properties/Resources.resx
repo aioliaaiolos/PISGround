@@ -421,4 +421,18 @@
     <comment>{0} = missing parameter name
 {1} = Default value</comment>
   </data>
+  <data name="ConfigurationErrorInvalidIntegerParameterValueWithDefault" xml:space="preserve">
+    <value>The value '{0}' for the configuration parameter '{1}' is an invalid integer value. Default value '{2}' is used.</value>
+    <comment>{0}: The invalid value
+{1}: Name of the configuration parameter.
+{2}: Default value</comment>
+  </data>
+  <data name="OptionalConfigurationParameterMissing" xml:space="preserve">
+    <value>The configuration parameter '{0}' is missing. Default value '{1}' is used.</value>
+    <comment>{0}: Name of the configuration parameter.
+{1}: Default value</comment>
+  </data>
+  <data name="LogServiceName" xml:space="preserve">
+    <value>Current service name</value>
+  </data>
 </root>

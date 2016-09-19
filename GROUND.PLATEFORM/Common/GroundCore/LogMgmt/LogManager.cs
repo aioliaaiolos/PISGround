@@ -1,11 +1,11 @@
-﻿// <copyright file="LogManager.cs" company="Alstom Transport Telecite Inc.">
-// Copyright by Alstom Transport Telecite Inc. 2011.  All rights reserved.
-// 
-// The informiton contained herein is confidential property of Alstom
-// Transport Telecite Inc.  The use, copy, transfer or disclosure of such
-// information is prohibited except by express written agreement with Alstom
-// Transport Telecite Inc.
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="LogManager.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
+//---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.LogMgmt
 {
     using System;
@@ -14,7 +14,6 @@ namespace PIS.Ground.Core.LogMgmt
     using System.Text;
     using PIS.Ground.Core.Data;
     using PIS.Ground.Core.Properties;
-    using PIS.Ground.Core.Utility;
 
     /// <summary>
     /// Class used for logging the Traces that occurs during the different operations.
@@ -79,6 +78,9 @@ namespace PIS.Ground.Core.LogMgmt
                     break;
                 case TraceType.WARNING:
                     isActive = (_userLogLevel == TraceType.WARNING || _userLogLevel == TraceType.INFO || _userLogLevel == TraceType.DEBUG);
+                    break;
+                case TraceType.NONE:
+                    isActive = false;
                     break;
                 default:
                     isActive = (_userLogLevel == TraceType.DEBUG);
@@ -444,20 +446,45 @@ namespace PIS.Ground.Core.LogMgmt
             try
             {
                 StringBuilder errorMessage = new StringBuilder(500);
+                string messageTitle;
+                switch (objEntryType)
+                {
+                    case EventLogEntryType.Error:
+                        messageTitle = Resources.LogExceptionErrorMessage;
+                        break;
+                    case EventLogEntryType.Warning:
+                        messageTitle = Resources.LogExceptionWarningrMessage;
+                        break;
+                    case EventLogEntryType.Information:
+                        messageTitle = Resources.LogExceptionInfoMessage;
+                        break;
+                    case EventLogEntryType.FailureAudit: 
+                        /* Failure Audit is used for debugging message */
+                        messageTitle = Resources.LogExceptionDebugMessage;
+                        break;
+                    case EventLogEntryType.SuccessAudit:
+                        messageTitle = Resources.LogExceptionInfoMessage;
+                        break;
+                    default:
+                        messageTitle = Resources.LogExceptionErrorMessage;
+                        break;
+                }
+
+                errorMessage.Append(messageTitle);
                 if (strUserMessage == null)
                 {
 					if (objException != null)
 					{
-						errorMessage.Append(Resources.LogExceptionErrorMessage).Append(": ").AppendLine(objException.Message);
+						errorMessage.Append(": ").AppendLine(objException.Message);
 					}
 					else
 					{
-						errorMessage.Append(Resources.LogExceptionErrorMessage);
+						errorMessage.AppendLine();
 					}
                 }
                 else
                 {
-                    errorMessage.Append(Resources.LogExceptionErrorMessage).Append(": ").AppendLine(strUserMessage);
+                    errorMessage.Append(": ").AppendLine(strUserMessage);
                 }
 
                 errorMessage.Append(Resources.LogExceptionContext).Append(": ").AppendLine(strContext ?? string.Empty);
@@ -467,6 +494,7 @@ namespace PIS.Ground.Core.LogMgmt
                 string utcErrorDateTime = errorDateTime.ToUniversalTime().ToString(DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture);
                 errorMessage.Append(Resources.LogExceptionDateTimeUtc).Append(": ").AppendLine(utcErrorDateTime);
                 System.Threading.Thread currentThread = System.Threading.Thread.CurrentThread;
+                errorMessage.Append(Resources.LogServiceName).Append(": ").AppendLine(PIS.Ground.Core.Utility.ServiceConfiguration.RunningServiceName);
                 errorMessage.Append(Resources.LogExceptionThreadName).Append(": ").AppendLine(currentThread.Name);
                 errorMessage.Append(Resources.LogExceptionThreadId).Append(": ").Append(currentThread.ManagedThreadId).AppendLine();
                 errorMessage.AppendLine();
