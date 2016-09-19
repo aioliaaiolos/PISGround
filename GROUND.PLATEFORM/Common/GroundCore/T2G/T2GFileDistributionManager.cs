@@ -107,24 +107,44 @@ namespace PIS.Ground.Core.T2G
 
             _fileDistributionRequests = new Dictionary<Guid, FileDistributionRequest>();
 
-            try
+            _sleepTimeBetweenUploads = 60000;
+            string parameterValue = System.Configuration.ConfigurationSettings.AppSettings["WaitingTimeBetweenUploads"];
+            if (string.IsNullOrEmpty(parameterValue))
             {
-                _sleepTimeBetweenUploads = int.Parse(System.Configuration.ConfigurationSettings.AppSettings["WaitingTimeBetweenUploads"]) * 1000;
+                string message = string.Format(CultureInfo.CurrentCulture, Resources.OptionalConfigurationParameterMissing, "WaitingTimeBetweenUploads", _sleepTimeBetweenUploads);
+                LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", null, EventIdEnum.GroundCore);
             }
-            catch (Exception ex)
+            else
             {
-                _sleepTimeBetweenUploads = 60000;
-                LogManager.WriteLog(TraceType.WARNING, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", ex, EventIdEnum.GroundCore);
+                try
+                {
+                    _sleepTimeBetweenUploads = int.Parse(parameterValue) * 1000;
+                }
+                catch (Exception ex)
+                {
+                    string message = string.Format(CultureInfo.CurrentCulture, Resources.ConfigurationErrorInvalidIntegerParameterValueWithDefault, parameterValue, "WaitingTimeBetweenUploads", _sleepTimeBetweenUploads);
+                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", ex, EventIdEnum.GroundCore);
+                }
             }
 
-            try
+            _processingUploadTaskCountLimit = 1;
+            parameterValue = System.Configuration.ConfigurationSettings.AppSettings["MaxParallelUploadsLimit"];
+            if (string.IsNullOrEmpty(parameterValue))
             {
-                _processingUploadTaskCountLimit = int.Parse(System.Configuration.ConfigurationSettings.AppSettings["MaxParallelUploadsLimit"]);
+                string message = string.Format(CultureInfo.CurrentCulture, Resources.OptionalConfigurationParameterMissing, "MaxParallelUploadsLimit", _processingUploadTaskCountLimit);
+                LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", null, EventIdEnum.GroundCore);
             }
-            catch (Exception ex)
+            else
             {
-                _processingUploadTaskCountLimit = 1;
-                LogManager.WriteLog(TraceType.WARNING, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", ex, EventIdEnum.GroundCore);
+                try
+                {
+                    _processingUploadTaskCountLimit = int.Parse(parameterValue);
+                }
+                catch (Exception ex)
+                {
+                    string message = string.Format(CultureInfo.CurrentCulture, Resources.ConfigurationErrorInvalidIntegerParameterValueWithDefault, parameterValue, "MaxParallelUploadsLimit", _processingUploadTaskCountLimit);
+                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.Create", ex, EventIdEnum.GroundCore);
+                }
             }
 
             _processingUploadTaskCount = 0;

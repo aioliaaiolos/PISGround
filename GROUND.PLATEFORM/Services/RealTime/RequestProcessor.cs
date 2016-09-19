@@ -9,15 +9,14 @@
 
 using System;
 using System.Collections.Generic;
-using PIS.Ground.Core.Data;
-using PIS.Ground.Core.SessionMgmt;
-using PIS.Ground.Core.T2G;
-using System.Configuration;
-using PIS.Ground.Core.LogMgmt;
-using PIS.Ground.Core.Common;
-using System.ServiceModel;
 using System.Globalization;
+using System.Linq;
+using System.ServiceModel;
 using System.Text;
+using PIS.Ground.Core.Common;
+using PIS.Ground.Core.Data;
+using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.T2G;
 
 namespace PIS.Ground.RealTime
 {
@@ -125,7 +124,9 @@ namespace PIS.Ground.RealTime
 				args.SystemInformation != null &&
 				args.SystemInformation.IsOnline &&
 				args.SystemInformation.PisMission != null &&
-				args.SystemInformation.PisMission.MissionState == MissionStateEnum.MI)
+				args.SystemInformation.PisMission.MissionState == MissionStateEnum.MI &&
+                args.SystemInformation.ServiceList != null &&
+                args.SystemInformation.ServiceList.Any(s => s.ServiceId == (ushort)eServiceID.eSrvSIF_RealTimeServer && s.IsAvailable == true))
 			{
 				ProcessMissionDataSending(
 					args.SystemInformation.SystemId,
@@ -146,47 +147,59 @@ namespace PIS.Ground.RealTime
 
 			if (e != null)
 			{
-				if (!string.IsNullOrEmpty(e.MissionCode))
-				{
-					T2GManagerErrorEnum rqstResult = _t2gManager.GetAvailableElementDataListByMissionCode(e.MissionCode, out elementList);
+                // Skip the processing if PIS-Ground does not communicate with T2G.
+                if (_t2gManager.T2GServerConnectionStatus)
+                {
+                    if (!string.IsNullOrEmpty(e.MissionCode))
+                    {
+                        T2GManagerErrorEnum rqstResult = _t2gManager.GetAvailableElementDataListByMissionCode(e.MissionCode, out elementList);
 
-					if (rqstResult == T2GManagerErrorEnum.eSuccess)
-					{
-						if (elementList != null)
-						{
-							foreach (var element in elementList)
-							{
-								ProcessMissionDataSending(element.ElementNumber, e.MissionCode);
-							}
-						}
-					}
-					else
-					{
-						LogManager.WriteLog(TraceType.INFO, string.Format(Logs.INFO_NO_ELEMENTS_FOR_MISSION, e.MissionCode), "PIS.Ground.RealTime.RealTimeService.RTPISDataStoreChanged", null, EventIdEnum.RealTime);
-					}
-				}
+                        if (rqstResult == T2GManagerErrorEnum.eSuccess)
+                        {
+                            if (elementList != null)
+                            {
+                                foreach (var element in elementList)
+                                {
+                                    ProcessMissionDataSending(element.ElementNumber, e.MissionCode);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (LogManager.IsTraceActive(TraceType.INFO))
+                            {
+                                LogManager.WriteLog(TraceType.INFO, string.Format(CultureInfo.CurrentCulture, Logs.INFO_NO_ELEMENTS_FOR_MISSION, e.MissionCode), "PIS.Ground.RealTime.RealTimeService.RTPISDataStoreChanged", null, EventIdEnum.RealTime);
+                            }
+                        }
+                    }
 
-				if (e.StationCodeList != null
-					&& !string.IsNullOrEmpty(((KeyValuePair<string, List<string>>)e.StationCodeList).Key)
-					&& ((KeyValuePair<string, List<string>>)e.StationCodeList).Value.Count > 0)
-				{
-					if (elementList == null)
-					{
-						T2GManagerErrorEnum rqstResult = _t2gManager.GetAvailableElementDataListByMissionCode(((KeyValuePair<string, List<string>>)e.StationCodeList).Key, out elementList);
-						if (rqstResult != T2GManagerErrorEnum.eSuccess)
-						{
-							LogManager.WriteLog(TraceType.INFO, string.Format(Logs.INFO_NO_ELEMENTS_FOR_MISSION, e.MissionCode), "PIS.Ground.RealTime.RealTimeService.RTPISDataStoreChanged", null, EventIdEnum.RealTime);
-						}
-					}
+                    string missionCode;
+                    if (e.StationCodeList.HasValue
+                        && !string.IsNullOrEmpty((missionCode = e.StationCodeList.Value.Key))
+                        && e.StationCodeList.Value.Value.Count > 0)
+                    {
+                        if (elementList == null)
+                        {
+                            T2GManagerErrorEnum rqstResult = _t2gManager.GetAvailableElementDataListByMissionCode(missionCode, out elementList);
+                            if (rqstResult != T2GManagerErrorEnum.eSuccess && LogManager.IsTraceActive(TraceType.INFO))
+                            {
+                                LogManager.WriteLog(TraceType.INFO, string.Format(CultureInfo.CurrentCulture, Logs.INFO_NO_ELEMENTS_FOR_MISSION, missionCode), "PIS.Ground.RealTime.RealTimeService.RTPISDataStoreChanged", null, EventIdEnum.RealTime);
+                            }
+                        }
 
-					if (elementList != null)
-					{
-						foreach (var element in elementList)
-						{
-							ProcessStationDataSending(element.ElementNumber, (KeyValuePair<string, List<string>>)e.StationCodeList);
-						}
-					}
-				}
+                        if (elementList != null)
+                        {
+                            foreach (var element in elementList)
+                            {
+                                ProcessStationDataSending(element.ElementNumber, e.StationCodeList.Value);
+                            }
+                        }
+                    }
+                }
+                else if (LogManager.IsTraceActive(TraceType.DEBUG))
+                {
+                    LogManager.WriteLog(TraceType.DEBUG, Logs.SKIP_NOTIFICATION_RTPISDATASTORECHANGED_T2G_OFFLINE, "PIS.Ground.RealTime.RealTimeService.RTPISDataStoreChanged", null, EventIdEnum.RealTime);
+                }
 			}
 		}
 
@@ -224,11 +237,11 @@ namespace PIS.Ground.RealTime
 									rtinfoWeather);
 							Train.RealTime.SetMissionRealTimeResponse response = ((Train.RealTime.IRealTimeTrainService)lTrainClient).SetMissionRealTime(request);
 
-							ProcessCommandResultList(elementId, response.ResultList);
+							ProcessCommandResultList(elementId, missionCode, response.ResultList);
 						}
 						catch (Exception ex)
 						{
-							LogManager.WriteLog(TraceType.EXCEPTION, string.Format(Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", ex, EventIdEnum.RealTime);
+							LogManager.WriteLog(TraceType.EXCEPTION, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", ex, EventIdEnum.RealTime);
 						}
 						finally
 						{
@@ -241,13 +254,17 @@ namespace PIS.Ground.RealTime
 				}
 				catch (Exception ex)
 				{
-					LogManager.WriteLog(TraceType.EXCEPTION, string.Format(Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", ex, EventIdEnum.RealTime);
+					LogManager.WriteLog(TraceType.EXCEPTION, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", ex, EventIdEnum.RealTime);
 				}
 			}
-			else
-			{
-				LogManager.WriteLog(TraceType.ERROR, string.Format(Logs.ERROR_GET_SERVICE_DATA_FOR_ELEMENT, eServiceID.eSrvSIF_RealTimeServer, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", null, EventIdEnum.RealTime);
-			}
+			else if (t2gResult == T2GManagerErrorEnum.eElementNotFound)
+            {
+                LogManager.WriteLog(TraceType.WARNING, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_GET_SERVICE_DATA_FOR_ELEMENT, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", null, EventIdEnum.RealTime);
+            }
+            else if (LogManager.IsTraceActive(TraceType.DEBUG))
+            {
+                LogManager.WriteLog(TraceType.DEBUG, string.Format(CultureInfo.CurrentCulture, Logs.DEBUG_GET_SERVICE_DATA_FOR_ELEMENT, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessMissionDataSending", null, EventIdEnum.RealTime);
+            }
 		}
 
 		/// <summary>Process the station data sending.</summary>
@@ -262,145 +279,191 @@ namespace PIS.Ground.RealTime
 				stationDataList = new List<RealTimeStationStatusType>();
 			}
 
-			if (stationDataList.Count == 0)
-			{
-				RealTimeRetrieveStationListResult result = new RealTimeRetrieveStationListResult();
-				AvailableElementData elementData = null;
+            if (stationDataList.Count == 0)
+            {
+                RealTimeRetrieveStationListResult result = new RealTimeRetrieveStationListResult();
+                AvailableElementData elementData = null;
 
-				T2GManagerErrorEnum t2gTmpResult = _t2gManager.GetAvailableElementDataByElementNumber(elementId, out elementData);
+                T2GManagerErrorEnum t2gTmpResult = _t2gManager.GetAvailableElementDataByElementNumber(elementId, out elementData);
 
-				if (t2gTmpResult == T2GManagerErrorEnum.eSuccess)
-				{
-					RealTimeService.GetStationListFromLMTDataBase(stationCodeList.Key, elementId, elementData, ref result);
+                if (t2gTmpResult == T2GManagerErrorEnum.eSuccess)
+                {
+                    RealTimeService.GetStationListFromLMTDataBase(stationCodeList.Key, elementId, elementData, ref result);
 
-					if (result.ResultCode == RealTimeServiceErrorEnum.RequestAccepted)
-					{
-						foreach (var station in result.StationList)
-						{
-							stationDataList.Add(new RealTimeStationStatusType() { StationID = station });
-						}
-					}
-					else
-					{
-						LogManager.WriteLog(TraceType.ERROR, string.Format(Logs.ERROR_ACCESSING_STATIONLIST_FOR_ELEMENT, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
-					}
-				}
-				else
-				{
-					LogManager.WriteLog(TraceType.ERROR, string.Format(Logs.ERROR_ACCESSING_STATIONLIST_FOR_ELEMENT, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
-				}
-			}
+                    if (result.ResultCode == RealTimeServiceErrorEnum.RequestAccepted)
+                    {
+                        stationDataList.Capacity = result.StationList.Count;
+                        foreach (var station in result.StationList)
+                        {
+                            stationDataList.Add(new RealTimeStationStatusType() { StationID = station });
+                        }
+                    }
+                    else
+                    {
+                        LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_ACCESSING_STATIONLIST_FOR_ELEMENT, elementId, "GetStationListFromLMTDataBase", result.ResultCode), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
+                    }
+                }
+                else
+                {
+                    LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_ACCESSING_STATIONLIST_FOR_ELEMENT, elementId, "GetAvailableElementDataByElementNumber", t2gTmpResult), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
+                }
+            }
 
+            // Updating the train is important only when the data of at least one station need to be updated.
+            if (stationDataList.Count != 0)
+            {
+                ServiceInfo serviceInfo = null;
+                T2GManagerErrorEnum t2gResult = _t2gManager.GetAvailableServiceData(elementId, (int)eServiceID.eSrvSIF_RealTimeServer, out serviceInfo);
 
-			ServiceInfo serviceInfo = null;
-			T2GManagerErrorEnum t2gResult = _t2gManager.GetAvailableServiceData(elementId, (int)eServiceID.eSrvSIF_RealTimeServer, out serviceInfo);
+                if (t2gResult == T2GManagerErrorEnum.eSuccess)
+                {
+                    string endpoint = "http://" + serviceInfo.ServiceIPAddress + ":" + serviceInfo.ServicePortNumber;
+                    try
+                    {
+                        // Call RealTime train service and send the request.
+                        using (Train.RealTime.RealTimeTrainServiceClient lTrainClient = new Train.RealTime.RealTimeTrainServiceClient("RealTimeTrainEndpoint", endpoint))
+                        {
+                            try
+                            {
+                                Train.RealTime.ListOfStationDataType stationDataListType = null;
 
-			if (t2gResult == T2GManagerErrorEnum.eSuccess)
-			{
-				string endpoint = "http://" + serviceInfo.ServiceIPAddress + ":" + serviceInfo.ServicePortNumber;
-				try
-				{
-					// Call RealTime train service and send the request.
-					using (Train.RealTime.RealTimeTrainServiceClient lTrainClient = new Train.RealTime.RealTimeTrainServiceClient("RealTimeTrainEndpoint", endpoint))
-					{
-						try
-						{
-							Train.RealTime.ListOfStationDataType stationDataListType = null;
+                                RealTimeUtils.ConvertGroundStationDataToTrainStationData(
+                                    stationDataList,
+                                    out stationDataListType);
 
-							RealTimeUtils.ConvertGroundStationDataToTrainStationData(
-								stationDataList,
-								out stationDataListType);
+                                Train.RealTime.SetStationRealTimeRequest request = new Train.RealTime.SetStationRealTimeRequest(stationCodeList.Key, stationDataListType);
+                                Train.RealTime.SetStationRealTimeResponse response = ((Train.RealTime.IRealTimeTrainService)lTrainClient).SetStationRealTime(request);
 
-							Train.RealTime.SetStationRealTimeRequest request = new Train.RealTime.SetStationRealTimeRequest(stationCodeList.Key, stationDataListType);
-							Train.RealTime.SetStationRealTimeResponse response = ((Train.RealTime.IRealTimeTrainService)lTrainClient).SetStationRealTime(request);
-
-							ProcessCommandResultList(elementId, response.ResultList);
-						}
-						catch (Exception ex)
-						{
-							LogManager.WriteLog(TraceType.EXCEPTION, string.Format(Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", ex, EventIdEnum.RealTime);
-						}
-						finally
-						{
-							if (lTrainClient.State == CommunicationState.Faulted)
-							{
-								lTrainClient.Abort();
-							}
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					LogManager.WriteLog(TraceType.EXCEPTION, string.Format(Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", ex, EventIdEnum.RealTime);
-				}
-			}
-			else
-			{
-				LogManager.WriteLog(TraceType.ERROR, string.Format(Logs.ERROR_GET_SERVICE_DATA_FOR_ELEMENT, eServiceID.eSrvSIF_RealTimeServer, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
-			}
-		}
+                                ProcessCommandResultList(elementId, stationCodeList.Key, response.ResultList);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogManager.WriteLog(TraceType.EXCEPTION, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", ex, EventIdEnum.RealTime);
+                            }
+                            finally
+                            {
+                                if (lTrainClient.State == CommunicationState.Faulted)
+                                {
+                                    lTrainClient.Abort();
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogManager.WriteLog(TraceType.EXCEPTION, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED, elementId), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", ex, EventIdEnum.RealTime);
+                    }
+                }
+                else if (t2gResult == T2GManagerErrorEnum.eElementNotFound)
+                {
+                    LogManager.WriteLog(TraceType.WARNING, string.Format(CultureInfo.CurrentCulture, Logs.ERROR_GET_SERVICE_DATA_FOR_ELEMENT, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
+                }
+                else if (LogManager.IsTraceActive(TraceType.DEBUG))
+                {
+                    LogManager.WriteLog(TraceType.DEBUG, string.Format(CultureInfo.CurrentCulture, Logs.DEBUG_GET_SERVICE_DATA_FOR_ELEMENT, elementId, t2gResult), "PIS.Ground.RealTime.RealTimeService.ProcessStationDataSending", null, EventIdEnum.RealTime);
+                }
+            }
+        }
 
 		/// <summary>Process the command result list.</summary>
 		/// <param name="elementId">Identifier for the element.</param>
+        /// <param name="missionCode">The default mission code.</param>
 		/// <param name="listOfResultType">Type of the list of result.</param>
-		private static void ProcessCommandResultList(string elementId, PIS.Train.RealTime.ListOfResultType listOfResultType)
-		{
-			if (listOfResultType != null)
-			{
-                StringBuilder logStr = new StringBuilder(1000);
-				foreach (var resultType in listOfResultType)
-				{
-                    logStr.Length = 0;
-					TraceType logLevel = TraceType.EXCEPTION;
+        private static void ProcessCommandResultList(string elementId, string missionCode, PIS.Train.RealTime.ListOfResultType listOfResultType)
+        {
+            if (listOfResultType != null)
+            {
+                TraceType logLevel = TraceType.NONE;
 
-					switch (resultType.ResultCode)
-					{
-						case PIS.Train.RealTime.ResultCodeEnum.OK:
-							logLevel = TraceType.INFO;
-							break;
-						case PIS.Train.RealTime.ResultCodeEnum.NotCurrentMission:
-						case PIS.Train.RealTime.ResultCodeEnum.StationNotInTrainRoute:
-							logLevel = TraceType.WARNING;
-							break;
-						case PIS.Train.RealTime.ResultCodeEnum.ComplexError:
+                // Determinate the log level.
+                foreach (var resultType in listOfResultType)
+                {
+                    if (resultType == null)
+                    {
+                        continue;
+                    }
+
+                    switch (resultType.ResultCode)
+                    {
+                        case PIS.Train.RealTime.ResultCodeEnum.OK:
+                            if (logLevel == TraceType.NONE)
+                            {
+                                logLevel = TraceType.INFO;
+                            }
+                            break;
+                        case PIS.Train.RealTime.ResultCodeEnum.NotCurrentMission:
+                        case PIS.Train.RealTime.ResultCodeEnum.StationNotInTrainRoute:
+                            if (logLevel != TraceType.ERROR)
+                            {
+                                logLevel = TraceType.WARNING;
+                            }
+                            break;
+                        case PIS.Train.RealTime.ResultCodeEnum.ComplexError:
                         case PIS.Train.RealTime.ResultCodeEnum.InvalidSoapRequest:
                         case PIS.Train.RealTime.ResultCodeEnum.Error:
-						default:
-							logLevel = TraceType.ERROR;
-							break;
-					}
+                        default:
+                            logLevel = TraceType.ERROR;
+                            break;
+                    }
 
-					logStr.AppendFormat(CultureInfo.CurrentCulture,
-						Logs.RESULT_PROCESS_CMD,
-						elementId,
-						resultType.InformationType,
-						resultType.MissionCode,
-						resultType.StationCode);
+                    if (logLevel == TraceType.ERROR)
+                    {
+                        break;
+                    }
+                }
 
-					foreach (var complexError in resultType.ComplexErrorList)
-					{
-						foreach (var parameterError in complexError.ParameterErrorList)
-						{
-							logStr.AppendFormat(CultureInfo.CurrentCulture,
-								Logs.RESULT_PROCESS_PARAMETER,
-								parameterError.ParameterName,
-								parameterError.ErrorMessage,
-								parameterError.ErroneousValue);
-						}
-					}
+                // Generate the log string
+                if (LogManager.IsTraceActive(logLevel))
+                {
+                    StringBuilder logStr = new StringBuilder(500 + 100 * listOfResultType.Count);
 
-					LogManager.WriteLog(logLevel, logStr.ToString(), "PIS.Ground.RealTime.RequestProcessor.ProcessCommandResultList", null, EventIdEnum.RealTime);
-				}
-			}
-		}
+                    logStr.AppendFormat(CultureInfo.CurrentCulture,
+                            Logs.RESULT_PROCESS_TITLE,
+                            elementId,
+                            missionCode);
+                    logStr.AppendLine();
+                    foreach (var resultType in listOfResultType)
+                    {
+                        if (resultType == null)
+                        {
+                            continue;
+                        }
 
-		#endregion
+                        if (!string.IsNullOrEmpty(resultType.StationCode))
+                        {
+                            logStr.AppendFormat(CultureInfo.CurrentCulture, Logs.RESULT_PROCESS_STATION_UPDATE, resultType.InformationType, resultType.StationCode, resultType.ResultCode);
+                        }
+                        else
+                        {
+                            logStr.AppendFormat(CultureInfo.CurrentCulture, Logs.RESULT_PROCESS_MISSION_UPDATE, resultType.InformationType, resultType.ResultCode);
+                        }
 
-		#region properties
+                        logStr.AppendLine();
 
-		#endregion
+                        if (resultType.ComplexErrorList != null)
+                        {
+                            foreach (var complexError in resultType.ComplexErrorList)
+                            {
+                                if (complexError.ParameterErrorList != null)
+                                {
+                                    foreach (var parameterError in complexError.ParameterErrorList)
+                                    {
+                                        logStr.AppendFormat(CultureInfo.CurrentCulture,
+                                            Logs.RESULT_PROCESS_PARAMETER,
+                                            parameterError.ParameterName,
+                                            parameterError.ErrorMessage,
+                                            parameterError.ErroneousValue);
+                                        logStr.AppendLine();
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-		#region methods
+                    LogManager.WriteLog(logLevel, logStr.ToString(), "PIS.Ground.RealTime.RequestProcessor.ProcessCommandResultList", null, EventIdEnum.RealTime);
+                }
+            }
+        }
 
 		#endregion
 	}

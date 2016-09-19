@@ -559,12 +559,21 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>Search AvailableElementData By Mission CommercialNumber.</summary>
 		/// <param name="commercialNumber">Mission Commercial Number.</param>
 		/// <param name="elementDataList">[out] Information describing the list available element.</param>
-		/// <returns>The available element data list by mission code.</returns>        
-		public T2GManagerErrorEnum GetAvailableElementDataListByMissionCode(string commercialNumber, out ElementList<AvailableElementData> elementDataList)
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Found at least one element.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>No element match the provided mission commercial number.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        public T2GManagerErrorEnum GetAvailableElementDataListByMissionCode(string commercialNumber, out ElementList<AvailableElementData> elementDataList)
 		{
-			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+			    LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for commercial number : '" + commercialNumber??string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            }
 
-			elementDataList = new ElementList<AvailableElementData>(); // always return an object
 
 			T2GManagerErrorEnum result = T2GManagerErrorEnum.eFailed;
 
@@ -583,7 +592,8 @@ namespace PIS.Ground.Core.T2G
 			}
 			else
 			{
-				result = T2GManagerErrorEnum.eT2GServerOffline;
+                elementDataList = new ElementList<AvailableElementData>(); // always return an object
+                result = T2GManagerErrorEnum.eT2GServerOffline;
 			}
 
 			return result;
@@ -595,7 +605,10 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>ElementList of AvailableElementData.</returns>
 		public T2GManagerErrorEnum GetAvailableElementDataListByMissionOperatorCode(string missionOperatorCode, out ElementList<AvailableElementData> elementDataList)
 		{
-			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for mission operator code: '" + missionOperatorCode?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            }
 
 			elementDataList = new ElementList<AvailableElementData>(); // always return an object
 
@@ -625,12 +638,21 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>Search AvailableElementData By ElementNumber.</summary>
 		/// <param name="elementNumber">element number.</param>
 		/// <param name="objAvailableElementData">[out] Information describing the object available element.</param>
-		/// <returns>if found return AvailableElementData else null.</returns>
-		public T2GManagerErrorEnum GetAvailableElementDataByElementNumber(string elementNumber, out AvailableElementData objAvailableElementData)
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Queryed element found.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried element is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        public T2GManagerErrorEnum GetAvailableElementDataByElementNumber(string elementNumber, out AvailableElementData objAvailableElementData)
 		{
-			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataByElementNumber called", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataByElementNumber called for element '" + elementNumber ?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+            }
 
-			objAvailableElementData = new AvailableElementData(); // always return an object
 
 			T2GManagerErrorEnum result = T2GManagerErrorEnum.eFailed;
 
@@ -646,12 +668,14 @@ namespace PIS.Ground.Core.T2G
 				}
 				else
 				{
-					result = T2GManagerErrorEnum.eElementNotFound;
+                    objAvailableElementData = new AvailableElementData(); // always return an object
+                    result = T2GManagerErrorEnum.eElementNotFound;
 				}
 			}
 			else
 			{
-				result = T2GManagerErrorEnum.eT2GServerOffline;
+                objAvailableElementData = new AvailableElementData(); // always return an object
+                result = T2GManagerErrorEnum.eT2GServerOffline;
 			}
 
 			return result;

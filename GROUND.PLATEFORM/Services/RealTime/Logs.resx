@@ -117,53 +117,72 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DEBUG_GET_SERVICE_DATA_FOR_ELEMENT" xml:space="preserve">
+    <value>Data of Real-Time service for element '{0}' is temporarily unavailable: {1}.</value>
+    <comment>{0}: Element ID
+{1}: Error Id</comment>
+  </data>
   <data name="ERROR_ACCESSING_STATIONLIST_FOR_ELEMENT" xml:space="preserve">
-    <value>Fail do get station list for element {0}.</value>
-    <comment>{0}: Element ID</comment>
+    <value>Fail do get station list for element '{0}': method '{1}' returned the error '{2}'.</value>
+    <comment>{0}: Element ID
+{1}: Method that returned an error.
+{2}: Error code of the method</comment>
   </data>
   <data name="ERROR_FAILED_SEND_REQUEST_TO_EMBEDDED" xml:space="preserve">
-    <value>Fail to send request to embedded {0}.</value>
+    <value>Fail to send request to embedded real-time service for element '{0}'.</value>
     <comment>{0}: Element ID</comment>
   </data>
   <data name="ERROR_GET_SERVICE_DATA_FOR_ELEMENT" xml:space="preserve">
-    <value>Error while requesting service {0} data for element {1} : {2}.</value>
-    <comment>{0}: service Id
-{1}: Element ID
-{2}: Error Id</comment>
+    <value>Error while requesting data of real-time service for element '{0}' : {1}.</value>
+    <comment>{0}: Element ID
+{1}: Error Id</comment>
   </data>
   <data name="ERROR_RETRIEVESTATIONLIST_CANT_OPEN_PACKAGE" xml:space="preserve">
-    <value>Failed to open package LMT version {0} for element {1}.</value>
+    <value>Failed to open package LMT version '{0}' for element '{1}'.</value>
     <comment>{0} : lmt package version
 {1} : Element ID</comment>
   </data>
   <data name="ERROR_RETRIEVESTATIONLIST_LMT_DB_NOT_FOUND" xml:space="preserve">
-    <value>Failed to find LMT database inside package version {0} for element {1}.</value>
+    <value>Failed to find LMT database inside package version {0} for element '{1}'.</value>
     <comment>{0} : lmt package version
 {1} : Element ID</comment>
   </data>
   <data name="ERROR_RETRIEVESTATIONLIST_UNKNOWN_EMBEDDED_LMT" xml:space="preserve">
-    <value>Embedded LMT version {0} not found in RemoteDataStore.</value>
+    <value>Embedded LMT version '{0}' not found in RemoteDataStore.</value>
     <comment>{0} : lmt package version</comment>
   </data>
   <data name="ERROR_UNKNOWN" xml:space="preserve">
     <value>An error occurs when using RemoteDataStoreProxy.</value>
   </data>
   <data name="INFO_NO_ELEMENTS_FOR_MISSION" xml:space="preserve">
-    <value>No elements are currently running mission {0}.</value>
+    <value>No elements are currently running mission '{0}'.</value>
     <comment>{0}: mission code</comment>
   </data>
-  <data name="RESULT_PROCESS_CMD" xml:space="preserve">
-    <value>Response from element {0} for {1} data processing for mission {2}, station {3}:\n</value>
-    <comment>{0}: ElementID
-{1}: Data type
-{2}: Mission Code
-{3}: Station Code
-{4}: Paramater name</comment>
+  <data name="RESULT_PROCESS_MISSION_UPDATE" xml:space="preserve">
+    <value>    - Update {0} data of mission terminated with result code '{1}'.</value>
+    <comment>{0}: information type(weather, delay, etc.)
+{1}: result code</comment>
   </data>
   <data name="RESULT_PROCESS_PARAMETER" xml:space="preserve">
-    <value>For parameter {0}, result message is {1} ({2})</value>
+    <value>        Validation of parameter '{0}' failed with message message: {1}.
+        Parameter value: '{2}'.</value>
     <comment>{0}: Parameter name
-{1}: Result code
+{1}: Result message
 {2}: Parameter value</comment>
+  </data>
+  <data name="RESULT_PROCESS_STATION_UPDATE" xml:space="preserve">
+    <value>    - Update {0} data of station '{1}' terminated with result code '{2}'.</value>
+    <comment>{0}: information type(weather, delay, etc.)
+{1}: station code
+{2}: result code</comment>
+  </data>
+  <data name="RESULT_PROCESS_TITLE" xml:space="preserve">
+    <value>Response of update real-time information from element '{0}' for mission '{1}':</value>
+    <comment>{0}: ElementID
+{1}: Mission Code
+</comment>
+  </data>
+  <data name="SKIP_NOTIFICATION_RTPISDATASTORECHANGED_T2G_OFFLINE" xml:space="preserve">
+    <value>The processing of notification RTPISDataStoreChanged skipped because T2G is offline.</value>
   </data>
 </root>

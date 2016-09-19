@@ -88,8 +88,15 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>Gets available element data by element number.</summary>
 		/// <param name="elementNumber">The element number.</param>
 		/// <param name="objAvailableElementData">[out] Information describing the object available element.</param>
-		/// <returns>T2GManagerErrorEnum.</returns>
-		T2GManagerErrorEnum GetAvailableElementDataByElementNumber(string elementNumber, out PIS.Ground.Core.Data.AvailableElementData objAvailableElementData);
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Queryed element found.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>Queried element is unknown.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        T2GManagerErrorEnum GetAvailableElementDataByElementNumber(string elementNumber, out PIS.Ground.Core.Data.AvailableElementData objAvailableElementData);
 
 		/// <summary>Gets available element data by target address.</summary>
 		/// <param name="targetAddress">Target address.</param>
@@ -105,8 +112,15 @@ namespace PIS.Ground.Core.T2G
 		/// <summary>Gets available element data list by mission code.</summary>
 		/// <param name="missionCommercialNumber">The mission commercial number.</param>
 		/// <param name="lstAvailableElementData">[out] Information describing the list available element.</param>
-		/// <returns>T2GManagerErrorEnum.</returns>
-		T2GManagerErrorEnum GetAvailableElementDataListByMissionCode(string missionCommercialNumber, out PIS.Ground.Core.Data.ElementList<PIS.Ground.Core.Data.AvailableElementData> lstAvailableElementData);
+        /// <returns>The success of the operation. Possible values are:
+        /// <list type="table">
+        /// <listheader><term>Error code</term><description>Description</description></listheader>
+        /// <item><term>T2GManagerErrorEnum.eSuccess</term><description>Found at least one element.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eElementNotFound</term><description>No element match the provided mission commercial number.</description></item>
+        /// <item><term>T2GManagerErrorEnum.eT2GServerOffline</term><description>T2G services are down.</description></item>
+        /// </list>
+        /// </returns>
+        T2GManagerErrorEnum GetAvailableElementDataListByMissionCode(string missionCommercialNumber, out PIS.Ground.Core.Data.ElementList<PIS.Ground.Core.Data.AvailableElementData> lstAvailableElementData);
 
 		/// <summary>Gets available element data list by mission operator code.</summary>
 		/// <param name="missionOperatorCode">The mission operator code.</param>
