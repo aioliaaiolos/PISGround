@@ -125,7 +125,7 @@ namespace DataPackageTests.ServicesStub
         /// <returns>
         ///   <c>true</c> if session is valid; otherwise, <c>false</c>.
         /// </returns>
-        public bool isSessionValid(int sessionId)
+        public bool IsSessionValid(int sessionId)
         {
             lock (_sessionLock)
             {
@@ -134,11 +134,27 @@ namespace DataPackageTests.ServicesStub
         }
 
         /// <summary>
+        /// Determines whether the specified system identifier is online or not.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified system identifier is online; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSystemOnline(string systemId)
+        {
+            lock (_systemInfoLock)
+            {
+                SystemInfoStruct systemInfo;
+                return _systems.TryGetValue(systemId, out systemInfo) && systemInfo.isOnline;
+            }
+        }
+
+        /// <summary>
         /// Gets the notification URL associated to a session.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <returns>The notification url associated to the session. Empty string if no url.</returns>
-        public string getNotificationUrl(int sessionId)
+        public string GetNotificationUrl(int sessionId)
         {
             string notificationUrl;
             lock (_sessionLock)
@@ -166,7 +182,7 @@ namespace DataPackageTests.ServicesStub
         /// <param name="status">The status.</param>
         /// <param name="missionId">The mission identifier.</param>
         /// <param name="communicationLink">The communication link.</param>
-        public void updateSystem(string systemId, int vehicleId, bool isOnline, uint status, string missionId, CommLinkEnum communicationLink, string IPAddress)
+        public void UpdateSystem(string systemId, int vehicleId, bool isOnline, uint status, string missionId, CommLinkEnum communicationLink, string IPAddress)
         {
             SystemInfoStruct newSystemInfo = new SystemInfoStruct();
             newSystemInfo.communicationLink = communicationLink;
@@ -328,7 +344,7 @@ namespace DataPackageTests.ServicesStub
         /// <exception cref="FaultException">Invalid session provided</exception>
         public void keepAliveSession(int sessionId, int seconds)
         {
-            if (!isSessionValid(sessionId))
+            if (!IsSessionValid(sessionId))
             {
                 throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
             }
@@ -341,7 +357,7 @@ namespace DataPackageTests.ServicesStub
         /// <returns>The list of know sessions</returns>
         public enumSessionsOutput enumSessions(enumSessionsInput request)
         {
-            if (!isSessionValid(request.Body.sessionId))
+            if (!IsSessionValid(request.Body.sessionId))
                 throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
 
             throw FaultExceptionFactory.CreateNotImplementedFault();
@@ -354,7 +370,7 @@ namespace DataPackageTests.ServicesStub
         /// <returns>The list of know systems.</returns>
         public enumSystemsOutput enumSystems(enumSystemsInput request)
         {
-            if (!isSessionValid(request.Body.sessionId))
+            if (!IsSessionValid(request.Body.sessionId))
             {
                 throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
             }

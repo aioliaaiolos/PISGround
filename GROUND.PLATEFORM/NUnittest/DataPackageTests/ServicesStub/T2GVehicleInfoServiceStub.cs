@@ -4,13 +4,18 @@ using System.Linq;
 using System.Text;
 using System.ServiceModel;
 using DataPackageTests.T2GServiceInterface.VehicleInfo;
+using PIS.Ground.Core.Common;
 
 using FieldStruct = DataPackageTests.T2GServiceInterface.Notification.fieldStruct;
 using NotificationClient = DataPackageTests.T2GServiceInterface.Notification.NotificationPortTypeClient;
+using System.Globalization;
 
 
 namespace DataPackageTests.ServicesStub
 {
+
+    #region T2G Message definition
+
     /// <summary>
     /// Base class for T2G Messages
     /// </summary>
@@ -383,11 +388,99 @@ namespace DataPackageTests.ServicesStub
         }
     }
 
+    #endregion
+
+    #region T2G Service data definition
+
+    /// <summary>
+    /// Describe the service data
+    /// </summary>
+    /// <seealso cref="DataPackageTests.T2GServiceInterface.Notification.serviceStruct" />
+    public class ServiceInfoData : DataPackageTests.T2GServiceInterface.Notification.serviceStruct
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceInfoData"/> class.
+        /// </summary>
+        /// <param name="serviceId">The service identifier.</param>
+        /// <param name="serviceName">Name of the service.</param>
+        /// <param name="isAvailable">if set to <c>true</c> [is available].</param>
+        /// <param name="IPAddress">The ip address.</param>
+        /// <param name="port">The port.</param>
+        /// <param name="vehicleId">The vehicle identifier.</param>
+        /// <param name="carId">The car identifier.</param>
+        public ServiceInfoData(ushort serviceId, string serviceName, bool isAvailable, string IPAddress, ushort port, ushort vehicleId, ushort carId)
+        {
+            this.vehiclePhysicalId = vehicleId;
+            this.carId = carId;
+            this.carIdStr = carId.ToString();
+            this.deviceId = 200;
+            this.deviceName = string.Empty;
+            this.serviceId = serviceId;
+            this.name = serviceName;
+            this.operatorId = 200;
+            this.AID = "MEDIA";
+            this.SID = string.Format(CultureInfo.InvariantCulture, "TRAIN={0}.CAR-{1}.VMC-1", vehicleId, carId);
+            this.serviceIPAddress = IPAddress;
+            this.servicePortNumber = port;
+            this.isAvailable = isAvailable;
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns>The cloned instance</returns>
+        public ServiceInfoData Clone()
+        {
+            return (ServiceInfoData)this.MemberwiseClone();
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ServiceInfoData);
+        }
+
+        /// <summary>
+        /// Equalses the specified other.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        ///   <c>true</c> if the specified <see cref="ServiceInfoData" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Equals(ServiceInfoData other)
+        {
+            return (other != null &&
+                other.vehiclePhysicalId == vehiclePhysicalId &&
+                other.carId == carId &&
+                other.carIdStr == carIdStr &&
+                other.deviceId == deviceId &&
+                other.deviceName == deviceName &&
+                other.serviceId == serviceId &&
+                other.name == name &&
+                other.operatorId == operatorId &&
+                other.AID == AID &&
+                other.SID == SID &&
+                other.serviceIPAddress == serviceIPAddress &&
+                other.servicePortNumber == servicePortNumber &&
+                other.isAvailable == isAvailable);
+        }
+    }
+
+    #endregion
+
+
     /// <summary>
     /// Simulate an implementation of service T2G Vehicle-Info.
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.VehicleInfo.VehicleInfoPortType" />
-    /// <remarks>Only subscribe, unsubscribe to service and message notification are implemented</remarks>
+    /// <remarks>Only subscribe, unsubscribe to service and message notification are implemented.
+    /// Support subscription to all systems only.
+    /// Only one subscription per message or service is supported.</remarks>
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.VehicleInfo.VehicleInfoPortType")]
     class T2GVehicleInfoServiceStub : VehicleInfoPortType
     {
@@ -398,26 +491,28 @@ namespace DataPackageTests.ServicesStub
         public const int VersionMessageIndex = 2;
 
         private static readonly string[] SupportedMessages = { BaselineMessage.MessageIdentifier, MissionMessage.MessageIdentifier, VersionMessage.MessageIdentifier };
+        private static readonly ushort[] SupportedServices = { (ushort)eServiceID.eSrvSIF_DataPackageServer,
+                                                            (ushort)eServiceID.eSrvSIF_InstantMessageServer,
+                                                            (ushort)eServiceID.eSrvSIF_ReportExchangeServer,
+                                                            (ushort)eServiceID.eSrvSIF_MaintenanceServer,
+                                                            (ushort)eServiceID.eSrvSIF_MissionServer,
+		                                                    (ushort)eServiceID.eSrvSIF_LiveVideoControlServer,
+                                                            (ushort)eServiceID.eSrvSIF_RealTimeServer};
 
         private T2GIdentificationServiceStub _identificationService;
 
         private object _messageSubscriptionLock = new object();
 
         /// <summary>
-        /// The message subscriptions. Key is notification url, Value is the subscription id. 
-        /// The array is indexed by message identifier index defined by SupportedMessages variable.
+        /// An indicator that indicates if a subscription exist for every message defined in SupportedMessages variables.
         /// </summary>
-        private Dictionary<string, int>[] _messageSubscriptions = {
-                                                                       new Dictionary<string, int>(10, StringComparer.OrdinalIgnoreCase),
-                                                                       new Dictionary<string, int>(10, StringComparer.OrdinalIgnoreCase),
-                                                                       new Dictionary<string, int>(10, StringComparer.OrdinalIgnoreCase),
-                                                                   };
-        private int _nextMessageSubscriptionId = 1;
+        private bool[] _messageSubscriptions = { false, false, false };
+        private string _messageNotificationUrl = string.Empty;
 
         private object _messageDataLock = new object();
 
         /// <summary>
-        /// The messages data index by message index defined by SupportedMessages variable. Key is the train-id and Value is the message value.
+        /// The messages data indexed by message index defined by SupportedMessages variable. Key is the train-id and Value is the message value.
         /// </summary>
         public Dictionary<string, MessageBase>[] _messagesData = {
                             new Dictionary<string, MessageBase>(10, StringComparer.OrdinalIgnoreCase),
@@ -425,6 +520,28 @@ namespace DataPackageTests.ServicesStub
                             new Dictionary<string, MessageBase>(10, StringComparer.OrdinalIgnoreCase)
                                                                  };
 
+        private object _serviceSubscriptionLock = new object();
+
+        /// <summary>
+        /// An indicator that indicates if a subscription exist for every service defined in SupportedServices variables.
+        /// </summary>
+        private bool[] _serviceSubscriptions = { false, false, false, false, false, false, false };
+        private string _serviceNotificationUrl = string.Empty;
+
+        public object _serviceDataLock = new object();
+
+        /// <summary>
+        /// The services data indexed by service index defined by SupportedServices variable. ey is the train-id and Value is the service data.
+        /// </summary>
+        public Dictionary<string, ServiceInfoData>[] _serviceData = {
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase),
+                            new Dictionary<string, ServiceInfoData>(10, StringComparer.OrdinalIgnoreCase)
+                                                                    };
         #endregion
 
         #region Constructor
@@ -483,6 +600,96 @@ namespace DataPackageTests.ServicesStub
             {
                 _messagesData[messageIndex][messageData.systemId] = clonedData;
             }
+
+            string notificationUrl;
+            bool subscribed;
+            lock (_messageSubscriptionLock)
+            {
+                subscribed = _messageSubscriptions[messageIndex];
+                notificationUrl = _messageNotificationUrl;
+            }
+
+            if (subscribed)
+            {
+                EndpointAddress address = new EndpointAddress(notificationUrl);
+                using (NotificationClient client = new NotificationClient("NotificationClient", address))
+                {
+                    try
+                    {
+                        client.Open();
+                        client.onMessageNotification(clonedData.systemId, clonedData.messageId, clonedData.fieldList, clonedData.timestamp, clonedData.inhibited);
+                    }
+                    finally
+                    {
+                        if (client.State == CommunicationState.Faulted)
+                        {
+                            client.Abort();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the service data.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <param name="serviceData">The service data.</param>
+        void UpdateServiceData(string systemId, ServiceInfoData serviceData)
+        {
+            ServiceInfoData clonedService = serviceData.Clone();
+            int serviceIndex = Array.IndexOf(SupportedServices, serviceData.serviceId);
+            if (serviceIndex >= 0)
+            {
+                lock (_serviceDataLock)
+                {
+                    ServiceInfoData existingService;
+                    if (_serviceData[serviceIndex].TryGetValue(systemId, out existingService))
+                    {
+                        if (existingService.Equals(serviceData))
+                        {
+                            clonedService = null;
+                        }
+                    }
+
+                    if (clonedService != null)
+                    {
+                        _serviceData[serviceIndex][systemId] = clonedService;
+                    }
+                }
+
+                string notificationUrl;
+                bool subscribed;
+                lock (_serviceSubscriptionLock)
+                {
+                    subscribed = _serviceSubscriptions[serviceIndex] == true;
+                    notificationUrl = _serviceNotificationUrl;
+                }
+
+                if (subscribed)
+                {
+
+                    DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
+                    serviceList.Capacity = 1;
+                    serviceList.Add(clonedService);
+                    EndpointAddress address = new EndpointAddress(notificationUrl);
+                    using (NotificationClient client = new NotificationClient("NotificationClient", address))
+                    {
+                        try
+                        {
+                            client.Open();
+                            client.onServiceNotification(systemId, _identificationService.IsSystemOnline(systemId), serviceIndex + 1, serviceList);
+                        }
+                        finally
+                        {
+                            if (client.State == CommunicationState.Faulted)
+                            {
+                                client.Abort();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -491,12 +698,12 @@ namespace DataPackageTests.ServicesStub
 
         public subscribeToMessageNotificationsOutput subscribeToMessageNotifications(subscribeToMessageNotificationsInput request)
         {
-            if (!_identificationService.isSessionValid(request.Body.sessionId))
+            if (!_identificationService.IsSessionValid(request.Body.sessionId))
             {
                 throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
             }
 
-            string notificationUrl = _identificationService.getNotificationUrl(request.Body.sessionId);
+            string notificationUrl = _identificationService.GetNotificationUrl(request.Body.sessionId);
 
             if (string.IsNullOrEmpty(notificationUrl))
             {
@@ -527,11 +734,9 @@ namespace DataPackageTests.ServicesStub
             int subscriptionId;
             lock (_messageSubscriptionLock)
             {
-                if (!_messageSubscriptions[messageIndex].TryGetValue(notificationUrl, out subscriptionId))
-                {
-                    subscriptionId = _nextMessageSubscriptionId;
-                    _messageSubscriptions[messageIndex][notificationUrl] = _nextMessageSubscriptionId++;
-                }
+                _messageSubscriptions[messageIndex] = true;
+                _messageNotificationUrl = notificationUrl;
+                subscriptionId = messageIndex+1;
             }
 
             Dictionary<string, MessageBase> messageData;
@@ -577,31 +782,16 @@ namespace DataPackageTests.ServicesStub
         /// <param name="subscriptionId">The subscription identifier.</param>
         public void unsubscribeToMessageNotifications(int sessionId, int subscriptionId)
         {
-            if (!_identificationService.isSessionValid(sessionId))
+            if (!_identificationService.IsSessionValid(sessionId))
             {
                 throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
             }
 
             lock (_messageSubscriptionLock)
             {
-                string notificationUrl=null;
-
-                foreach (Dictionary<string, int> dictionary in _messageSubscriptions)
+                if (subscriptionId > 0 && subscriptionId <= SupportedMessages.Length)
                 {
-                    foreach (KeyValuePair<string,int> item in dictionary)
-                    {
-                        if (item.Value == subscriptionId)
-                        {
-                            notificationUrl = item.Key;
-                            break;
-                        }
-                    }
-
-                    if (notificationUrl != null)
-                    {
-                        dictionary.Remove(notificationUrl);
-                        break;
-                    }
+                    _messageSubscriptions[subscriptionId - 1] = false;
                 }
             }
         }
@@ -613,12 +803,99 @@ namespace DataPackageTests.ServicesStub
 
         public subscribeToServiceNotificationsOutput subscribeToServiceNotifications(subscribeToServiceNotificationsInput request)
         {
-            throw FaultExceptionFactory.CreateNotImplementedFault();
+            if (!_identificationService.IsSessionValid(request.Body.sessionId))
+            {
+                throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
+            }
+
+            string notificationUrl = _identificationService.GetNotificationUrl(request.Body.sessionId);
+
+            if (string.IsNullOrEmpty(notificationUrl))
+            {
+                throw FaultExceptionFactory.CreateNoNotificationUrlFault();
+            }
+
+            if (request.Body.systemIdList.Count != 0)
+            {
+                throw FaultExceptionFactory.CreateOnlySubscriptionToAllSystemIsSupportedFault();
+            }
+
+            int serviceIndex = Array.IndexOf(SupportedServices, (ushort)request.Body.serviceId);
+            if (serviceIndex < 0)
+            {
+                throw FaultExceptionFactory.CreateInvalidServiceIdentifierFault();
+            }
+
+            lock (_serviceSubscriptionLock)
+            {
+                _serviceSubscriptions[serviceIndex] = true;
+                _serviceNotificationUrl = notificationUrl;
+            }
+
+            Dictionary<string, ServiceInfoData> serviceData;
+            lock (_serviceDataLock)
+            {
+                serviceData = new Dictionary<string, ServiceInfoData>(_serviceData[serviceIndex]);
+            }
+
+            // Notify the subscribers
+            if (serviceData.Count > 0)
+            {
+                DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
+                serviceList.Capacity = 1;
+                EndpointAddress address = new EndpointAddress(notificationUrl);
+                using (NotificationClient client = new NotificationClient("NotificationClient", address))
+                {
+                    try
+                    {
+                        client.Open();
+                        foreach (KeyValuePair<string, ServiceInfoData> notification in serviceData)
+                        {
+                            if (serviceList.Count == 0)
+                            {
+                                serviceList.Add(notification.Value);
+                            }
+                            else
+                            {
+                                serviceList[0] = notification.Value;
+                            }
+                            client.onServiceNotification(notification.Key, _identificationService.IsSystemOnline(notification.Key) , serviceIndex+1, serviceList);
+                        }
+                    }
+                    finally
+                    {
+                        if (client.State == CommunicationState.Faulted)
+                        {
+                            client.Abort();
+                        }
+                    }
+                }
+            }
+
+            subscribeToServiceNotificationsOutput result = new subscribeToServiceNotificationsOutput();
+            result.Body.subscriptionId = serviceIndex + 1;
+            return result;
         }
 
+        /// <summary>
+        /// Implements the unsubscribeToServiceNotifications method of T2G Vehicle-Info service.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="subscriptionId">The subscription identifier to unsubscribe.</param>
         public void unsubscribeToServiceNotifications(int sessionId, int subscriptionId)
         {
-            throw FaultExceptionFactory.CreateNotImplementedFault();
+            if (!_identificationService.IsSessionValid(sessionId))
+            {
+                throw FaultExceptionFactory.CreateInvalidSessionIdentifierFault();
+            }
+
+            lock (_serviceSubscriptionLock)
+            {
+                if (subscriptionId > 0 && subscriptionId <= SupportedServices.Length)
+                {
+                    _serviceSubscriptions[subscriptionId - 1] = false;
+                }
+            }
         }
 
         public getActiveServicesOutput getActiveServices(getActiveServicesInput request)

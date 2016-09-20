@@ -26,6 +26,7 @@ namespace DataPackageTests.ServicesStub
         public const string CodeNoNotificationUrl = "F020A";
         public const string CodeUnexpectedError = "F0100";
         public const string CodeInvalidMessageIdentifier = "F0208";
+        public const string CodeInvalidServiceIdentifier = "F0204";
         public const string MessageInvalidSession = "The provided session Id is either invalid or has expired. (F0103)";
         public const string MessageNotImplementedException = "The invoked service method is not implemented. (F0100)";
         public const string MessageNoNotificationUrl = "No notification URL is associated to the session. (F020A)";
@@ -33,6 +34,7 @@ namespace DataPackageTests.ServicesStub
         public const string MessageInvalidSubscriptionCount = "Only one subscription is allowed at time (F0100)";
         public const string MessageOnlyOnChangeNotificationSupported = "Only onChange notification is supported (F0100)";
         public const string MessageInvalidMessageIdentifier = "The provided Message identifier is invalid (F0208)";
+        public const string MessageInvalidServiceIdentifier = "Unknown service identifier (F0204)";
 
         #endregion
 
@@ -97,6 +99,15 @@ namespace DataPackageTests.ServicesStub
         public static FaultException CreateInvalidMessageIdentifierFault()
         {
             return new FaultException(new FaultReason(MessageInvalidMessageIdentifier), new FaultCode(CodeInvalidMessageIdentifier, CodeNS));
+        }
+
+        /// <summary>
+        /// Creates the invalid service identifier fault.
+        /// </summary>
+        /// <returns>The fault object created.</returns>
+        public static FaultException CreateInvalidServiceIdentifierFault()
+        {
+            return new FaultException(new FaultReason(MessageInvalidServiceIdentifier), new FaultCode(CodeInvalidServiceIdentifier, CodeNS));
         }
     }
 }
