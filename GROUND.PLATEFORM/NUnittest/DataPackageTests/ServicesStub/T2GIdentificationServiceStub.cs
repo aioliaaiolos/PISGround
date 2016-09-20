@@ -46,7 +46,7 @@ namespace DataPackageTests.T2GServiceInterface.Identification
 namespace DataPackageTests.ServicesStub
 {
     /// <summary>
-    /// Class that simulate the T2G services
+    /// Class that simulate the T2G identification service.
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.Identification.IdentificationPortType" />
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.Identification.IdentificationPortType")]
@@ -134,6 +134,21 @@ namespace DataPackageTests.ServicesStub
         }
 
         /// <summary>
+        /// Determines whether the specified system identifier is a known system.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified system identifier exist; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSystemExist(string systemId)
+        {
+            lock (_systemInfoLock)
+            {
+                return _systems.ContainsKey(systemId);
+            }
+        }
+
+        /// <summary>
         /// Determines whether the specified system identifier is online or not.
         /// </summary>
         /// <param name="systemId">The system identifier.</param>
@@ -171,6 +186,34 @@ namespace DataPackageTests.ServicesStub
             }
 
             return notificationUrl;
+        }
+
+        /// <summary>
+        /// Gets the name of the user associated to a session identifier..
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <returns>The associated user name; empty string if session is invalid</returns>
+        public string GetUserName(int sessionId)
+        {
+            lock (_sessionLock)
+            {
+                SessionData sessionInfo;
+                return _sessions.TryGetValue(sessionId, out sessionInfo) ? sessionInfo.UserName : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the communication link associated to a system.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <returns>The communication link. If system is offline, the value CommLinkEnum.notApplicable is returned.</returns>
+        public CommLinkEnum GetSystemLink(string systemId)
+        {
+            lock (_systemInfoLock)
+            {
+                SystemInfoStruct systemInfo;
+                return (_systems.TryGetValue(systemId, out systemInfo) && systemInfo.isOnline) ? systemInfo.communicationLink : CommLinkEnum.notApplicable;
+            }
         }
 
         /// <summary>
