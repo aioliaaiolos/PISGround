@@ -318,6 +318,29 @@ namespace DataPackageTests.ServicesStub
         #region Implementation of IdentificationPortType interface
 
         /// <summary>
+        /// Logins the specified user name.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="notificationUrl">The notification URL.</param>
+        /// <param name="protocolVersion">The protocol version.</param>
+        /// <param name="effectiveProtocolVersion">[out]The effective protocol version.</param>
+        /// <param name="applicationIds">The application ids.</param>
+        /// <returns>The session id.</returns>
+        public int login(string userName, string password, string notificationUrl, int protocolVersion, out int effectiveProtocolVersion, params string[] applicationIds)
+        {
+            
+            ApplicationIdList list = new ApplicationIdList();
+            list.Capacity = applicationIds.Length;
+            list.AddRange(applicationIds);
+            loginInputBody body = new loginInputBody(userName, password, notificationUrl,list, protocolVersion);
+            loginInput request = new loginInput(body);
+
+            loginOutput result = login(request);
+            effectiveProtocolVersion = result.Body.effectiveProtocolVersion;
+            return result.Body.sessionId;
+        }
+        /// <summary>
         /// Implement the Login function of T2G Identification service.
         /// </summary>
         /// <param name="request">The request.</param>

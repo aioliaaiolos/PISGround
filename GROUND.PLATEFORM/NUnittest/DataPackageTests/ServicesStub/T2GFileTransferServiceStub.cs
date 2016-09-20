@@ -27,12 +27,33 @@ using TransferTaskList = DataPackageTests.T2GServiceInterface.FileTransfer.trans
 using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
 using NotificationClient = DataPackageTests.T2GServiceInterface.Notification.NotificationPortTypeClient;
 using LinkTypeEnum = DataPackageTests.T2GServiceInterface.Notification.linkTypeEnum;
+using PathList = DataPackageTests.T2GServiceInterface.FileTransfer.pathList;
 using System.Globalization;
 using System.ServiceModel;
 
 namespace DataPackageTests.ServicesStub
 {
     #region Data Definition
+    
+/// <summary>
+/// Define a file path in T2G.
+/// </summary>
+/// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct" />
+    public class FilePathInfo : FilePathStruct
+    {        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FilePathInfo"/> class.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="checksum">The checksum.</param>
+        public FilePathInfo(string path, long size, uint checksum)
+        {
+            this.checksum = checksum;
+            this.path = path;
+            this.size = size;
+        }
+    }
 
     /// <summary>
     /// Define a file in T2G.
@@ -334,7 +355,7 @@ namespace DataPackageTests.ServicesStub
             activeFileTransferCount = (Recipient.transferState == TransferStateEnum.transferring) ? (ushort)1 : (ushort)0;
             waitingFileTransferCount = (Recipient.IsWaiting) ? (ushort)1 : (ushort)0;
             completedFileTransferCount = (Recipient.transferState == TransferStateEnum.transferCompleted && Recipient.distributionDate != NullDate) ? (ushort)1 : (ushort)0;
-            distributingFileTransferCount = (Recipient.transferState == TransferStateEnum.transferCompleted && Recipient.distributionDate == NullDate) ? (ushort)1 : (ushort)0;
+            distributingFileTransferCount = (Recipient.transferState == TransferStateEnum.transferCompleted && Recipient.distributionDate == NullDate && taskState == TaskStateEnum.taskStarted) ? (ushort)1 : (ushort)0;
 
 
             if (taskPhase == TaskPhaseEnum.creationPhase && acquisitionCompletionPercent != 0)
@@ -380,6 +401,11 @@ namespace DataPackageTests.ServicesStub
                             subState = TaskSubStateEnum.subtaskInProgress;
                             break;
                         case TaskPhaseEnum.distributionPhase:
+                            if (distributingFileTransferCount != 0)
+                            {
+                                subState = TaskSubStateEnum.subtaskInProgress;
+                            }
+                            break;
                         case TaskPhaseEnum.transferPhase:
                             if (activeFileTransferCount != 0)
                             {
@@ -492,12 +518,12 @@ namespace DataPackageTests.ServicesStub
         /// <summary>
         /// Gets or sets the last created folder identifier.
         /// </summary>
-        int? LastCreatedFolder { get; set; }
+        public int? LastCreatedFolder { get; set; }
 
         /// <summary>
         /// Gets or sets the last created transfer.
         /// </summary>
-        int? LastCreatedTransfer { get; set; }
+        public int? LastCreatedTransfer { get; set; }
         #endregion
 
         #region Constructor
@@ -592,6 +618,7 @@ namespace DataPackageTests.ServicesStub
                     else if (t.Recipient.transferState != TransferStateEnum.waitingForConnection)
                     {
                         t.Recipient.transferState = TransferStateEnum.waitingForConnection;
+                        t.UpdateProgress();
                         _notificationList[t.taskId] = t.Clone();
                     }
                 }
@@ -617,7 +644,7 @@ namespace DataPackageTests.ServicesStub
                         t.Recipient.transferEndDate = DateTime.UtcNow;
                         t.Recipient.transferredFilesSize = t.SourceFolder.totalFilesSize;
                         t.Recipient.transferredFilesCount = t.SourceFolder.totalFilesCount;
-                        t.Recipient.transferState = TransferStateEnum.notTransferring;
+                        t.Recipient.transferState = TransferStateEnum.transferCompleted;
                         t.Recipient.completionPercent = 100;
                         t.activeFileTransferCount = 0;
                         t.taskPhase = TaskPhaseEnum.distributionPhase;
@@ -679,14 +706,39 @@ namespace DataPackageTests.ServicesStub
                     t.UpdateProgress();
                     _notificationList[t.taskId] = t.Clone();
                 }
+            }
 
-
+            foreach (TransferTaskInfo task in _notificationList.Values)
+            {
+                NotifySubscribers(task);
             }
         }
 
         #endregion
 
         #region FileTransferPortType Members
+
+        /// <summary>
+        /// Helper to call create upload folder of T2G.
+        /// </summary>
+        /// <param name="sessionid">The sessionid.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        /// <param name="fileCompression">if set to <c>true</c> [file compression].</param>
+        /// <param name="paths">The paths.</param>
+        /// <returns>The folder identifier created/</returns>
+        public int CreateUploadFolder(int sessionid, string name, DateTime expirationDate, bool fileCompression, params FilePathInfo[] paths)
+        {
+            PathList list = new PathList();
+            list.Capacity = paths.Length;
+            list.AddRange(paths);
+            DataPackageTests.T2GServiceInterface.FileTransfer.createUploadFolderInputBody body = new DataPackageTests.T2GServiceInterface.FileTransfer.createUploadFolderInputBody(
+                sessionid, name, expirationDate.ToUniversalTime(), list, fileCompression);
+            DataPackageTests.T2GServiceInterface.FileTransfer.createUploadFolderInput request = new DataPackageTests.T2GServiceInterface.FileTransfer.createUploadFolderInput(body);
+
+            DataPackageTests.T2GServiceInterface.FileTransfer.createUploadFolderOutput result = createUploadFolder(request);
+            return result.Body.folderId;
+        }
 
         /// <summary>
         /// Creates the upload folder.
@@ -719,6 +771,8 @@ namespace DataPackageTests.ServicesStub
                 string path = string.Format(CultureInfo.InvariantCulture, "upload\\{0}", folderId);
                 folderInfo = new FolderInfoData(folderId, request.Body.name, path, creator);
                 folderInfo.expirationDate = request.Body.expirationDate.ToUniversalTime();
+                folderInfo.totalFilesCount = (uint)request.Body.pathList.Count;
+                folderInfo.totalFilesSize = request.Body.pathList.Select(p => p.size).Sum();
                 foreach (FilePathStruct p in request.Body.pathList)
                 {
                     folderInfo.Files.Add(new FileInfoData(p.path, p.size, p.checksum));
@@ -759,6 +813,23 @@ namespace DataPackageTests.ServicesStub
             }
 
             throw FaultExceptionFactory.CreateNotImplementedFault();
+        }
+
+        /// <summary>
+        /// Gets the folder information.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="folderId">The folder identifier.</param>
+        /// <param name="files">[out] The files.</param>
+        /// <returns>The folder information structure</returns>
+        public FolderInfoStruct GetFolderInfo(int sessionId, int folderId, out FileList files)
+        {
+            DataPackageTests.T2GServiceInterface.FileTransfer.getFolderInfoInputBody body = new DataPackageTests.T2GServiceInterface.FileTransfer.getFolderInfoInputBody(sessionId, folderId);
+            DataPackageTests.T2GServiceInterface.FileTransfer.getFolderInfoInput request = new DataPackageTests.T2GServiceInterface.FileTransfer.getFolderInfoInput(body);
+
+            DataPackageTests.T2GServiceInterface.FileTransfer.getFolderInfoOutput result = getFolderInfo(request);
+            files = result.Body.fileList;
+            return result.Body.folderInfo;
         }
 
         /// <summary>
@@ -829,6 +900,43 @@ namespace DataPackageTests.ServicesStub
             DataPackageTests.T2GServiceInterface.FileTransfer.enumFoldersOutput result = new DataPackageTests.T2GServiceInterface.FileTransfer.enumFoldersOutput(body);
 
             return result;
+        }
+
+        /// <summary>
+        /// Wrapper to call create transfer task function..
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="transferType">Type of the transfer.</param>
+        /// <param name="folderSystemId">The folder system identifier.</param>
+        /// <param name="folderId">The folder identifier.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        /// <param name="destination">The destination.</param>
+        /// <param name="applicationIds">The application ids.</param>
+        /// <returns></returns>
+        public int CreateTransferTask(int sessionId, string description, DataPackageTests.T2GServiceInterface.FileTransfer.transferTypeEnum transferType, string folderSystemId, int folderId, System.DateTime startDate, System.DateTime expirationDate, string destination, string applicationIds)
+        {
+            DataPackageTests.T2GServiceInterface.FileTransfer.createTransferTaskInput inValue = new DataPackageTests.T2GServiceInterface.FileTransfer.createTransferTaskInput();
+            inValue.Body = new DataPackageTests.T2GServiceInterface.FileTransfer.createTransferTaskInputBody();
+            inValue.Body.sessionId = sessionId;
+            inValue.Body.description = description;
+            inValue.Body.transferType = transferType;
+            inValue.Body.folderSystemId = folderSystemId;
+            inValue.Body.folderId = folderId;
+            inValue.Body.startDate = startDate;
+            inValue.Body.expirationDate = expirationDate;
+
+            DataPackageTests.T2GServiceInterface.FileTransfer.recipientIdList recipients = new DataPackageTests.T2GServiceInterface.FileTransfer.recipientIdList();
+            recipients.Capacity = 1;
+            DataPackageTests.T2GServiceInterface.FileTransfer.recipientIdStruct recipient = new DataPackageTests.T2GServiceInterface.FileTransfer.recipientIdStruct();
+            recipient.applicationId = applicationIds;
+            recipient.missionId = string.Empty;
+            recipient.systemId = destination;
+            recipients.Add(recipient);
+            inValue.Body.recipientIdList = recipients;
+            DataPackageTests.T2GServiceInterface.FileTransfer.createTransferTaskOutput retVal =createTransferTask(inValue);
+            return retVal.Body.taskId;
         }
 
         /// <summary>
@@ -950,6 +1058,7 @@ namespace DataPackageTests.ServicesStub
                     taskInfo.Recipient.transferState = TransferStateEnum.waitingInQueue;
                 }
 
+                taskInfo.taskState = TaskStateEnum.taskStarted;
                 taskInfo.priority = priority;
                 taskInfo.transferNotifURL = transferNotifUrl;
                 taskInfo.UpdateProgress();
@@ -1077,6 +1186,37 @@ namespace DataPackageTests.ServicesStub
         public void changeTransferPriority(int sessionId, int taskId, sbyte priority)
         {
             throw FaultExceptionFactory.CreateNotImplementedFault();
+        }
+
+        /// <summary>
+        /// Gets the transfer task.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="taskId">The task identifier.</param>
+        /// <param name="recipient">[out]The recipient.</param>
+        /// <returns>The transfer task</returns>
+        public DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct GetTransferTask(int sessionId, int taskId, out DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct recipient)
+        {
+            DataPackageTests.T2GServiceInterface.FileTransfer.getTransferTaskInput inValue = new DataPackageTests.T2GServiceInterface.FileTransfer.getTransferTaskInput();
+            inValue.Body = new DataPackageTests.T2GServiceInterface.FileTransfer.getTransferTaskInputBody();
+            inValue.Body.sessionId = sessionId;
+            inValue.Body.taskId = taskId;
+            DataPackageTests.T2GServiceInterface.FileTransfer.getTransferTaskOutput retVal = getTransferTask(inValue);
+            recipient = retVal.Body.recipientList[0];
+            return retVal.Body.transferTask;
+        }
+
+        /// <summary>
+        /// Gets the transfer task.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="taskId">The task identifier.</param>
+        /// <param name="recipient">[out]The recipient.</param>
+        /// <returns>The transfer task</returns>
+        public DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct GetTransferTask(int sessionId, int taskId)
+        {
+            DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct recipient;
+            return GetTransferTask(sessionId, taskId, out recipient);
         }
 
         /// <summary>
