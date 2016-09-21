@@ -19,10 +19,13 @@ using Moq;
 using NUnit.Framework;
 using PIS.Ground.Core.Common;
 using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.SessionMgmt;
 using PIS.Ground.Core.SqlServerAccess;
 using PIS.Ground.Core.T2G;
 using PIS.Ground.Core.Utility;
 using PIS.Ground.DataPackage;
+using PIS.Ground.DataPackage.RemoteDataStoreFactory;
+using PIS.Ground.DataPackage.RequestMgt;
 using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
 using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
 using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
@@ -36,9 +39,7 @@ using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStat
 using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
 using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
-using PIS.Ground.Core.SessionMgmt;
-using PIS.Ground.DataPackage.RequestMgt;
-using PIS.Ground.DataPackage.RemoteDataStoreFactory;
+using PIS.Ground.RemoteDataStore;
 
 
 namespace DataPackageTests
@@ -54,9 +55,27 @@ namespace DataPackageTests
     {
         #region Fields
 
+        public const int ONE_SECOND = 1000;
+
         public const string IdentificationServiceUrl = "http://127.0.0.1:5000/T2G/Identification.asmx";
         public const string FileTransferServiceUrl = "http://127.0.0.1:5000/T2G/FileTransfer.asmx";
         public const string VehicleInfoServiceUrl = "http://127.0.0.1:5000/T2G/VehicleInfo.asmx";
+        public const string PisGroundNotificationServiceUrl = "http://127.0.0.1/5002/PIS_GROUND/notification.svc";
+
+        public const string TRAIN_NAME_1 = "TRAIN-1";
+        public const int TRAIN_VEHICLE_ID_1 = 1;
+        public const string TRAIN_IP_1 = "127.0.0.1";
+        public const ushort TRAIN_DATA_PACKAGE_PORT_1 = 4000;
+
+        public const string DEFAULT_BASELINE = "3.0.0.0";
+        public const string DEFAULT_MISSION = "";
+        public const CommLinkEnum DEFAULT_COMMUNICATION_LINK = CommLinkEnum.wifi;
+        public const string DEFAULT_OPERATOR_CODE = "77";
+
+        public const string DEFAULT_PIS_VERSION = "5.16.3.2";
+
+        public const string SERVICE_NAME_DATA_PACKAGE = "PIS2G DataPackage";
+        public const ushort DEFAULT_CAR_ID = 1;
 
         private T2GFileTransferServiceStub _fileTransferServiceStub;
         private T2GIdentificationServiceStub _identificationServiceStub;
@@ -79,10 +98,11 @@ namespace DataPackageTests
         /// <summary>The notification sender mock.</summary>
         private Mock<INotificationSender> _notificationSenderMock;
         private Mock<IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
+        private Mock<IRemoteDataStore> _remoteDataStoreMock;
         private SessionManager _sessionManager;
         private RequestContextFactory _requestFactory;
         private RequestManager _requestManager;
-
+        private Guid _pisGroundSessionId;
 
         #endregion
 
@@ -212,6 +232,8 @@ namespace DataPackageTests
         {
             _notificationSenderMock = new Mock<INotificationSender>();
             _remoteDataStoreFactoryMock = new Mock<IRemoteDataStoreFactory>();
+            _remoteDataStoreMock = new Mock<IRemoteDataStore>();
+            _remoteDataStoreFactoryMock.Setup(f => f.GetRemoteDataStoreInstance()).Returns(_remoteDataStoreMock.Object);
         }
 
         /// <summary>Tear down called after each test to clean.</summary>
@@ -546,7 +568,13 @@ namespace DataPackageTests
         public void DistributeBaselineScenario_Nominal()
         {
             CreateT2GServicesStub();
+            _remoteDataStoreMock.Setup(r => r.getAllBaselineDistributingSavedRequests()).Returns(new DataContainer());
+            InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1);
             InitializeDataPackageService();
+            InitializePISGroundSession();
+            WaitPisGroundIsConnectedWithT2G();
+            WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
+            
         }
 
         #endregion
@@ -605,6 +633,31 @@ namespace DataPackageTests
         }
 
         /// <summary>
+        /// Establish a session with PIS-Ground.
+        /// </summary>
+        private void InitializePISGroundSession()
+        {
+            Assert.IsEmpty(_sessionManager.Login("admin", "admin", out _pisGroundSessionId), "Cannot create a session with PIS-Ground");
+            Assert.IsEmpty(_sessionManager.SetNotificationURL(_pisGroundSessionId, PisGroundNotificationServiceUrl), "Cannot associate the notification url to PIS-Ground session");
+        }
+
+        private void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort)
+        {
+            _identificationServiceStub.UpdateSystem(trainId, vehicleId, isOnline, 0, DEFAULT_MISSION, DEFAULT_COMMUNICATION_LINK, ipAddress);
+            _vehicleInfoServiceStub.UpdateMessageData(new VersionMessage(trainId, DEFAULT_PIS_VERSION));
+            BaselineMessage baseline = new BaselineMessage(trainId);
+            baseline.CurrentVersion = DEFAULT_BASELINE;
+            _vehicleInfoServiceStub.UpdateMessageData(baseline);
+
+            MissionMessage mission = new MissionMessage(trainId, DEFAULT_MISSION, (string.IsNullOrEmpty(DEFAULT_MISSION)) ? "NI" : "MI", DEFAULT_OPERATOR_CODE);
+            _vehicleInfoServiceStub.UpdateMessageData(mission);
+
+            ServiceInfoData datapackageService = new  ServiceInfoData((ushort)eServiceID.eSrvSIF_DataPackageServer, SERVICE_NAME_DATA_PACKAGE, isOnline, ipAddress, dataPackagePort, (ushort) vehicleId, DEFAULT_CAR_ID);
+            _vehicleInfoServiceStub.UpdateServiceData(trainId, datapackageService);
+        }
+
+
+        /// <summary>
         /// Drops the test database and delete the physical files.
         /// </summary>
         private void DropTestDb()
@@ -629,6 +682,31 @@ namespace DataPackageTests
                 }
             }
         }
+
+        private void WaitPisGroundIsConnectedWithT2G()
+        {
+            Assert.That(() => _t2gManager.T2GServerConnectionStatus, Is.True.After(5 * ONE_SECOND, ONE_SECOND / 4), "Pis-Ground cannot establish connection with T2G");
+        }
+        private void WaitTrainOnlineWithPISGround(string trainName, bool waitForDataPackage)
+        {
+            WaitTrainOnlineWithPISGround(trainName, waitForDataPackage, 3 *ONE_SECOND);
+        }
+
+        private void WaitTrainOnlineWithPISGround(string trainName, bool waitForDataPackage, int delay)
+        {
+            bool isOnline;
+
+            Assert.That(() => _t2gManager.IsElementOnline(trainName, out isOnline) == T2GManagerErrorEnum.eSuccess && isOnline == true, Is.True.After(delay, ONE_SECOND / 5), "The train '{0}' is not online with PIS-Ground as expected", trainName);
+
+            if (waitForDataPackage)
+            {
+                
+                PIS.Ground.Core.Data.ServiceInfo serviceInfo;
+                Assert.That(_t2gManager.GetAvailableServiceData(trainName, (int)eServiceID.eSrvSIF_DataPackageServer, out serviceInfo) == T2GManagerErrorEnum.eSuccess, Is.True.After(delay, ONE_SECOND / 5), "The service DataPackageService is not available with PIS-Ground as expected on train '{0}'", trainName);
+            }
+
+        }
+            
 
         #endregion
     }
