@@ -1175,21 +1175,11 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer baselineDistributingTask = DataTypeConversion.fromBaselineDistributingRequestToDataContainer(processBaselineDistributingRequest);
-						remoteDataStoreProxy.saveBaselineDistributingRequest(baselineDistributingTask);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer baselineDistributingTask = DataTypeConversion.fromBaselineDistributingRequestToDataContainer(processBaselineDistributingRequest);
+                    remoteDataStoreProxy.saveBaselineDistributingRequest(baselineDistributingTask);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1213,25 +1203,15 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
-						requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
-							baselineDistributingSavedRequestsList,
-							_requestFactory,
-							_remoteDataStoreFactory,
-							_t2gManager);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
+                    requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
+                        baselineDistributingSavedRequestsList,
+                        _requestFactory,
+                        _remoteDataStoreFactory,
+                        _t2gManager);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1255,20 +1235,10 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						remoteDataStoreProxy.deleteBaselineDistributingRequest(elementId);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    remoteDataStoreProxy.deleteBaselineDistributingRequest(elementId);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1881,34 +1851,23 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer elementDescription = remoteDataStore.getElementBaselinesDefinitions(lElID);
-						baselineVersion = elementDescription.getStrValue("AssignedFutureBaseline");
-						if (!string.IsNullOrEmpty(baselineVersion) && remoteDataStore.checkIfBaselineExists(baselineVersion))
-						{
-							mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_FUTURE_BASELINE, lElID, baselineVersion);
-							DataContainer baselineDefinitionContainer = remoteDataStore.getBaselineDefinition(baselineVersion);
-							remoteDataStore.checkDataPackagesAvailability(lResult.reqId, baselineDefinitionContainer);
-							baselineActivationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineActivationDate"));
-							baselineExpirationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineExpirationDate"));
-						}
-						else
-						{
-							lResult.error_code = DataPackageErrorEnum.INVALID_BASELINE_VERSION;
-						}
-					}
-					finally
-					{
-						if (remoteDataStore.State == CommunicationState.Faulted)
-						{
-							remoteDataStore.Abort();
-							mWriteLog(TraceType.EXCEPTION, "distributeBaseline", null, Logs.ERROR_REMOTEDATASTORE_FAULTED);
-						}
-					}
-				}
+                using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer elementDescription = remoteDataStore.getElementBaselinesDefinitions(lElID);
+                    baselineVersion = elementDescription.getStrValue("AssignedFutureBaseline");
+                    if (!string.IsNullOrEmpty(baselineVersion) && remoteDataStore.checkIfBaselineExists(baselineVersion))
+                    {
+                        mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_FUTURE_BASELINE, lElID, baselineVersion);
+                        DataContainer baselineDefinitionContainer = remoteDataStore.getBaselineDefinition(baselineVersion);
+                        remoteDataStore.checkDataPackagesAvailability(lResult.reqId, baselineDefinitionContainer);
+                        baselineActivationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineActivationDate"));
+                        baselineExpirationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineExpirationDate"));
+                    }
+                    else
+                    {
+                        lResult.error_code = DataPackageErrorEnum.INVALID_BASELINE_VERSION;
+                    }
+                }
 			}
 			catch (FaultException ex)
 			{

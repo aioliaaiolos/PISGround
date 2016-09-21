@@ -46,7 +46,6 @@ namespace PIS.Ground.RemoteDataStore
         private DateTime _lowestActivationDateTime = new DateTime(1900, 1, 1);
         private DateTime _lowestExpirationDateTime = new DateTime(1900, 1, 2);
 
-
         public RemoteDataStoreService()
         {
             try
@@ -104,7 +103,12 @@ namespace PIS.Ground.RemoteDataStore
         public List<string> DataPackagesTypes
         {
             get { return _dataPackagesTypes; }
-        }       
+        }
+
+        /// <summary>
+        /// Gets or sets the operation timeout.
+        /// </summary>
+        public TimeSpan OperationTimeout { get; set; }
 
         OpenDataPackageResult IRemoteDataStore.openLocalDataPackage(
             string packageType,
@@ -1335,7 +1339,209 @@ namespace PIS.Ground.RemoteDataStore
 		}
 
 		#endregion
-	}
+
+        #region IRemoteDataStore Members
+
+        void IRemoteDataStore.moveTheNewDataPackageFiles(Guid pReqID, string pFileURL)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IRemoteDataStore.checkUrl(Guid pReqID, string pUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.checkDataPackagesAvailability(Guid pRequestID, DataContainer pBLDef)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IRemoteDataStore.checkIfDataPackageExists(string pDPType, string pDPVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IRemoteDataStore.checkIfBaselineExists(string pBLVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IRemoteDataStore.checkIfElementExists(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.setNewDataPackage(DataContainer pNDPkg)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.setNewBaselineDefinition(Guid pRequestID, DataContainer pNBLDef)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.saveBaselineDistributingRequest(DataContainer baselineDistributingTask)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.deleteBaselineDefinition(string pVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getBaselinesDefinitions()
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getBaselineDefinition(string pBLVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getAssignedBaselinesVersions()
+        {
+            throw new NotImplementedException();
+        }
+
+        string IRemoteDataStore.getAssignedCurrentBaselineVersion(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        string IRemoteDataStore.getAssignedFutureBaselineVersion(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getDataPackages(DataContainer pBLDef)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getDataPackagesList()
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getDataPackageCharacteristics(string pDPType, string pDPVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getCurrentBaselineDefinition(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getElementBaselinesDefinitions(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getAllBaselineDistributingSavedRequests()
+        {
+            throw new NotImplementedException();
+        }
+
+        string IRemoteDataStore.createBaselineFile(Guid pReqId, string pEID, string pBLVersion, string pActivationDate, string pExpirationDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        string IRemoteDataStore.getDiffDataPackageUrl(Guid pReqID, string pEID, string pDPType, string pDPVersionOnBoard, string pDPVersionOnGround)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.assignAFutureBaselineToElement(Guid ReqID, string pEID, string pBLVersion, DateTime pActDate, DateTime pExpDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.assignACurrentBaselineToElement(Guid ReqID, string pEID, string pBLVersion, DateTime pExpDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.deleteBaselineFile(Guid pReqId, string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.deleteDataPackage(Guid pReqId, string pDPType, string pDPVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.deleteDataPackageDiffFile(Guid pReqId, string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.deleteBaselineDistributingRequest(string elementId)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.setElementUndefinedBaselineParams(string pEID, string pPisBasePackageVersion, string pPisMissionPackageVersion, string pPisInfotainmentPackageVersion, string pLmtPackageVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getElementsDescription()
+        {
+            throw new NotImplementedException();
+        }
+
+        DataContainer IRemoteDataStore.getUndefinedBaselinesList()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.unassignFutureBaselineFromElement(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IRemoteDataStore.unassignCurrentBaselineFromElement(string pEID)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IDisposable Members
+
+        void IDisposable.Dispose()
+        {
+            if (_dataPackageCallbackClient != null)
+            {
+                bool success = false;
+                try
+                {
+                    if (_dataPackageCallbackClient.State != CommunicationState.Faulted)
+                    {
+                        _dataPackageCallbackClient.Close();
+                        success = true;
+                    }
+                }
+                finally
+                {
+                    if (!success)
+                    {
+                        _dataPackageCallbackClient.Abort();
+                    }
+                }
+
+            }
+        }
+
+        #endregion
+    }
 
     public class RemoteDataStoreWinService : ServiceBase
     {

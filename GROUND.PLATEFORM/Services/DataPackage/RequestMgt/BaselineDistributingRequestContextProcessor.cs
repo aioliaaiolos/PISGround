@@ -116,26 +116,16 @@ namespace PIS.Ground.DataPackage.RequestMgt
 										{
 											try
 											{
-												using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-												{
-													try
-													{
-														filesUrlsList.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"]
-															+ remoteDataStore.createBaselineFile(
-																requestContext.RequestId,
-																requestContext.ElementId,
-																requestContext.BaselineVersion,
-																requestContext.BaselineActivationDate.ToString(),
-																requestContext.BaselineExpirationDate.ToString()));
-													}
-													finally
-													{
-														if (remoteDataStore.State == CommunicationState.Faulted)
-														{
-															remoteDataStore.Abort();
-														}
-													}
-												}
+                                                using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                                {
+                                                    filesUrlsList.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"]
+                                                        + remoteDataStore.createBaselineFile(
+                                                            requestContext.RequestId,
+                                                            requestContext.ElementId,
+                                                            requestContext.BaselineVersion,
+                                                            requestContext.BaselineActivationDate.ToString(),
+                                                            requestContext.BaselineExpirationDate.ToString()));
+                                                }
 											}
 											catch (Exception ex)
 											{
@@ -293,180 +283,170 @@ namespace PIS.Ground.DataPackage.RequestMgt
 				{
 					try
 					{
-						using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-						{
-							try
-							{
-								if (remoteDataStore.checkIfBaselineExists(baselineVersion))
-								{
-									baselineDefinition = DataTypeConversion.fromDataContainerToBaselineDefinition(remoteDataStore.getBaselineDefinition(baselineVersion));
-								}
+                        using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        {
+                            if (remoteDataStore.checkIfBaselineExists(baselineVersion))
+                            {
+                                baselineDefinition = DataTypeConversion.fromDataContainerToBaselineDefinition(remoteDataStore.getBaselineDefinition(baselineVersion));
+                            }
 
-								if (baselineDefinition == null)
-								{
-									DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
-									DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
-									result = false;
-								}
-								else if (remoteDataStore.checkIfDataPackageExists(DataPackageType.PISBASE.ToString(), baselineDefinition.PISBaseDataPackageVersion) == false ||
-									remoteDataStore.checkIfDataPackageExists(DataPackageType.PISMISSION.ToString(), baselineDefinition.PISMissionDataPackageVersion) == false ||
-									remoteDataStore.checkIfDataPackageExists(DataPackageType.PISINFOTAINMENT.ToString(), baselineDefinition.PISInfotainmentDataPackageVersion) == false ||
-									remoteDataStore.checkIfDataPackageExists(DataPackageType.LMT.ToString(), baselineDefinition.LMTDataPackageVersion) == false)
-								{
-									if (notifyGroundApp)
-									{
-										DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
-									}
+                            if (baselineDefinition == null)
+                            {
+                                DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
+                                DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
+                                result = false;
+                            }
+                            else if (remoteDataStore.checkIfDataPackageExists(DataPackageType.PISBASE.ToString(), baselineDefinition.PISBaseDataPackageVersion) == false ||
+                                remoteDataStore.checkIfDataPackageExists(DataPackageType.PISMISSION.ToString(), baselineDefinition.PISMissionDataPackageVersion) == false ||
+                                remoteDataStore.checkIfDataPackageExists(DataPackageType.PISINFOTAINMENT.ToString(), baselineDefinition.PISInfotainmentDataPackageVersion) == false ||
+                                remoteDataStore.checkIfDataPackageExists(DataPackageType.LMT.ToString(), baselineDefinition.LMTDataPackageVersion) == false)
+                            {
+                                if (notifyGroundApp)
+                                {
+                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
+                                }
 
-									DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
-									result = false;
-								}
-								else
-								{
-									AvailableElementData elementData;
-									T2GManagerErrorEnum requestResult = _trainToGroundManager.GetAvailableElementDataByElementNumber(elementId, out elementData);
+                                DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
+                                result = false;
+                            }
+                            else
+                            {
+                                AvailableElementData elementData;
+                                T2GManagerErrorEnum requestResult = _trainToGroundManager.GetAvailableElementDataByElementNumber(elementId, out elementData);
 
-									if (requestResult == T2GManagerErrorEnum.eT2GServerOffline)
-									{
-										DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
-										DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_T2G_SERVER_OFFLINE);
-									}
-									else if (requestResult == T2GManagerErrorEnum.eElementNotFound)
-									{
-										DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionUnknowElementId, stringWriter.ToString());
-										DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_ELEMENT_NOT_FOUND, elementId);
-									}
+                                if (requestResult == T2GManagerErrorEnum.eT2GServerOffline)
+                                {
+                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+                                    DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_T2G_SERVER_OFFLINE);
+                                }
+                                else if (requestResult == T2GManagerErrorEnum.eElementNotFound)
+                                {
+                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionUnknowElementId, stringWriter.ToString());
+                                    DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_ELEMENT_NOT_FOUND, elementId);
+                                }
 
-									Dictionary<DataPackageType, string> uploadPackagesList = new Dictionary<DataPackageType, string>();
-									BaselineDefinition embeddedBaselineDefinition = null;
+                                Dictionary<DataPackageType, string> uploadPackagesList = new Dictionary<DataPackageType, string>();
+                                BaselineDefinition embeddedBaselineDefinition = null;
 
-									if (elementData.PisBaselineData != null &&
-										!string.IsNullOrEmpty(elementData.PisBaselineData.CurrentVersionOut) &&
-										elementData.PisBaselineData.CurrentVersionOut != "0.0.0.0")
-									{
-										if (remoteDataStore.checkIfBaselineExists(elementData.PisBaselineData.CurrentVersionOut))
-										{
-											embeddedBaselineDefinition = DataTypeConversion.fromDataContainerToBaselineDefinition(remoteDataStore.getBaselineDefinition(elementData.PisBaselineData.CurrentVersionOut));
-										}
-										else
-										{
-											string message = string.Format(CultureInfo.CurrentCulture, "Baseline version '{0}' installed on element '{1}' is unknown. Full baseline distribution will be performed.", elementData.PisBaselineData.CurrentVersionOut, elementData.ElementNumber);
-											DataPackageService.mWriteLog(TraceType.WARNING, System.Reflection.MethodBase.GetCurrentMethod().Name, null, message);
-										}
+                                if (elementData.PisBaselineData != null &&
+                                    !string.IsNullOrEmpty(elementData.PisBaselineData.CurrentVersionOut) &&
+                                    elementData.PisBaselineData.CurrentVersionOut != "0.0.0.0")
+                                {
+                                    if (remoteDataStore.checkIfBaselineExists(elementData.PisBaselineData.CurrentVersionOut))
+                                    {
+                                        embeddedBaselineDefinition = DataTypeConversion.fromDataContainerToBaselineDefinition(remoteDataStore.getBaselineDefinition(elementData.PisBaselineData.CurrentVersionOut));
+                                    }
+                                    else
+                                    {
+                                        string message = string.Format(CultureInfo.CurrentCulture, "Baseline version '{0}' installed on element '{1}' is unknown. Full baseline distribution will be performed.", elementData.PisBaselineData.CurrentVersionOut, elementData.ElementNumber);
+                                        DataPackageService.mWriteLog(TraceType.WARNING, System.Reflection.MethodBase.GetCurrentMethod().Name, null, message);
+                                    }
 
-										if (embeddedBaselineDefinition != null)
-										{
-											if (baselineDefinition.PISBaseDataPackageVersion != embeddedBaselineDefinition.PISBaseDataPackageVersion)
-											{
-												uploadPackagesList.Add(DataPackageType.PISBASE, baselineDefinition.PISBaseDataPackageVersion);
-											}
+                                    if (embeddedBaselineDefinition != null)
+                                    {
+                                        if (baselineDefinition.PISBaseDataPackageVersion != embeddedBaselineDefinition.PISBaseDataPackageVersion)
+                                        {
+                                            uploadPackagesList.Add(DataPackageType.PISBASE, baselineDefinition.PISBaseDataPackageVersion);
+                                        }
 
-											if (baselineDefinition.PISMissionDataPackageVersion != embeddedBaselineDefinition.PISMissionDataPackageVersion)
-											{
-												uploadPackagesList.Add(DataPackageType.PISMISSION, baselineDefinition.PISMissionDataPackageVersion);
-											}
+                                        if (baselineDefinition.PISMissionDataPackageVersion != embeddedBaselineDefinition.PISMissionDataPackageVersion)
+                                        {
+                                            uploadPackagesList.Add(DataPackageType.PISMISSION, baselineDefinition.PISMissionDataPackageVersion);
+                                        }
 
-											if (baselineDefinition.PISInfotainmentDataPackageVersion != embeddedBaselineDefinition.PISInfotainmentDataPackageVersion)
-											{
-												uploadPackagesList.Add(DataPackageType.PISINFOTAINMENT, baselineDefinition.PISInfotainmentDataPackageVersion);
-											}
+                                        if (baselineDefinition.PISInfotainmentDataPackageVersion != embeddedBaselineDefinition.PISInfotainmentDataPackageVersion)
+                                        {
+                                            uploadPackagesList.Add(DataPackageType.PISINFOTAINMENT, baselineDefinition.PISInfotainmentDataPackageVersion);
+                                        }
 
-											if (baselineDefinition.LMTDataPackageVersion != embeddedBaselineDefinition.LMTDataPackageVersion)
-											{
-												uploadPackagesList.Add(DataPackageType.LMT, baselineDefinition.LMTDataPackageVersion);
-											}
-										}
-									}
+                                        if (baselineDefinition.LMTDataPackageVersion != embeddedBaselineDefinition.LMTDataPackageVersion)
+                                        {
+                                            uploadPackagesList.Add(DataPackageType.LMT, baselineDefinition.LMTDataPackageVersion);
+                                        }
+                                    }
+                                }
 
-									if (embeddedBaselineDefinition == null)
-									{
-										uploadPackagesList.Add(DataPackageType.PISBASE, baselineDefinition.PISBaseDataPackageVersion);
-										uploadPackagesList.Add(DataPackageType.PISMISSION, baselineDefinition.PISMissionDataPackageVersion);
-										uploadPackagesList.Add(DataPackageType.PISINFOTAINMENT, baselineDefinition.PISInfotainmentDataPackageVersion);
-										uploadPackagesList.Add(DataPackageType.LMT, baselineDefinition.LMTDataPackageVersion);
-									}
+                                if (embeddedBaselineDefinition == null)
+                                {
+                                    uploadPackagesList.Add(DataPackageType.PISBASE, baselineDefinition.PISBaseDataPackageVersion);
+                                    uploadPackagesList.Add(DataPackageType.PISMISSION, baselineDefinition.PISMissionDataPackageVersion);
+                                    uploadPackagesList.Add(DataPackageType.PISINFOTAINMENT, baselineDefinition.PISInfotainmentDataPackageVersion);
+                                    uploadPackagesList.Add(DataPackageType.LMT, baselineDefinition.LMTDataPackageVersion);
+                                }
 
-									if (isIncremental == false || embeddedBaselineDefinition == null)
-									{
-										foreach (KeyValuePair<DataPackageType, string> lDP in uploadPackagesList)
-										{
-											DataPackagesCharacteristics packageCharacteristics = DataTypeConversion.fromDataContainerToDataPackagesCharacteristics(remoteDataStore.getDataPackageCharacteristics(lDP.Key.ToString(), lDP.Value));
+                                if (isIncremental == false || embeddedBaselineDefinition == null)
+                                {
+                                    foreach (KeyValuePair<DataPackageType, string> lDP in uploadPackagesList)
+                                    {
+                                        DataPackagesCharacteristics packageCharacteristics = DataTypeConversion.fromDataContainerToDataPackagesCharacteristics(remoteDataStore.getDataPackageCharacteristics(lDP.Key.ToString(), lDP.Value));
 
-											packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + packageCharacteristics.DataPackagePath);
-											packagesParams.Add(new PackageParams(lDP.Key, lDP.Value));
-										}
+                                        packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + packageCharacteristics.DataPackagePath);
+                                        packagesParams.Add(new PackageParams(lDP.Key, lDP.Value));
+                                    }
 
-										result = true;
-									}
-									else
-									{
-										foreach (KeyValuePair<DataPackageType, string> packageToUpload in uploadPackagesList)
-										{
-											string embeddedBaselineVersion = string.Empty;
-											switch (packageToUpload.Key)
-											{
-												case DataPackageType.PISBASE:
-													embeddedBaselineVersion = embeddedBaselineDefinition.PISBaseDataPackageVersion;
-													break;
-												case DataPackageType.PISMISSION:
-													embeddedBaselineVersion = embeddedBaselineDefinition.PISMissionDataPackageVersion;
-													break;
-												case DataPackageType.PISINFOTAINMENT:
-													embeddedBaselineVersion = embeddedBaselineDefinition.PISInfotainmentDataPackageVersion;
-													break;
-												case DataPackageType.LMT:
-													embeddedBaselineVersion = embeddedBaselineDefinition.LMTDataPackageVersion;
-													break;
-												default:
-													break;
-											}
+                                    result = true;
+                                }
+                                else
+                                {
+                                    foreach (KeyValuePair<DataPackageType, string> packageToUpload in uploadPackagesList)
+                                    {
+                                        string embeddedBaselineVersion = string.Empty;
+                                        switch (packageToUpload.Key)
+                                        {
+                                            case DataPackageType.PISBASE:
+                                                embeddedBaselineVersion = embeddedBaselineDefinition.PISBaseDataPackageVersion;
+                                                break;
+                                            case DataPackageType.PISMISSION:
+                                                embeddedBaselineVersion = embeddedBaselineDefinition.PISMissionDataPackageVersion;
+                                                break;
+                                            case DataPackageType.PISINFOTAINMENT:
+                                                embeddedBaselineVersion = embeddedBaselineDefinition.PISInfotainmentDataPackageVersion;
+                                                break;
+                                            case DataPackageType.LMT:
+                                                embeddedBaselineVersion = embeddedBaselineDefinition.LMTDataPackageVersion;
+                                                break;
+                                            default:
+                                                break;
+                                        }
 
-											bool isEmbPackageOnGround = remoteDataStore.checkIfDataPackageExists(packageToUpload.Key.ToString(), embeddedBaselineVersion);
-											if (!isEmbPackageOnGround)
-											{
-												string message = string.Format(CultureInfo.CurrentCulture, "{0}'s data package version '{1}' associated to baseline '{2}' is unknown. Distribution the element '{3}' will receive a complete update for that data package.", packageToUpload.Key.ToString(), embeddedBaselineVersion, packageToUpload.Value, elementData.ElementNumber);
-												DataPackageService.mWriteLog(TraceType.WARNING, System.Reflection.MethodBase.GetCurrentMethod().Name, null, message);
+                                        bool isEmbPackageOnGround = remoteDataStore.checkIfDataPackageExists(packageToUpload.Key.ToString(), embeddedBaselineVersion);
+                                        if (!isEmbPackageOnGround)
+                                        {
+                                            string message = string.Format(CultureInfo.CurrentCulture, "{0}'s data package version '{1}' associated to baseline '{2}' is unknown. Distribution the element '{3}' will receive a complete update for that data package.", packageToUpload.Key.ToString(), embeddedBaselineVersion, packageToUpload.Value, elementData.ElementNumber);
+                                            DataPackageService.mWriteLog(TraceType.WARNING, System.Reflection.MethodBase.GetCurrentMethod().Name, null, message);
 
-												DataPackagesCharacteristics packageCharacteristics = DataTypeConversion.fromDataContainerToDataPackagesCharacteristics(remoteDataStore.getDataPackageCharacteristics(packageToUpload.Key.ToString(), packageToUpload.Value));
+                                            DataPackagesCharacteristics packageCharacteristics = DataTypeConversion.fromDataContainerToDataPackagesCharacteristics(remoteDataStore.getDataPackageCharacteristics(packageToUpload.Key.ToString(), packageToUpload.Value));
 
-												packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + packageCharacteristics.DataPackagePath);
-												packagesParams.Add(new PackageParams(packageToUpload.Key, packageToUpload.Value));
-											}
-											else
-											{
-                                                // Store the current operational timeout.
-                                                TimeSpan oldOperationTimeOut = remoteDataStore.InnerChannel.OperationTimeout;
-                                                try
+                                            packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + packageCharacteristics.DataPackagePath);
+                                            packagesParams.Add(new PackageParams(packageToUpload.Key, packageToUpload.Value));
+                                        }
+                                        else
+                                        {
+                                            // Store the current operational timeout.
+                                            TimeSpan oldOperationTimeOut = remoteDataStore.OperationTimeout;
+                                            try
+                                            {
+                                                // Set the operational timeout to 10minutes because the getDiffDataPackageUrl can take a long time (Zip operation) 
+                                                remoteDataStore.OperationTimeout = TimeSpan.FromMinutes(10);
+                                                string differentialPackagePath = remoteDataStore.getDiffDataPackageUrl(requestId, elementId, packageToUpload.Key.ToString(), embeddedBaselineVersion, packageToUpload.Value);
+                                                if (null != differentialPackagePath && !string.IsNullOrEmpty(differentialPackagePath))
                                                 {
-                                                    // Set the operational timeout to 10minutes because the getDiffDataPackageUrl can take a long time (Zip operation) 
-                                                    remoteDataStore.InnerChannel.OperationTimeout = TimeSpan.FromMinutes(10);
-                                                    string differentialPackagePath = remoteDataStore.getDiffDataPackageUrl(requestId, elementId, packageToUpload.Key.ToString(), embeddedBaselineVersion, packageToUpload.Value);
-                                                    if (null != differentialPackagePath && !string.IsNullOrEmpty(differentialPackagePath))
-                                                    {
-                                                        packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + differentialPackagePath);
-                                                        packagesParams.Add(new PackageParams(packageToUpload.Key, packageToUpload.Value));
-                                                    }
+                                                    packagesURLs.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] + "/" + differentialPackagePath);
+                                                    packagesParams.Add(new PackageParams(packageToUpload.Key, packageToUpload.Value));
                                                 }
-                                                finally
-                                                {
-                                                    // restore the operation timeout.
-                                                    remoteDataStore.InnerChannel.OperationTimeout = oldOperationTimeOut;
-                                                }
-											}
+                                            }
+                                            finally
+                                            {
+                                                // restore the operation timeout.
+                                                remoteDataStore.OperationTimeout = oldOperationTimeOut;
+                                            }
+                                        }
 
-											result = true;
-										}
-									}
-								}
-							}
-							finally
-							{
-								if (remoteDataStore.State == CommunicationState.Faulted)
-								{
-									remoteDataStore.Abort();
-								}
-							}
-						}
+                                        result = true;
+                                    }
+                                }
+                            }
+                        }
 					}
 					catch (Exception ex)
 					{

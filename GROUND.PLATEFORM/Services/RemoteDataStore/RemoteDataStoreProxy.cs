@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RemoteDataStoreProxy.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2013.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -16,8 +16,25 @@ namespace PIS.Ground.RemoteDataStore
     public class RemoteDataStoreProxy :
         //WCF create proxy for IRemoteDataStore using ClientBase
         ClientBase<IRemoteDataStore>,
-        IRemoteDataStore
+        IRemoteDataStore,
+        IDisposable
     {
+        /// <summary>
+        /// Gets or sets the operation timeout.
+        /// </summary>
+        public TimeSpan OperationTimeout
+        {
+            get
+            {
+                return InnerChannel.OperationTimeout;
+            }
+
+            set
+            {
+                InnerChannel.OperationTimeout = value;
+            }
+        }
+
         /// <summary>Download a file from an url in the Remote Data Store.</summary>
         /// <param name="pReqID">Identifier for the request.</param>
         /// <param name="pFileURL">URL of the file.</param>
@@ -324,5 +341,32 @@ namespace PIS.Ground.RemoteDataStore
 		}
 
 		#endregion
-	}
+
+        #region IDisposable Members
+
+        /// <summary>
+        /// Method that safely close the proxy.
+        /// </summary>
+        void IDisposable.Dispose()
+        {
+            bool success = false;
+            try
+            {
+                if (State != CommunicationState.Faulted)
+                {
+                    Close();
+                    success = true;
+                }
+            }
+            finally
+            {
+            	if (!success)
+                {
+                    Abort();
+                }
+            }
+        }
+
+        #endregion
+    }
 }
