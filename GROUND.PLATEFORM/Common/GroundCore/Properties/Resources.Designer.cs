@@ -232,6 +232,15 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while removing all session data in database: {0}..
+        /// </summary>
+        internal static string ExRemoveAllSession {
+            get {
+                return ResourceManager.GetString("ExRemoveAllSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error Occured while Removing the Session for the SessionID :{0} from the DataBase :  Details:{1}.
         /// </summary>
         internal static string ExRemoveSession {
