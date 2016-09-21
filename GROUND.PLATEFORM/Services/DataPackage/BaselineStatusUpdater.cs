@@ -408,6 +408,27 @@ namespace PIS.Ground.DataPackage
 			return _isInitialized;
 		}
 
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public static void Uninitialize()
+        {
+            lock (_baselineStatusUpdaterLock)
+            {
+                _isInitialized = false;
+                _isHistoryLoggerAvailable = true;
+                _t2g = null;
+                if (_baselineProgresses != null)
+                {
+                    _baselineProgresses.Clear();
+                }
+                _baselineProgresses = null;
+                _baselineProgressUpdateProcedure = null;
+                _baselineProgressRemoveProcedure = null;
+            }
+        }
+
+
 		/// <summary>Resets all status entries by clearing the fields that might have changed.</summary>
 		public static void ResetStatusEntries()
 		{

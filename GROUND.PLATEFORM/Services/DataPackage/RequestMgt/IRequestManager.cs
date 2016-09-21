@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="IRequestManager.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2015.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -14,7 +14,7 @@ using System.Text;
 namespace PIS.Ground.DataPackage.RequestMgt
 {
 	/// <summary>Interface for request manager.</summary>
-	internal interface IRequestManager
+	public interface IRequestManager
 	{
 		/// <summary>Initializes this object.</summary>
 		/// <param name="train2groundManager">T2GManager instance.</param>

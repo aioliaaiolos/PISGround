@@ -135,36 +135,12 @@ namespace PIS.Ground.DataPackage
 							_t2gManager = T2GManagerContainer.T2GManager;
 
 							_remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
+                            _requestManager = new RequestMgt.RequestManager();
+                            _requestFactory = new RequestMgt.RequestContextFactory();
 
-							_baselineStatusThread = new Thread(new ThreadStart(OnBaselineStatusEvent));
-                            _baselineStatusThread.Name = "Baseline Status";
+                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
-							// Baseline Deployments Status
-
-							// Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
-							// and registering a T2G client object to be used for updating those statuses
-							//
-							BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager);
-
-							_t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
-
-							_t2gManager.SubscribeToSystemDeletedNotification(SubscriberId, new EventHandler<SystemDeletedNotificationArgs>(OnSystemDeleted));
-							_t2gManager.SubscribeToT2GOnlineStatusNotification(SubscriberId, new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline), false);
-							_t2gManager.SubscribeToElementChangeNotification(SubscriberId, new EventHandler<ElementEventArgs>(OnElementInfoChanged));
-							_t2gManager.SubscribeToFileDistributionNotifications(SubscriberId, new EventHandler<FileDistributionStatusArgs>(OnFileTransfer));
-
-							_baselineStatusThread.Start();
-
-							_updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
-
-							_requestFactory = new RequestMgt.RequestContextFactory();
-
-							_remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
-
-							_requestManager = new RequestMgt.RequestManager();
-							_requestManager.Initialize(_t2gManager, _notificationSender);
-							_requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
-                            _initialized = true;
+                            CommonInitialize();
 						}
 						catch (Exception e)
 						{
@@ -175,7 +151,48 @@ namespace PIS.Ground.DataPackage
 			}
 		}
 
-		internal static void Initialize(
+        /// <summary>
+        /// Implements the common logic of initialization function.
+        /// </summary>
+        private static void CommonInitialize()
+        {
+            _remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
+            _baselineStatusThread = new Thread(new ThreadStart(OnBaselineStatusEvent));
+            _baselineStatusThread.Name = "Baseline Status";
+
+            // Baseline Deployments Status
+
+            // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
+            // and registering a T2G client object to be used for updating those statuses
+            //
+            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager);
+
+            _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
+
+            _t2gManager.SubscribeToSystemDeletedNotification(SubscriberId, new EventHandler<SystemDeletedNotificationArgs>(OnSystemDeleted));
+            _t2gManager.SubscribeToT2GOnlineStatusNotification(SubscriberId, new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline), false);
+            _t2gManager.SubscribeToElementChangeNotification(SubscriberId, new EventHandler<ElementEventArgs>(OnElementInfoChanged));
+            _t2gManager.SubscribeToFileDistributionNotifications(SubscriberId, new EventHandler<FileDistributionStatusArgs>(OnFileTransfer));
+
+            _baselineStatusThread.Start();
+
+            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
+
+            _requestManager.Initialize(_t2gManager, _notificationSender);
+            _requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
+            _initialized = true;
+        }
+
+        /// <summary>
+        /// Initializes this instance by providing objects to use.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="requestsFactory">The requests factory.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="requestManager">The request manager.</param>
+		public static void Initialize(
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
 			IT2GManager t2gManager,
@@ -183,13 +200,55 @@ namespace PIS.Ground.DataPackage
 			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
 			RequestMgt.IRequestManager requestManager)
 		{
-			_sessionManager = sessionManager;
-			_notificationSender = notificationSender;
-			_t2gManager = t2gManager;
-			_requestFactory = requestsFactory;
-			_remoteDataStoreFactory = remoteDataStoreFactory;
-			_requestManager = requestManager;
+            lock (_initializationLock)
+            {
+                Uninitialize();
+
+                _sessionManager = sessionManager;
+                _notificationSender = notificationSender;
+                _t2gManager = t2gManager;
+                _requestFactory = requestsFactory;
+                _remoteDataStoreFactory = remoteDataStoreFactory;
+                _requestManager = requestManager;
+                CommonInitialize();
+            }
 		}
+
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public static void Uninitialize()
+        {
+            lock (_initializationLock)
+            {
+                if (_baselineStatusThread != null)
+                {
+                    _baselineStatusThread.Abort();
+                    _baselineStatusThread = null;
+                }
+
+                if (_updateBaseLineTimer != null)
+                {
+                    _updateBaseLineTimer.Dispose();
+                    _updateBaseLineTimer = null;
+                }
+
+                if (_t2gManager != null)
+                {
+                    _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(null);
+                    
+                    _t2gManager.UnsubscribeFromSystemDeletedNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromT2GOnlineStatusNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromElementChangeNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromFileDistributionNotifications(SubscriberId);
+                }
+
+                BaselineStatusUpdater.Uninitialize();
+                _remoteDateStoreUrl = null;
+                _initialized = false;
+            }
+
+        }
 
 		/// <summary>Called when the UploadFile method completes.</summary>
 		/// <param name="request">The request information from UploadFile.</param>
