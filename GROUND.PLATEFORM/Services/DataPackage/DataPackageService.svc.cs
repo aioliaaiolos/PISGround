@@ -105,6 +105,10 @@ namespace PIS.Ground.DataPackage
 		#endregion
 
 		#region constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// </summary>
 		public DataPackageService()
 		{
             if (Thread.CurrentThread.Name == null)
@@ -114,6 +118,28 @@ namespace PIS.Ground.DataPackage
 
 			Initialize();
 		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="requestsFactory">The requests factory.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="requestManager">The request manager.</param>
+        /// <remarks>Available for automated testing.</remarks>
+        protected DataPackageService(
+            ISessionManager sessionManager,
+            INotificationSender notificationSender,
+            IT2GManager t2gManager,
+            RequestMgt.IRequestContextFactory requestsFactory,
+            RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
+            RequestMgt.IRequestManager requestManager)
+        {
+            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager);
+        }
+
 		#endregion
 
 		#region private static methods

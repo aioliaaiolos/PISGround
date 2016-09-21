@@ -52,6 +52,7 @@
     <Compile Include="RequestMgt\BaselineDistributingRequestContextProcessorTests.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextTests.cs" />
     <Compile Include="RequestMgt\RequestManagerTests.cs" />
+    <Compile Include="ServicesStub\DataPackageServiceStub.cs" />
     <Compile Include="ServicesStub\FaultExceptionFactory.cs" />
     <Compile Include="ServicesStub\T2GFileTransferServiceStub.cs" />
     <Compile Include="ServicesStub\T2GIdentificationServiceStub.cs" />
@@ -104,6 +105,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Services\Session\App_Data\SessionData.s3db">
+      <Link>SessionData.s3db</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>
