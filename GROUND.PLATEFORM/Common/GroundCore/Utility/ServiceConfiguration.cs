@@ -118,6 +118,15 @@ namespace PIS.Ground.Core.Utility
         #region Public properties
 
         /// <summary>
+        /// Gets the application data path.
+        /// </summary>
+        public static string AppDataPath
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets the T2GService UserName value
         /// </summary>
         public static string T2GServiceUserName
@@ -256,6 +265,7 @@ namespace PIS.Ground.Core.Utility
 
             // Initialize the application identifier
             InitializeRunningServiceName();
+            InitializeAppDataPath();
 
             error |= !InitializeFilterLocalTrainParameter();
 
@@ -329,7 +339,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    _sessionSqLiteDBPath = ConfigurationManager.AppSettings[SQLLITESESSIONSTOREPATH];
+                    _sessionSqLiteDBPath = ConfigurationManager.AppSettings[SQLLITESESSIONSTOREPATH].Replace("|DataDirectory|", AppDataPath);
                 }
                 catch
                 {
@@ -596,5 +606,33 @@ namespace PIS.Ground.Core.Utility
 
             return success;
         }
+
+        /// <summary>
+        /// Initializes the application data path variable.
+        /// </summary>
+        private static void InitializeAppDataPath()
+        {
+            string appDataPath = null;
+            try
+            {
+                object currentValue = AppDomain.CurrentDomain.GetData("DataDirectory");
+                if (currentValue != null)
+                {
+                    appDataPath = currentValue.ToString() + "\\";
+                }
+            }
+            catch
+            {
+                // Ignore the errors.
+            }
+
+            if (appDataPath == null)
+            {
+                appDataPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).Replace(@"file:\", string.Empty) + "\\";
+            }
+
+            AppDataPath = appDataPath;
+        }
+
     }
 }
