@@ -25,6 +25,9 @@ using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhas
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
 using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
 using LinkTypeEnum = DataPackageTests.T2GServiceInterface.Notification.linkTypeEnum;
+using System.ServiceModel;
+using PIS.Ground.Core.Utility;
+using PIS.Ground.DataPackage;
 
 
 namespace DataPackageTests
@@ -39,6 +42,19 @@ namespace DataPackageTests
     class BaselineDistributionIntegrationTests
     {
         #region Fields
+
+        public const string IdentificationServiceUrl = "http://127.0.0.1:5000/T2G/Identification.asmx";
+        public const string FileTransferServiceUrl = "http://127.0.0.1:5000/T2G/FileTransfer.asmx";
+        public const string VehicleInfoServiceUrl = "http://127.0.0.1:5000/T2G/VehicleInfo.asmx";
+
+        private T2GFileTransferServiceStub _fileTransferServiceStub;
+        private T2GIdentificationServiceStub _identificationServiceStub;
+        private T2GVehicleInfoServiceStub _vehicleInfoServiceStub;
+        private T2GNotificationServiceStub _notificationServiceStub;
+        private ServiceHost _hostIdentificationService;
+        private ServiceHost _hostFileTransferService;
+        private ServiceHost _hostVehicleInfoService;
+        private ServiceHost _hostNotificationService;
 
         #endregion
 
@@ -66,7 +82,26 @@ namespace DataPackageTests
         [TearDown]
         public void TearDown()
         {
-            // Do something after each tests
+            foreach (ServiceHost service in new ServiceHost[] { _hostVehicleInfoService, _hostFileTransferService, _hostIdentificationService, _hostNotificationService })
+            {
+                if (service == null)
+                    continue;
+
+                if (service.State == CommunicationState.Faulted)
+                {
+                    service.Abort();
+                    service.Close();
+                }
+            }
+            _hostIdentificationService = null;
+            _hostFileTransferService = null;
+            _hostVehicleInfoService = null;
+            _hostNotificationService = null;
+            _fileTransferServiceStub = null;
+            _identificationServiceStub = null;
+            _vehicleInfoServiceStub = null;
+            _notificationServiceStub = null;
+            DataPackageService.Uninitialize();
         }
         #endregion
 
@@ -344,7 +379,6 @@ namespace DataPackageTests
             Assert.AreEqual(folderId, folderInfo.folderId, "GetFolderInfo return the wrong folder");
             Assert.AreEqual(AcquisitionStateEnum.acquisitionSuccess, folderInfo.acquisitionState, "Acquisition state after transfer progression is not set to expected value");
             Assert.AreEqual(2, folderInfo.currentFilesCount, "CurrentFileCount after transfer progression is not set to expected value");
-
         }
 
         #endregion
@@ -357,12 +391,38 @@ namespace DataPackageTests
         [Test]
         public void DistributeBaselineScenario_Nominal()
         {
-
+            CreateT2GServicesStub();
         }
 
         #endregion
 
         #region Utilities methods
+
+        /// <summary>
+        /// Creates the T2G services stub.
+        /// </summary>
+        private void CreateT2GServicesStub()
+        {
+            _identificationServiceStub = new T2GIdentificationServiceStub();
+            _fileTransferServiceStub = new T2GFileTransferServiceStub(_identificationServiceStub);
+            _vehicleInfoServiceStub = new T2GVehicleInfoServiceStub(_identificationServiceStub);
+            _notificationServiceStub = new T2GNotificationServiceStub();
+
+            Uri identificationAddress = new Uri(IdentificationServiceUrl);
+            Uri fileTransferAddress = new Uri(FileTransferServiceUrl);
+            Uri vehicleInfoAddress = new Uri(VehicleInfoServiceUrl);
+            Uri notificationAddress = new Uri(ServiceConfiguration.T2GServiceNotificationUrl);
+
+            _hostIdentificationService = new ServiceHost(_identificationServiceStub, identificationAddress);
+            _hostFileTransferService = new ServiceHost(_fileTransferServiceStub, fileTransferAddress);
+            _hostVehicleInfoService = new ServiceHost(_vehicleInfoServiceStub, vehicleInfoAddress);
+            _hostNotificationService = new ServiceHost(_notificationServiceStub, notificationAddress);
+
+            _hostIdentificationService.Open();
+            _hostFileTransferService.Open();
+            _hostVehicleInfoService.Open();
+            _hostNotificationService.Open();
+        }
         #endregion
     }
 }
