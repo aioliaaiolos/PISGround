@@ -20,6 +20,7 @@ namespace DataPackageTests.ServicesStub
     /// Base class for T2G Messages
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInputBody" />
+    [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
     abstract class MessageBase : DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInputBody
     {
         /// <summary>
@@ -85,6 +86,7 @@ namespace DataPackageTests.ServicesStub
     /// Class that represent the PIS.MISSION message in T2G
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
+    [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
     class MissionMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "CommercialNumber", "OperatorCode", "State" };
@@ -173,6 +175,7 @@ namespace DataPackageTests.ServicesStub
     /// Class that represent the PIS.VERSION message in T2G.
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
+    [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
     class VersionMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "Version PIS Software" };
@@ -235,6 +238,7 @@ namespace DataPackageTests.ServicesStub
     /// Class that represent the PIS.BASELINE message in T2G.
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
+    [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
     class BaselineMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "Archived Valid Out", 
@@ -396,6 +400,7 @@ namespace DataPackageTests.ServicesStub
     /// Describe the service data
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.Notification.serviceStruct" />
+    [System.Runtime.Serialization.DataContractAttribute(Name = "serviceStruct", Namespace = "http://alstom.com/T2G/Notification")]
     public class ServiceInfoData : DataPackageTests.T2GServiceInterface.Notification.serviceStruct
     {
         /// <summary>
@@ -883,8 +888,8 @@ namespace DataPackageTests.ServicesStub
                 }
             }
 
-            subscribeToServiceNotificationsOutput result = new subscribeToServiceNotificationsOutput();
-            result.Body.subscriptionId = serviceIndex + 1;
+            subscribeToServiceNotificationsOutputBody body = new subscribeToServiceNotificationsOutputBody(serviceIndex + 1);
+            subscribeToServiceNotificationsOutput result = new subscribeToServiceNotificationsOutput(body);
             return result;
         }
 
