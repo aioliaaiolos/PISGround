@@ -334,19 +334,24 @@ namespace PIS.Ground.DataPackage.RequestMgt
                 }
 
                 _stopTransmitThread = true;
+                _TransmitEvent.Set();
                 threadCopy = _transmitThread;
                 _newRequests.Clear();
             }
 
             if (threadCopy != null)
             {
-                if (threadCopy.ThreadState != ThreadState.Unstarted && threadCopy.ThreadState != ThreadState.Stopped)
-                {
-                    threadCopy.Abort();
-                }
-
+                // Wait that thread stop by itself up to one minute.
+                bool stopped = true;
                 if (threadCopy.ThreadState != ThreadState.Unstarted)
                 {
+                    stopped = threadCopy.Join(new TimeSpan(0, 1, 0));
+                }
+
+                if (!stopped)
+                {
+                    // Force the thread to stop.
+                    threadCopy.Abort();
                     threadCopy.Join(new TimeSpan(0, 1, 0));
                 }
             }

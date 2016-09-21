@@ -19,6 +19,15 @@ namespace PIS.Ground.RemoteDataStore
         IRemoteDataStore,
         IDisposable
     {
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteDataStoreProxy"/> class.
+        /// </summary>
+        public RemoteDataStoreProxy()
+        {
+            // No logic to apply
+        }
+
         /// <summary>
         /// Gets or sets the operation timeout.
         /// </summary>
