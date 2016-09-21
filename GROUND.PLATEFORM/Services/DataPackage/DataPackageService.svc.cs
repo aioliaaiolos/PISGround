@@ -249,7 +249,11 @@ namespace PIS.Ground.DataPackage
             {
                 if (_baselineStatusThread != null)
                 {
-                    _baselineStatusThread.Abort();
+                    if (_baselineStatusThread.ThreadState != ThreadState.Stopped &&
+                        _baselineStatusThread.ThreadState != ThreadState.Unstarted)
+                    {
+                        _baselineStatusThread.Abort();
+                    }
                     _baselineStatusThread = null;
                 }
 
@@ -257,6 +261,22 @@ namespace PIS.Ground.DataPackage
                 {
                     _updateBaseLineTimer.Dispose();
                     _updateBaseLineTimer = null;
+                }
+
+                if (_requestManager != null)
+                {
+                    _requestManager.Uninitialize();
+                    _requestManager = null;
+                }
+
+                if (_baselineStatusThread != null)
+                {
+                    if (_baselineStatusThread.ThreadState != ThreadState.Unstarted)
+                    {
+                        _baselineStatusThread.Join(new TimeSpan(0, 1, 0));
+                    }
+
+                    _baselineStatusThread = null;
                 }
 
                 if (_t2gManager != null)

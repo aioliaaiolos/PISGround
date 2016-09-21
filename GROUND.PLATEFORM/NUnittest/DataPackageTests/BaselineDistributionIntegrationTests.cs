@@ -37,6 +37,8 @@ using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskS
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
 using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
 using PIS.Ground.Core.SessionMgmt;
+using PIS.Ground.DataPackage.RequestMgt;
+using PIS.Ground.DataPackage.RemoteDataStoreFactory;
 
 
 namespace DataPackageTests
@@ -76,7 +78,10 @@ namespace DataPackageTests
 
         /// <summary>The notification sender mock.</summary>
         private Mock<INotificationSender> _notificationSenderMock;
+        private Mock<IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
         private SessionManager _sessionManager;
+        private RequestContextFactory _requestFactory;
+        private RequestManager _requestManager;
 
 
         #endregion
@@ -206,6 +211,7 @@ namespace DataPackageTests
         public void Setup()
         {
             _notificationSenderMock = new Mock<INotificationSender>();
+            _remoteDataStoreFactoryMock = new Mock<IRemoteDataStoreFactory>();
         }
 
         /// <summary>Tear down called after each test to clean.</summary>
@@ -216,6 +222,12 @@ namespace DataPackageTests
             {
                 _datapackageServiceStub.Dispose();
                 _datapackageServiceStub = null;
+            }
+
+            if (_requestManager != null)
+            {
+                _requestManager.Uninitialize();
+                _requestManager = null;
             }
 
             foreach (ServiceHost service in new ServiceHost[] { _hostVehicleInfoService, _hostFileTransferService, _hostIdentificationService, _hostNotificationService })
@@ -241,6 +253,8 @@ namespace DataPackageTests
             T2GManagerContainer.T2GManager = null;
             _t2gManager = null;
             _sessionManager = null;
+            _requestFactory = null;
+            _remoteDataStoreFactoryMock = null;
 
         }
         #endregion
@@ -575,12 +589,19 @@ namespace DataPackageTests
 
             // Create a complete T2G Manager
             _t2gManager = T2GManagerContainer.T2GManager;
-
             _sessionManager = new SessionManager();
 
             Assert.IsEmpty(_sessionManager.RemoveAllSessions(), "Cannot empty the session database");
+            _requestFactory = new RequestContextFactory();
+            _requestManager = new RequestManager();
 
-            //_datapackageServiceStub = new DataPackageServiceStub(_sessionManager, _notificationSenderMock.Object, _t2gManager);
+            _datapackageServiceStub = new DataPackageServiceStub(_sessionManager,
+                _notificationSenderMock.Object, 
+                _t2gManager, 
+                _requestFactory,
+                _remoteDataStoreFactoryMock.Object,
+                _requestManager
+                );
         }
 
         /// <summary>

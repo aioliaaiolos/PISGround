@@ -53,6 +53,9 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <summary>The string list serializer.</summary>
 		private static XmlSerializer _stringListSerializer = new XmlSerializer(typeof(List<string>));
 
+        /// <summary>Indicates if the transmit thread shall stop.</summary>
+        private static volatile bool _stopTransmitThread = false;
+
 		#endregion
 
 		#region static
@@ -80,7 +83,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
                 List<IRequestContext> currentRequests = new List<IRequestContext>();
                 BaselineDistributingRequestContext processBaselineDistributingRequest = null;
 
-                while (true)
+                while (!_stopTransmitThread)
                 {
                     if (currentRequests.Count == 0)
                     {
@@ -97,7 +100,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
                         }
                     }
 
-                    for (int i = 0; i < currentRequests.Count; ++i)
+                    for (int i = 0; i < currentRequests.Count && !_stopTransmitThread; ++i)
                     {
                         IRequestContext request = currentRequests[i];
 
@@ -191,8 +194,11 @@ namespace PIS.Ground.DataPackage.RequestMgt
                         }
                     }
 
-                    currentRequests.RemoveAll(c => c.IsStateFinal);
-                    Thread.Sleep(100);
+                    if (!_stopTransmitThread)
+                    {
+                        currentRequests.RemoveAll(c => c.IsStateFinal);
+                        Thread.Sleep(100);
+                    }
                 }
             }
             catch (ThreadAbortException)
@@ -266,12 +272,6 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <summary>Initializes a new instance of the RequestManager class.</summary>
 		public RequestManager()
 		{
-			RequestManager._transmitThread = new Thread(new ThreadStart(RequestManager.OnTransmitEvent));
-            RequestManager._transmitThread.Name = "DataPkg Rqt Mgr";
-			if (_transmitThread.ThreadState != ThreadState.Running)
-			{
-				_transmitThread.Start();
-			}
 		}
 
 		/// <summary>Initializes this object.</summary>
@@ -282,6 +282,11 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		{
 			lock (_lock)
 			{
+                if (RequestManager._transmitThread != null)
+                {
+                    Uninitialize();
+                }
+
 				if (train2groundManager != null)
 				{
 					RequestManager._train2groundManager = train2groundManager;
@@ -300,8 +305,60 @@ namespace PIS.Ground.DataPackage.RequestMgt
 				{
 					throw new ArgumentNullException("notificationSender");
 				}
+
+                _stopTransmitThread = false;
+                RequestManager._transmitThread = new Thread(new ThreadStart(RequestManager.OnTransmitEvent));
+                RequestManager._transmitThread.Name = "DataPkg Rqt Mgr";
+                if (_transmitThread.ThreadState != ThreadState.Running)
+                {
+                    _transmitThread.Start();
+                }
+
 			}
 		}
+
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public void Uninitialize()
+        {
+            // First step is to stop that transmit thread and unsubscribe to subscribed notification.
+            // Then wait that transmit thread completed.
+            // Then finish the uninitialization.
+            Thread threadCopy;
+            lock (_lock)
+            {
+                if (_train2groundManager != null)
+                {
+                    _train2groundManager.UnsubscribeFromElementChangeNotification(SubscriberId);
+                }
+
+                _stopTransmitThread = true;
+                threadCopy = _transmitThread;
+                _newRequests.Clear();
+            }
+
+            if (threadCopy != null)
+            {
+                if (threadCopy.ThreadState != ThreadState.Unstarted && threadCopy.ThreadState != ThreadState.Stopped)
+                {
+                    threadCopy.Abort();
+                }
+
+                if (threadCopy.ThreadState != ThreadState.Unstarted)
+                {
+                    threadCopy.Join(new TimeSpan(0, 1, 0));
+                }
+            }
+
+            lock (_lock)
+            {
+                _transmitThread = null;
+                _newRequests.Clear();
+                _train2groundManager = null;
+                _notificationSender = null;
+            }
+        }
 
 		#endregion
 

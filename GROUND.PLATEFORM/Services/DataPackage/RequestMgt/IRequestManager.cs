@@ -21,6 +21,11 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="notificationSender">The notification sender.</param>
 		void Initialize(Ground.Core.T2G.IT2GManager train2groundManager, PIS.Ground.Core.Common.INotificationSender notificationSender);
 
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        void Uninitialize();
+
 		/// <summary>Adds a request.</summary>
 		/// <param name="requestContext">Context for the request.</param>
 		void AddRequest(PIS.Ground.Core.Data.IRequestContext requestContext);
