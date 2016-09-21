@@ -8,26 +8,35 @@
 //---------------------------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using DataPackageTests.ServicesStub;
-using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
-using FolderInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.folderInfoStruct;
-using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
-using RecipientStruct = DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct;
-using FilePathStruct = DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct;
-using FileList = DataPackageTests.T2GServiceInterface.FileTransfer.fileList;
-using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
-using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
-using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
-using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
-using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
-using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
-using LinkTypeEnum = DataPackageTests.T2GServiceInterface.Notification.linkTypeEnum;
+using System.Reflection;
 using System.ServiceModel;
+using System.Text;
+using DataPackageTests.ServicesStub;
+using Moq;
+using NUnit.Framework;
+using PIS.Ground.Core.Common;
+using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.SqlServerAccess;
+using PIS.Ground.Core.T2G;
 using PIS.Ground.Core.Utility;
 using PIS.Ground.DataPackage;
+using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
+using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
+using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
+using FileList = DataPackageTests.T2GServiceInterface.FileTransfer.fileList;
+using FilePathStruct = DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct;
+using FolderInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.folderInfoStruct;
+using LinkTypeEnum = DataPackageTests.T2GServiceInterface.Notification.linkTypeEnum;
+using RecipientStruct = DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct;
+using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
+using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
+using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
+using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
+using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
+using PIS.Ground.Core.SessionMgmt;
 
 
 namespace DataPackageTests
@@ -51,10 +60,24 @@ namespace DataPackageTests
         private T2GIdentificationServiceStub _identificationServiceStub;
         private T2GVehicleInfoServiceStub _vehicleInfoServiceStub;
         private T2GNotificationServiceStub _notificationServiceStub;
+        private DataPackageServiceStub _datapackageServiceStub;
         private ServiceHost _hostIdentificationService;
         private ServiceHost _hostFileTransferService;
         private ServiceHost _hostVehicleInfoService;
         private ServiceHost _hostNotificationService;
+        private IT2GManager _t2gManager;
+
+        private const string DatabaseName="TestDatabaseDataPackage";
+        private string _databaseFilePath = string.Empty;
+        private string _databaseLogPath = string.Empty;
+        private string _databaseFolderPath = string.Empty;
+        private string _databaseName = string.Empty;
+        private bool _databaseConfigurationValid = false;
+
+        /// <summary>The notification sender mock.</summary>
+        private Mock<INotificationSender> _notificationSenderMock;
+        private SessionManager _sessionManager;
+
 
         #endregion
 
@@ -65,23 +88,136 @@ namespace DataPackageTests
         /// </summary>
         public BaselineDistributionIntegrationTests()
         {
-            // No logic to apply
+            // No logic to execute
         }
 
         #endregion
 
         #region Tests managment
 
+        /// <summary>
+        /// Test fixture setup.
+        /// </summary>
+        [TestFixtureSetUp]
+        public void FixtureInit()
+        {
+            if (!HistoryLoggerConfiguration.Valid)
+            {
+                throw new Exception("Test application is misconfigured. The history logger configuration is invalid");
+            }
+            if (!HistoryLoggerConfiguration.Used)
+            {
+                throw new Exception("Test application is misconfigured. The history logger configuration is not set to used");
+            }
+
+            Console.Out.Write("ServiceConfiguration.SessionSqLiteDBPath=\"");
+            Console.Out.Write(ServiceConfiguration.SessionSqLiteDBPath);
+            Console.Out.WriteLine("\"");
+
+            Console.Out.Write("HistoryLoggerConfiguration.LogBackupPath=\"");
+            Console.Out.Write(HistoryLoggerConfiguration.LogBackupPath);
+            Console.Out.WriteLine("\"");
+            Console.Out.Write("HistoryLoggerConfiguration.CreateTableScriptPath=\"");
+            Console.Out.Write(HistoryLoggerConfiguration.CreateTableScriptPath);
+            Console.Out.WriteLine("\"");
+            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(HistoryLoggerConfiguration.SqlConnectionString);
+
+            Console.Out.Write("HistoryLoggerConfiguration.DatabaseName=\"");
+            Console.Out.Write(connectionBuilder.InitialCatalog);
+            Console.Out.WriteLine("\"");
+            Console.Out.Write("HistoryLoggerConfiguration.AttachDBFilename=\"");
+            Console.Out.Write(connectionBuilder.AttachDBFilename);
+            Console.Out.WriteLine("\"");
+
+            if (string.IsNullOrEmpty(connectionBuilder.AttachDBFilename))
+            {
+                throw new Exception("Test application is misconfigured: the sql connection string of history logger configuration does not have AttachDBFilename value set.");
+            }
+            if (string.IsNullOrEmpty(connectionBuilder.InitialCatalog))
+            {
+                throw new Exception("Test application is misconfigured: the sql connection string of history logger configuration does not have Database value set.");
+            }
+
+            _databaseName = connectionBuilder.InitialCatalog;
+            _databaseFilePath = connectionBuilder.AttachDBFilename;
+            _databaseFolderPath = Path.GetDirectoryName(_databaseFilePath);
+            _databaseLogPath = Path.Combine(_databaseFolderPath, Path.GetFileNameWithoutExtension(_databaseFilePath) + "_log.ldf");
+
+
+
+            if (!Directory.Exists(HistoryLoggerConfiguration.LogBackupPath))
+            {
+                Directory.CreateDirectory(HistoryLoggerConfiguration.LogBackupPath);
+            }
+
+            if (!File.Exists(HistoryLoggerConfiguration.CreateTableScriptPath))
+            {
+                throw new Exception("Test application is misconfigured: the create table script of history logger configuration does not exist at this location: \"" + HistoryLoggerConfiguration.CreateTableScriptPath + "\".");
+            }
+
+            if (!Directory.Exists(_databaseFolderPath))
+            {
+                Directory.CreateDirectory(_databaseFolderPath);
+            }
+
+            if (!File.Exists(ServiceConfiguration.SessionSqLiteDBPath))
+            {
+                throw new Exception("The session database does not exist at this location: \"" + ServiceConfiguration.SessionSqLiteDBPath + "\".");
+            }
+            
+            // Remove the readonly attribute on session database table if set.
+            FileAttributes attributes = File.GetAttributes(ServiceConfiguration.SessionSqLiteDBPath);
+            if ((attributes& FileAttributes.ReadOnly) != 0)
+            {
+                attributes = attributes& (~FileAttributes.ReadOnly);
+                File.SetAttributes(ServiceConfiguration.SessionSqLiteDBPath, attributes);
+            }
+
+
+            // Verify that connection with SQL Server can be established.
+            try
+            {
+                using (SqlConnection dbConnection = new SqlConnection(HistoryLoggerConfiguration.SqlCreateDbConnectionString))
+                {
+                    dbConnection.Open();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                throw new Exception("Check that SQL server is running or the history logger database configuration because the application cannot connect to SQL server instance:" + ex.Message, ex);
+            }
+
+            _databaseConfigurationValid = true;
+            DropTestDb();
+
+            HistoryLogger.Initialize();
+        }
+
+        /// <summary>Test fixture cleanup.</summary>
+        [TestFixtureTearDown]
+        public void MyCleanup()
+        {
+            DropTestDb();
+        }
+
+
         /// <summary>Setups called before each test to initialize variables.</summary>
         [SetUp]
         public void Setup()
         {
+            _notificationSenderMock = new Mock<INotificationSender>();
         }
 
         /// <summary>Tear down called after each test to clean.</summary>
         [TearDown]
         public void TearDown()
         {
+            if (_datapackageServiceStub != null)
+            {
+                _datapackageServiceStub.Dispose();
+                _datapackageServiceStub = null;
+            }
+
             foreach (ServiceHost service in new ServiceHost[] { _hostVehicleInfoService, _hostFileTransferService, _hostIdentificationService, _hostNotificationService })
             {
                 if (service == null)
@@ -102,6 +238,10 @@ namespace DataPackageTests
             _vehicleInfoServiceStub = null;
             _notificationServiceStub = null;
             DataPackageService.Uninitialize();
+            T2GManagerContainer.T2GManager = null;
+            _t2gManager = null;
+            _sessionManager = null;
+
         }
         #endregion
 
@@ -392,6 +532,7 @@ namespace DataPackageTests
         public void DistributeBaselineScenario_Nominal()
         {
             CreateT2GServicesStub();
+            InitializeDataPackageService();
         }
 
         #endregion
@@ -423,6 +564,51 @@ namespace DataPackageTests
             _hostVehicleInfoService.Open();
             _hostNotificationService.Open();
         }
+        
+        /// <summary>
+        /// Initializes the data package service.
+        /// </summary>
+        private void InitializeDataPackageService()
+        {
+            Assert.IsTrue(HistoryLoggerConfiguration.Used, "The test application is misconfigured. HistoryLoggerConfiguration.Used is not set to proper value");
+            Assert.IsTrue(HistoryLoggerConfiguration.Valid, "The test application is misconfigured. HistoryLoggerConfiguration.Valid is not set to proper value");
+
+            // Create a complete T2G Manager
+            _t2gManager = T2GManagerContainer.T2GManager;
+
+            _sessionManager = new SessionManager();
+
+            Assert.IsEmpty(_sessionManager.RemoveAllSessions(), "Cannot empty the session database");
+
+            //_datapackageServiceStub = new DataPackageServiceStub(_sessionManager, _notificationSenderMock.Object, _t2gManager);
+        }
+
+        /// <summary>
+        /// Drops the test database and delete the physical files.
+        /// </summary>
+        private void DropTestDb()
+        {
+            if (_databaseConfigurationValid)
+            {
+                SqlConnection.ClearAllPools();
+
+                if (File.Exists(_databaseFilePath))
+                {
+                    string cmdDropDB =
+                        "IF EXISTS( select name from sys.databases where NAME= '" + _databaseName + "')" +
+                        " BEGIN DROP DATABASE [" + _databaseName + "] END";
+
+                    SqlHelper.ExecuteNonQuery(HistoryLoggerConfiguration.SqlCreateDbConnectionString, System.Data.CommandType.Text, cmdDropDB);
+                    File.Delete(_databaseFilePath);
+                }
+
+                if (File.Exists(_databaseLogPath))
+                {
+                    File.Delete(_databaseLogPath);
+                }
+            }
+        }
+
         #endregion
     }
 }
