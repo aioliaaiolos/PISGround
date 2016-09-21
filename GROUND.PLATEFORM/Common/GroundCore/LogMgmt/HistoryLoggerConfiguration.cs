@@ -1,26 +1,27 @@
-﻿// <copyright file="HistoryLoggerConfiguration.cs" company="Alstom Transport Telecite Inc.">
-// Copyright by Alstom Transport Telecite Inc. 2011.  All rights reserved.
-// 
-// The informiton contained herein is confidential property of Alstom
-// Transport Telecite Inc.  The use, copy, transfer or disclosure of such
-// information is prohibited except by express written agreement with Alstom
-// Transport Telecite Inc.
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="HistoryLoggerConfiguration.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.LogMgmt
 {
     using System;
     using System.Configuration;
     using System.Data.SqlClient;
     using System.IO;
+    using System.ServiceModel.Configuration;
+    using System.Web.Configuration;
     using System.Xml;
     using PIS.Ground.Core.Data;
-    using PIS.Ground.Core.LogMgmt;
-    using System.Web.Configuration;
-    using System.ServiceModel.Configuration;
+    using PIS.Ground.Core.Utility;
 
     /// <summary>
     /// Utility Class
     /// </summary>
-    internal class HistoryLoggerConfiguration
+    public class HistoryLoggerConfiguration
     {
         #region Private Variable Declaration
 
@@ -296,17 +297,7 @@ namespace PIS.Ground.Core.LogMgmt
             try
             {
 
-                string appDataPath;
-				bool isLoadingFromWebApplication = true;
-				try
-				{
-					appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString() + "\\";
-				}
-				catch
-				{
-					appDataPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).Replace(@"file:\", string.Empty) + "\\";
-					isLoadingFromWebApplication = false;
-				}
+				bool isLoadingFromWebApplication = AppDomain.CurrentDomain.GetData("DataDirectory") != null;;
 
                 if (ConfigurationManager.AppSettings[DATABASECONFIGPATH] != null)
                 {
@@ -316,7 +307,7 @@ namespace PIS.Ground.Core.LogMgmt
                         try
                         {
                             _dataBaseConfigPath = ConfigurationManager.AppSettings[DATABASECONFIGPATH];
-                            _dataBaseConfigPath = _dataBaseConfigPath.Replace("|DataDirectory|", appDataPath);
+                            _dataBaseConfigPath = _dataBaseConfigPath.Replace("|DataDirectory|", ServiceConfiguration.AppDataPath);
 
                             ReadDBConfigFile();
                         }
@@ -340,7 +331,7 @@ namespace PIS.Ground.Core.LogMgmt
                         try
                         {
                             _logBackupPath = ConfigurationManager.AppSettings[LOGBACKUPPATH];
-                            _logBackupPath = _logBackupPath.Replace("|DataDirectory|", appDataPath);
+                            _logBackupPath = _logBackupPath.Replace("|DataDirectory|", ServiceConfiguration.AppDataPath);
                         }
                         catch (Exception)
                         {
@@ -362,7 +353,7 @@ namespace PIS.Ground.Core.LogMgmt
                         try
                         {
                             _createTableScriptPath = ConfigurationManager.AppSettings[CREATETABLESCRIPTPATH];
-                            _createTableScriptPath = _createTableScriptPath.Replace("|DataDirectory|", appDataPath);
+                            _createTableScriptPath = _createTableScriptPath.Replace("|DataDirectory|", ServiceConfiguration.AppDataPath);
                         }
                         catch (Exception)
                         {
@@ -385,7 +376,7 @@ namespace PIS.Ground.Core.LogMgmt
                         SqlConnectionStringBuilder stringBuiilder = new SqlConnectionStringBuilder(ConfigurationManager.ConnectionStrings["SqlServerDataDirectory"].ConnectionString);
                         if (stringBuiilder != null && stringBuiilder.AttachDBFilename != null && stringBuiilder.AttachDBFilename.Contains("|DataDirectory|"))
                         {
-                            string configConvertedPath = stringBuiilder.AttachDBFilename.Replace("|DataDirectory|", appDataPath);
+                            string configConvertedPath = stringBuiilder.AttachDBFilename.Replace("|DataDirectory|", ServiceConfiguration.AppDataPath);
                             //if (File.Exists(configConvertedPath))
                             try
                             {
