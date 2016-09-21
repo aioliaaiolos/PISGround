@@ -589,7 +589,7 @@ namespace DataPackageTests.ServicesStub
         /// Updates the message data for the version message.
         /// </summary>
         /// <param name="missionMessage">The version message.</param>
-        public void UpateMessageData(VersionMessage versionMessage)
+        public void UpdateMessageData(VersionMessage versionMessage)
         {
             UpdateMessageData(versionMessage, VersionMessageIndex);
         }
@@ -646,7 +646,7 @@ namespace DataPackageTests.ServicesStub
         /// </summary>
         /// <param name="systemId">The system identifier.</param>
         /// <param name="serviceData">The service data.</param>
-        void UpdateServiceData(string systemId, ServiceInfoData serviceData)
+        public void UpdateServiceData(string systemId, ServiceInfoData serviceData)
         {
             ServiceInfoData clonedService = serviceData.Clone();
             int serviceIndex = Array.IndexOf(SupportedServices, serviceData.serviceId);
