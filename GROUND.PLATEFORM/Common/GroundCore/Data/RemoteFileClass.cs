@@ -17,11 +17,22 @@ using PIS.Ground.Core.Properties;
 namespace PIS.Ground.Core.Data
 {
     /// <summary>
-    /// This class manage remote file for read access. It simplified acces methodes to don't care
+    /// This class manage remote file for read access. It simplified access methods to don't care
     /// about ftp, http or local file when dealing with files.
     /// </summary>
     public class RemoteFileClass : IRemoteFileClass
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the testing mode enabled.
+        /// 
+        /// When testing mode is enable, no physical access to files is performed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if testing mode enabled; otherwise, <c>false</c>.
+        /// </value>
+        /// <remarks>This approach is not the best, but works with a little bit efforts.</remarks>
+        public static bool TestingModeEnabled { get; set; }
+
         #region attributes
         
         /// <summary>Full pathname of the file.</summary>
@@ -69,7 +80,7 @@ namespace PIS.Ground.Core.Data
                     _filePath = pFilePath;
                     _fileName = System.IO.Path.GetFileName(_filePath);
                     string lDataStorePath = System.IO.Path.GetFullPath(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"]);
-                    string lFileName = Path.GetFileName(_filePath);
+                    string lFileName = _fileName;
                     string lFileNameWExt = Path.GetFileNameWithoutExtension(_filePath);
                     string lType = lFileNameWExt.Substring(0, lFileName.IndexOf('-')).ToUpperInvariant();
                     string lDestFolder = lDataStorePath + lType;
@@ -88,14 +99,6 @@ namespace PIS.Ground.Core.Data
                 PIS.Ground.Core.LogMgmt.LogManager.WriteLog(TraceType.ERROR, String.Format(CultureInfo.CurrentCulture, Resources.RemoteFileClassArgumentOutOfRangeException, _filePath), "PIS.Ground.Core.Data.RemoteFileClass", lEx, EventIdEnum.GroundCore);
             }
 
-        }
-
-        #endregion
-
-        #region destructor
-        /// <summary>Destructor.</summary>
-        ~RemoteFileClass()
-	    {
         }
 
         #endregion
@@ -133,26 +136,33 @@ namespace PIS.Ground.Core.Data
         public void OpenStream(out System.IO.Stream pStream)
         {
             pStream = null;
-            switch (_fileType)
+            if (!TestingModeEnabled)
             {
-                case FileTypeEnum.Undefined:
-                    break;
-                case FileTypeEnum.LocalFile:
-                    OpenReadLocalFile(out pStream);
-                    break;
-                case FileTypeEnum.FtpFile:
-                    OpenReadRemoteDownloadedFile(out pStream);
-                    break;
-                case FileTypeEnum.HttpFile:
-                    OpenReadRemoteDownloadedFile(out pStream);
-                    break;
-                default:
-                    break;
+                switch (_fileType)
+                {
+                    case FileTypeEnum.Undefined:
+                        break;
+                    case FileTypeEnum.LocalFile:
+                        OpenReadLocalFile(out pStream);
+                        break;
+                    case FileTypeEnum.FtpFile:
+                        OpenReadRemoteDownloadedFile(out pStream);
+                        break;
+                    case FileTypeEnum.HttpFile:
+                        OpenReadRemoteDownloadedFile(out pStream);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                OpenReadTestingModeFile(out pStream);
             }
         }
 
         /// <summary>
-        /// Return wheter or not the file realy exists (and is a ccessible). True if the file is.
+        /// Return whether or not the file exists (and is accessible).
         /// </summary>
         /// <value>true if exists, false if not.</value>
         public bool Exists
@@ -206,20 +216,43 @@ namespace PIS.Ground.Core.Data
         {
             if (_initialized == false)
             {
-                if (_filePath.StartsWith("ftp:"))
+                if (!TestingModeEnabled)
                 {
-                    mInitFtpFile();
-                }
-                else if (_filePath.StartsWith("http:"))
-                {
-                    mInitHttpFile();
+                    if (_filePath.StartsWith("ftp:"))
+                    {
+                        mInitFtpFile();
+                    }
+                    else if (_filePath.StartsWith("http:"))
+                    {
+                        mInitHttpFile();
+                    }
+                    else
+                    {
+                        _filePath = mGetValidUriFromPath(_filePath);
+                        mInitLocalFile();
+                    }
                 }
                 else
                 {
-                    _filePath = mGetValidUriFromPath(_filePath);
-                    mInitLocalFile();
+                    mInitTestingModeFile();
                 }
             }
+        }
+
+        private void mInitTestingModeFile()
+        {
+            _size = FileName.Length;
+            _exists = true;
+            _fileType = FileTypeEnum.Undefined;
+            System.IO.Stream lFileStream;
+            OpenReadTestingModeFile(out lFileStream);
+            using (lFileStream)
+            {
+                Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
+
+                _crc = lCrcCalculator.CalculateChecksum(lFileStream);
+            }
+
         }
 
         /// <summary>
@@ -236,12 +269,13 @@ namespace PIS.Ground.Core.Data
                 _size = lFileInfo.Length;
                 _fileType = FileTypeEnum.LocalFile;
 
-                System.IO.Stream lFileStream = lFileInfo.OpenRead();
+                using (System.IO.Stream lFileStream = lFileInfo.OpenRead())
+                {
+                    //Calcul CRC
+                    Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
 
-                //Calcul CRC
-                Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
-
-                _crc = lCrcCalculator.CalculateChecksum(lFileStream);
+                    _crc = lCrcCalculator.CalculateChecksum(lFileStream);
+                }
             }
             catch (System.Security.SecurityException lEx)
             {
@@ -376,6 +410,26 @@ namespace PIS.Ground.Core.Data
         }
 
         /// <summary>
+        /// Opens a read-only stream on a simulated file. This function is useful only for testing.
+        /// </summary>
+        /// <param name="pStream">The stream.</param>
+        /// <remarks>This function is used during testing.</remarks>
+        private void OpenReadTestingModeFile(out System.IO.Stream stream)
+        {
+            try
+            {
+                // Use the filename as data.
+                byte[] sampleData = System.Text.Encoding.Unicode.GetBytes(FileName);
+                stream = new MemoryStream(sampleData, false);
+            }
+            catch (System.Exception ex)
+            {
+                PIS.Ground.Core.LogMgmt.LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Data.RemoteFileClass", ex, EventIdEnum.GroundCore);
+                stream = null;
+            }
+        }
+
+        /// <summary>
         /// Open a FileStream on a local file for read only. On failed, output stream is null and a
         /// message is write in logs.
         /// </summary>
@@ -495,7 +549,7 @@ namespace PIS.Ground.Core.Data
         }
 
         /// <summary>
-        /// Transforme an UNC path in a valid path (i.e. replace hostname by Ip, remove file:///,
+        /// Transform an UNC path in a valid path (i.e. replace hostname by Ip, remove file:///,
         /// harmonizes / and \)
         /// </summary>
         /// <param name="pUrl">The url to transform.</param>
