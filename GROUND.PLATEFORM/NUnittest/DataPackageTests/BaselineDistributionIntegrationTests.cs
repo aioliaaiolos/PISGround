@@ -85,12 +85,14 @@ namespace DataPackageTests
         private T2GIdentificationServiceStub _identificationServiceStub;
         private T2GVehicleInfoServiceStub _vehicleInfoServiceStub;
         private T2GNotificationServiceStub _notificationServiceStub;
+        private TrainDataPackageServiceStub _trainDataPackageServiceStub;
         private DataPackageServiceStub _datapackageServiceStub;
         private DataPackageCallbackService _datapackageCallbackService;
         private ServiceHost _hostIdentificationService;
         private ServiceHost _hostFileTransferService;
         private ServiceHost _hostVehicleInfoService;
         private ServiceHost _hostNotificationService;
+        private ServiceHost _hostTrainDataPackageService;
         private IT2GManager _t2gManager;
 
         private const string DatabaseName="TestDatabaseDataPackage";
@@ -235,6 +237,7 @@ namespace DataPackageTests
 
             _databaseConfigurationValid = true;
             DropTestDb();
+            RemoteFileClass.TestingModeEnabled = true;
 
             HistoryLogger.Initialize();
         }
@@ -243,6 +246,7 @@ namespace DataPackageTests
         [TestFixtureTearDown]
         public void MyCleanup()
         {
+            RemoteFileClass.TestingModeEnabled = false;
             DropTestDb();
         }
 
@@ -274,7 +278,7 @@ namespace DataPackageTests
                 _requestManager = null;
             }
 
-            foreach (ServiceHost service in new ServiceHost[] { _hostVehicleInfoService, _hostFileTransferService, _hostIdentificationService, _hostNotificationService })
+            foreach (ServiceHost service in new ServiceHost[] { _hostVehicleInfoService, _hostFileTransferService, _hostIdentificationService, _hostNotificationService, _hostTrainDataPackageService })
             {
                 if (service == null)
                     continue;
@@ -289,6 +293,7 @@ namespace DataPackageTests
             _hostFileTransferService = null;
             _hostVehicleInfoService = null;
             _hostNotificationService = null;
+            _hostTrainDataPackageService = null;
             _fileTransferServiceStub = null;
             _identificationServiceStub = null;
             _vehicleInfoServiceStub = null;
@@ -616,7 +621,8 @@ namespace DataPackageTests
 
             // Wait that folder on T2G was created
 
-            Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(60 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
+            Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
+            Assert.That(() => _fileTransferServiceStub.LastCreatedTransfer.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer task on T2G service not created", TRAIN_NAME_1);
         }
 
         #endregion
@@ -703,6 +709,16 @@ namespace DataPackageTests
             {
                 _dataStoreElementsData.Add(trainId, new ElementsDataStoreData(trainId));
             }
+
+            if (_trainDataPackageServiceStub != null)
+            {
+                throw new NotImplementedException("Support to multiple train need to be implemented if needed.");
+            }
+
+            _trainDataPackageServiceStub = new TrainDataPackageServiceStub(trainId);
+            Uri address = new Uri("http://" + ipAddress + ":" + dataPackagePort);
+            _hostTrainDataPackageService = new ServiceHost(_trainDataPackageServiceStub, address);
+            _hostTrainDataPackageService.Open();
         }
 
 
@@ -782,6 +798,7 @@ namespace DataPackageTests
             _remoteDataStoreMock.Setup(r => r.getDataPackageCharacteristics(It.IsAny<string>(), It.IsAny<string>())).Returns<string, string>(GetDataPackageCharacteristicsImplementation);
             _remoteDataStoreMock.Setup(r => r.checkIfElementExists(It.IsAny<string>())).Returns<string>(CheckIfElementExistsImplementation);
             _remoteDataStoreMock.Setup(r => r.createBaselineFile(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns<Guid, string, string, string, string>(CreateBaselineFileImplementation);
+            _remoteDataStoreMock.Setup(r => r.checkIfDataPackageExists(It.IsAny<string>(), It.IsAny<string>())).Returns<string, string>(CheckIfDataPackageExistsImplementation);
         }
 
         private bool IsValidPackageType(string type)
@@ -803,6 +820,17 @@ namespace DataPackageTests
             return outputPath;
 
         }
+
+        private bool CheckIfDataPackageExistsImplementation(string packageType, string version)
+        {
+            if (!IsValidPackageType(packageType))
+            {
+                throw new FaultException("Unknown DataPackage type", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_DATAPACKAGE_TYPE.ToString()));
+            }
+
+            return CheckIfBaselineExistsImplementation(version);
+        }
+
 
         private DataContainer GetDataPackageCharacteristicsImplementation(string packageType, string version)
         {
