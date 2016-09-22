@@ -62,14 +62,17 @@ namespace DataPackageTests
 
         public const int ONE_SECOND = 1000;
 
-        public const string IdentificationServiceUrl = "http://127.0.0.1:5000/T2G/Identification.asmx";
-        public const string FileTransferServiceUrl = "http://127.0.0.1:5000/T2G/FileTransfer.asmx";
-        public const string VehicleInfoServiceUrl = "http://127.0.0.1:5000/T2G/VehicleInfo.asmx";
-        public const string PisGroundNotificationServiceUrl = "http://127.0.0.1/5002/PIS_GROUND/notification.svc";
+        // Define the IP address to use. Change it if you would like to debug with a proxy server.
+        public const string DEFAULT_IP = "127.0.0.1";
+
+        public const string IdentificationServiceUrl = "http://" + DEFAULT_IP + ":5000/T2G/Identification.asmx";
+        public const string FileTransferServiceUrl = "http://" + DEFAULT_IP + ":5000/T2G/FileTransfer.asmx";
+        public const string VehicleInfoServiceUrl = "http://" + DEFAULT_IP + ":5000/T2G/VehicleInfo.asmx";
+        public const string PisGroundNotificationServiceUrl = "http://" + DEFAULT_IP + ":5002/PIS_GROUND/notification.svc";
 
         public const string TRAIN_NAME_1 = "TRAIN-1";
         public const int TRAIN_VEHICLE_ID_1 = 1;
-        public const string TRAIN_IP_1 = "127.0.0.1";
+        public const string TRAIN_IP_1 = DEFAULT_IP;
         public const ushort TRAIN_DATA_PACKAGE_PORT_1 = 4000;
 
         public const string DEFAULT_BASELINE = "3.0.0.0";
