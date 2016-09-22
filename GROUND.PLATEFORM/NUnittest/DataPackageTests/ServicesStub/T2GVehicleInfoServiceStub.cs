@@ -32,6 +32,7 @@ namespace DataPackageTests.ServicesStub
         protected MessageBase(string systemId, string messageIdentifier, string[] fieldNames)
         {
             this.systemId = systemId;
+            this.messageId = messageIdentifier;
             this.timestamp = DateTime.UtcNow;
             this.inhibited = false;
             this.fieldList = new DataPackageTests.T2GServiceInterface.Notification.fieldList();
@@ -48,7 +49,8 @@ namespace DataPackageTests.ServicesStub
         /// <param name="other">The other message to copy.</param>
         protected MessageBase(MessageBase other)
         {
-            systemId = other.systemId;
+            this.systemId = other.systemId;
+            this.messageId = other.messageId;
             this.timestamp = other.timestamp;
             this.inhibited = other.inhibited;
             this.fieldList = new DataPackageTests.T2GServiceInterface.Notification.fieldList();
@@ -306,6 +308,10 @@ namespace DataPackageTests.ServicesStub
                 fieldList[CurrentVersionPisInfotainmentOutIndex].value = value;
                 fieldList[CurrentVersionLmtOutIndex].value = value;
                 fieldList[CurrentValidOutIndex].value = string.IsNullOrEmpty(value) ? "false" : "true";
+                if (string.IsNullOrEmpty(fieldList[CurrentForcedOutIndex].value))
+                {
+                    fieldList[CurrentForcedOutIndex].value = "false";
+                }
             }
         }
 
@@ -346,7 +352,7 @@ namespace DataPackageTests.ServicesStub
                 fieldList[ArchivedVersionPisBaseOutIndex].value = value;
                 fieldList[ArchivedVersionPisMissionOutIndex].value = value;
                 fieldList[ArchivedVersionPisInfotainmentOutIndex].value = value;
-                fieldList[FutureVersionLmtOutIndex].value = value;
+                fieldList[ArchivedVersionLmtOutIndex].value = value;
                 fieldList[ArchivedVersionLmtOutIndex].value = string.IsNullOrEmpty(value) ? "false" : "true";
             }
         }
