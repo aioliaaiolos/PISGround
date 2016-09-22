@@ -1369,7 +1369,7 @@ namespace DataPackageTests.ServicesStub
             string lastNotificationUrl = string.Empty;
             foreach (string currentUrl in new string[] { notificationUrl, task.transferNotifURL })
             {
-                if (!string.IsNullOrEmpty(currentUrl) || string.Equals(lastNotificationUrl, currentUrl, StringComparison.OrdinalIgnoreCase) )
+                if (string.IsNullOrEmpty(currentUrl) || string.Equals(lastNotificationUrl, currentUrl, StringComparison.OrdinalIgnoreCase) )
                 {
                     continue;
                 }

@@ -43,6 +43,7 @@ using PIS.Ground.RemoteDataStore;
 using DataPackageTests.Data;
 using PIS.Ground.Core.Data;
 using System.Configuration;
+using System.Threading;
 
 
 namespace DataPackageTests
@@ -54,7 +55,7 @@ namespace DataPackageTests
     /// This class also validate the history log database and the notifications send by PIS-Ground.
     /// </summary>
     [TestFixture, Category("DistributionScenario")]
-    class BaselineDistributionIntegrationTests
+    class BaselineDistributionIntegrationTests : AssertionHelper
     {
         #region Fields
 
@@ -622,7 +623,24 @@ namespace DataPackageTests
             // Wait that folder on T2G was created
 
             Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
+            int transferFolderId = _fileTransferServiceStub.LastCreatedFolder.Value;
+            _fileTransferServiceStub.LastCreatedFolder = null;
             Assert.That(() => _fileTransferServiceStub.LastCreatedTransfer.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer task on T2G service not created", TRAIN_NAME_1);
+            int transferTaskId = _fileTransferServiceStub.LastCreatedTransfer.Value;
+            _fileTransferServiceStub.LastCreatedTransfer = null;
+
+            _fileTransferServiceStub.PerformTransferProgression();
+
+            //VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, "3.0.0.0", "1.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            for (int i = 0; i < (5 + 5 + 2); ++i)
+            {
+                _fileTransferServiceStub.PerformTransferProgression();
+                Thread.Sleep(ONE_SECOND / 4);
+            }
+
+            Thread.Sleep(5 * ONE_SECOND);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, "3.0.0.0", "1.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+
         }
 
         #endregion
@@ -654,7 +672,9 @@ namespace DataPackageTests
             _hostVehicleInfoService.Open();
             _hostNotificationService.Open();
         }
-        
+
+        #region Initialization methods
+
         /// <summary>
         /// Initializes the data package service.
         /// </summary>
@@ -746,6 +766,24 @@ namespace DataPackageTests
                     File.Delete(_databaseLogPath);
                 }
             }
+        }
+
+        #endregion
+
+        private void VerifyTrainBaselineStatusInHistoryLog(string systemId, bool expectedOnlineStatus, string expectedBaselineVersion, string expectedFutureVersion, Guid expectedRequestId, int expectedTaskId, BaselineProgressStatusEnum expectedProgress)
+        {
+            Dictionary<string, TrainBaselineStatusData> statuses;
+
+            HistoryLogger.GetTrainBaselineStatus(out statuses);
+
+            TrainBaselineStatusData analysedTrain;
+            Assert.IsTrue(statuses.TryGetValue(systemId, out analysedTrain), "History log database integrity error for train '{0}': no data found", systemId);
+            Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId);
+            Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId);
+//            Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId);
+            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
+            Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId);
+  //          Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId);
         }
 
         private void WaitPisGroundIsConnectedWithT2G()

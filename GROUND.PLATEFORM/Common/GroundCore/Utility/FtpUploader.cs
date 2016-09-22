@@ -209,6 +209,23 @@ namespace PIS.Ground.Core.Utility
                 {
                     if (lRemoteFile.Exists)
                     {
+                        /* Testing mode is enable. So, simulate that file was uploaded properly.
+                         * 
+                         * In the future, a better approach might be found.
+                         */
+                        if (lRemoteFile.FileType == FileTypeEnum.Undefined && RemoteFileClass.TestingModeEnabled)
+                        {
+                            FtpStatus ftpStatus = new FtpStatus();
+                            ftpStatus.FileName = lRemoteFile.FilePath;
+                            ftpStatus.FtpStatusCode = FtpStatusCode.FileActionOK; ;
+                            ftpStatus.OperationException = null;
+                            ftpStatus.StatusDescription = "OK";
+
+                            lRemoteFile.FtpStatus = ftpStatus;
+
+                            continue;
+                        }
+
                         DateTime dtTime = DateTime.Now;
                         FtpWebRequest reqFTP = null;
                         try
@@ -265,7 +282,8 @@ namespace PIS.Ground.Core.Utility
 									else
 									{
 										error = "Can't upload file on T2G Ftp Server. Server is not responding or input file is invalid, check error log.";
-										return error;
+                                        objUploadFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
+                                        return error;
 									}
 
 								}
