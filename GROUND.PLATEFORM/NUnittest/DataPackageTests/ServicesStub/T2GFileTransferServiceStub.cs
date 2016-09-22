@@ -8,37 +8,37 @@
 //---------------------------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
+using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
+using FileList = DataPackageTests.T2GServiceInterface.FileTransfer.fileList;
+using FilePathStruct = DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct;
 using FileTransferPortType = DataPackageTests.T2GServiceInterface.FileTransfer.FileTransferPortType;
 using FolderInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.folderInfoStruct;
-using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
-using FilePathStruct = DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct;
-using FileList = DataPackageTests.T2GServiceInterface.FileTransfer.fileList;
 using FolderList = DataPackageTests.T2GServiceInterface.FileTransfer.folderList;
-using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
+using NotificationClient = DataPackageTests.T2GServiceInterface.Notification.NotificationPortTypeClient;
+using PathList = DataPackageTests.T2GServiceInterface.FileTransfer.pathList;
+using RecipientList = DataPackageTests.T2GServiceInterface.FileTransfer.recipientList;
 using RecipientStruct = DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct;
+using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
 using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
 using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
-using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
-using RecipientList = DataPackageTests.T2GServiceInterface.FileTransfer.recipientList;
 using TransferTaskList = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskList;
-using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
-using NotificationClient = DataPackageTests.T2GServiceInterface.Notification.NotificationPortTypeClient;
-using LinkTypeEnum = DataPackageTests.T2GServiceInterface.Notification.linkTypeEnum;
-using PathList = DataPackageTests.T2GServiceInterface.FileTransfer.pathList;
-using System.Globalization;
-using System.ServiceModel;
+using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
 
 namespace DataPackageTests.ServicesStub
 {
     #region Data Definition
     
-/// <summary>
-/// Define a file path in T2G.
-/// </summary>
-/// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct" />
+    /// <summary>
+    /// Define a file path in T2G.
+    /// </summary>
+    /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.filePathStruct" />
+    [DataContractAttribute(Name = "filePathStruct", Namespace = "http://alstom.com/T2G/FileTransfer")]
     public class FilePathInfo : FilePathStruct
     {        
         /// <summary>
@@ -59,6 +59,7 @@ namespace DataPackageTests.ServicesStub
     /// Define a file in T2G.
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct" />
+    [DataContractAttribute(Name = "fileInfoStruct", Namespace = "http://alstom.com/T2G/FileTransfer")]
     public class FileInfoData : FileInfoStruct
     {
         public long AcquiredSize { get; set; }
@@ -92,6 +93,7 @@ namespace DataPackageTests.ServicesStub
     /// Describes a folder in T2G.
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.folderInfoStruct" />
+    [DataContractAttribute(Name = "folderInfoStruct", Namespace = "http://alstom.com/T2G/FileTransfer")]
     public class FolderInfoData : FolderInfoStruct
     {
         public static readonly DateTime NullDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -160,6 +162,7 @@ namespace DataPackageTests.ServicesStub
     /// Describes a T2G Transfer recipient.
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.recipientStruct" />
+    [DataContractAttribute(Name = "recipientStruct", Namespace = "http://alstom.com/T2G/FileTransfer")]
     public class RecipientInfo : RecipientStruct
     {
         public static readonly DateTime NullDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -248,6 +251,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct" />
     /// <remarks>Only one recipient is supported.</remarks>
+    [DataContractAttribute(Name = "transferTaskStruct", Namespace = "http://alstom.com/T2G/FileTransfer")]
     public class TransferTaskInfo : TransferTaskStruct
     {
         public static readonly DateTime NullDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
