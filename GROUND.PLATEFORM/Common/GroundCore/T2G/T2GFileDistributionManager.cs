@@ -608,176 +608,195 @@ namespace PIS.Ground.Core.T2G
 		public string UploadFile(UploadFileDistributionRequest objFileDistributionRequest)
 		{
 			string strError = string.Empty;
-			try
-			{
-				LogManager.WriteLog(TraceType.INFO, String.Format(CultureInfo.CurrentCulture, Resources.InUploadFile) + " " + String.Format(CultureInfo.CurrentCulture, Resources.RequestInfo, objFileDistributionRequest.RequestId.ToString(), objFileDistributionRequest.Folder.CRCGuid, objFileDistributionRequest.Folder.FolderId.ToString()), "Ground.Core.T2G.T2GClient.UploadFile", null, EventIdEnum.GroundCore);
+            try
+            {
+                LogManager.WriteLog(TraceType.INFO, String.Format(CultureInfo.CurrentCulture, Resources.InUploadFile) + " " + String.Format(CultureInfo.CurrentCulture, Resources.RequestInfo, objFileDistributionRequest.RequestId.ToString(), objFileDistributionRequest.Folder.CRCGuid, objFileDistributionRequest.Folder.FolderId.ToString()), "Ground.Core.T2G.T2GClient.UploadFile", null, EventIdEnum.GroundCore);
 
-				try
-				{
+                try
+                {
 
-					if (objFileDistributionRequest != null)
-					{
-						if (this.ValidateUploadFileRequest(objFileDistributionRequest, out strError))
-						{
-							//Calculate CRCGuid and append it to Upload Folder name
-							objFileDistributionRequest.Folder.CalculateCRCGuid();
-							objFileDistributionRequest.Folder.FolderName += "|" + objFileDistributionRequest.Folder.CRCGuid;
+                    if (objFileDistributionRequest != null)
+                    {
+                        if (this.ValidateUploadFileRequest(objFileDistributionRequest, out strError))
+                        {
+                            //Calculate CRCGuid and append it to Upload Folder name
+                            objFileDistributionRequest.Folder.CalculateCRCGuid();
+                            objFileDistributionRequest.Folder.FolderName += "|" + objFileDistributionRequest.Folder.CRCGuid;
 
-							lock (_fileDistributionRequestsLock)
-							{
-								//If not findAndUseFolderIdByCRC, this request must create a new UploadFolder
-								FindFolderIdWithSimilarCRC(ref objFileDistributionRequest);
+                            lock (_fileDistributionRequestsLock)
+                            {
+                                //If not findAndUseFolderIdByCRC, this request must create a new UploadFolder
+                                FindFolderIdWithSimilarCRC(ref objFileDistributionRequest);
 
-								if (objFileDistributionRequest.Folder.FolderId <= 0)
-								{
-									//if not CreateUploadFolder
-									CreateUploadFolder(ref objFileDistributionRequest, out strError);
+                                if (objFileDistributionRequest.Folder.FolderId <= 0)
+                                {
+                                    //if not CreateUploadFolder
+                                    CreateUploadFolder(ref objFileDistributionRequest, out strError);
 
-									if (objFileDistributionRequest.Folder.FolderId > 0)
-									{
-										//Flag the folder as uploading. This permits others requests with same CRCGuid to know this request is already uploading the same data
-										objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.InProgress;
-										objFileDistributionRequest.UploadingRequestID = objFileDistributionRequest.RequestId;
-									}
-									else
-									{
-										//Folder Upload is considered as failed.
-										objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
-										strError = Resources.UploadFolderCreationFailed;
-									}
-								}
+                                    if (objFileDistributionRequest.Folder.FolderId > 0)
+                                    {
+                                        //Flag the folder as uploading. This permits others requests with same CRCGuid to know this request is already uploading the same data
+                                        objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.InProgress;
+                                        objFileDistributionRequest.UploadingRequestID = objFileDistributionRequest.RequestId;
+                                    }
+                                    else
+                                    {
+                                        //Folder Upload is considered as failed.
+                                        objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
+                                        strError = Resources.UploadFolderCreationFailed;
+                                    }
+                                }
 
-								//Add request to request list
+                                //Add request to request list
 
-								if ((!_fileDistributionRequests.ContainsKey(objFileDistributionRequest.RequestId)) && (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed))
-								{
-									_fileDistributionRequests.Add(objFileDistributionRequest.RequestId, objFileDistributionRequest);
-								}
-							}
+                                if ((!_fileDistributionRequests.ContainsKey(objFileDistributionRequest.RequestId)) && (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed))
+                                {
+                                    _fileDistributionRequests.Add(objFileDistributionRequest.RequestId, objFileDistributionRequest);
+                                }
+                            }
 
-							//If we need to upload files then do it
-							if ((objFileDistributionRequest.RequestId == objFileDistributionRequest.UploadingRequestID) && (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed))
-							{
-								strError = FtpUtility.Upload(ref objFileDistributionRequest);
+                            //If we need to upload files then do it
+                            if ((objFileDistributionRequest.RequestId == objFileDistributionRequest.UploadingRequestID) && (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed))
+                            {
+                                strError = FtpUtility.Upload(ref objFileDistributionRequest);
 
-								//Report error
-								if (objFileDistributionRequest.Folder.UploadingState == UploadingStateEnum.Failed)
-								{
+                                //Report error
+                                if (objFileDistributionRequest.Folder.UploadingState == UploadingStateEnum.Failed)
+                                {
 
-									foreach (IRemoteFileClass lRemoteFiles in objFileDistributionRequest.Folder.FolderFilesList)
-									{
-										if (lRemoteFiles.HasError)
-										{
-											string errorDesc = this.MapFtpStatusCode(lRemoteFiles.FtpStatus.FtpStatusCode);
-											LogManager.WriteLog(TraceType.ERROR, errorDesc, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
-										}
-									}
+                                    foreach (IRemoteFileClass lRemoteFiles in objFileDistributionRequest.Folder.FolderFilesList)
+                                    {
+                                        if (lRemoteFiles.HasError)
+                                        {
+                                            string errorDesc = this.MapFtpStatusCode(lRemoteFiles.FtpStatus.FtpStatusCode);
+                                            LogManager.WriteLog(TraceType.ERROR, errorDesc, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
+                                        }
+                                    }
 
-									if (strError != string.Empty)
-									{
-										LogManager.WriteLog(TraceType.ERROR, strError, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
-									}
-								}
+                                    if (strError != string.Empty)
+                                    {
+                                        LogManager.WriteLog(TraceType.ERROR, strError, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
+                                    }
+                                }
 
-								if (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed)
-								{
-									objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Uploaded;
-									strError = CreateAndStartTask(objFileDistributionRequest);
-								}
+                                if (objFileDistributionRequest.Folder.UploadingState != UploadingStateEnum.Failed)
+                                {
+                                    objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Uploaded;
+                                    strError = CreateAndStartTask(objFileDistributionRequest);
+                                }
 
-								//wait before next upload
-								Thread.Sleep(_sleepTimeBetweenUploads);
+                                //wait before next upload
+                                Thread.Sleep(_sleepTimeBetweenUploads);
 
-								//check if folder acquisition is OK. It might happen that upload worked correctly on pisground side but that the folder was not acquired correctly on T2G side after task creation.
-								try
-								{
-									IFolderInfo lFolderInfo = GetFolderInformation(objFileDistributionRequest.Folder.FolderId, out strError);
-									if (lFolderInfo == null || (lFolderInfo.AcquisitionState == acquisitionStateEnum.acquisitionError) || (lFolderInfo.AcquisitionState == acquisitionStateEnum.notAcquired))
-									{
-										objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
-									}
-								}
-								catch (System.Web.Services.Protocols.SoapException ex)
-								{
-									LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.UploadFile", ex, EventIdEnum.GroundCore);
-									objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
-								}
-								catch (Exception ex)
-								{
-									LogManager.WriteLog(TraceType.ERROR, ex.Message, "Ground.Core.T2G.T2GClient.UploadFile", ex, EventIdEnum.GroundCore);
-									objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
-								}
+                                //check if folder acquisition is OK. It might happen that upload worked correctly on pisground side but that the folder was not acquired correctly on T2G side after task creation.
+                                try
+                                {
+                                    IFolderInfo lFolderInfo = GetFolderInformation(objFileDistributionRequest.Folder.FolderId, out strError);
+                                    if (lFolderInfo == null || (lFolderInfo.AcquisitionState == acquisitionStateEnum.acquisitionError) || (lFolderInfo.AcquisitionState == acquisitionStateEnum.notAcquired))
+                                    {
+                                        objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
+                                    }
+                                }
+                                catch (System.Web.Services.Protocols.SoapException ex)
+                                {
+                                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.UploadFile", ex, EventIdEnum.GroundCore);
+                                    objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "Ground.Core.T2G.T2GClient.UploadFile", ex, EventIdEnum.GroundCore);
+                                    objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
+                                }
 
-								this.UpdateRequestList(objFileDistributionRequest);
+                                this.UpdateRequestList(objFileDistributionRequest);
 
-								NotifyAssociatedRequestOfUploadingState(objFileDistributionRequest);
+                                NotifyAssociatedRequestOfUploadingState(objFileDistributionRequest);
 
-							}
-							else
-							{
-								//If data upload is a success or they were already uploaded. Create the transfer task 
-								if (objFileDistributionRequest.Folder.UploadingState == UploadingStateEnum.Uploaded)
-								{
-									strError = CreateAndStartTask(objFileDistributionRequest);
-								}
-							}
-						}
-						else
-						{
-							strError = Resources.InvalidUploadFileRequest;
-						}
-					}
-					else
-					{
-						strError = Resources.InvalidInputParameter;
-					}
-				}
-				catch (Exception ex)
-				{
-					LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Utility.UploadFile", ex, EventIdEnum.GroundCore);
-				}
+                            }
+                            else
+                            {
+                                //If data upload is a success or they were already uploaded. Create the transfer task 
+                                if (objFileDistributionRequest.Folder.UploadingState == UploadingStateEnum.Uploaded)
+                                {
+                                    strError = CreateAndStartTask(objFileDistributionRequest);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            strError = Resources.InvalidUploadFileRequest;
+                        }
+                    }
+                    else
+                    {
+                        strError = Resources.InvalidInputParameter;
+                    }
+                }
+                // Avoid logging thread abort exception.
+                catch (ThreadAbortException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Utility.UploadFile", ex, EventIdEnum.GroundCore);
+                }
 
-				if (strError != string.Empty)
-				{
-					LogManager.WriteLog(TraceType.ERROR, strError, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
-				}
+                if (strError != string.Empty)
+                {
+                    LogManager.WriteLog(TraceType.ERROR, strError, "PIS.Ground.Core.Utility.UploadFile", null, EventIdEnum.GroundCore);
+                }
 
-				if (_updateFileCompletionCallBack != null)
-				{
-					try
-					{
-						_updateFileCompletionCallBack(objFileDistributionRequest);
+                if (_updateFileCompletionCallBack != null)
+                {
+                    try
+                    {
+                        _updateFileCompletionCallBack(objFileDistributionRequest);
 
-					}
-					catch (Exception lException)
-					{
-						LogManager.WriteLog(TraceType.ERROR,
-							Resources.ExceptionUpdateFileCallback,
-							"PIS.Ground.Core.T2G.T2GFileDistributionManager",
-							lException,
-							EventIdEnum.GroundCore);
-					}
-				}
+                    }
+                    // Avoid logging thread abort exception.
+                    catch (ThreadAbortException)
+                    {
+                        throw;
+                    }
+                    catch (Exception lException)
+                    {
+                        LogManager.WriteLog(TraceType.ERROR,
+                            Resources.ExceptionUpdateFileCallback,
+                            "PIS.Ground.Core.T2G.T2GFileDistributionManager",
+                            lException,
+                            EventIdEnum.GroundCore);
+                    }
+                }
 
-				lock (_processingUploadLock)
-				{
-					if (_processingUploadTaskCount > 0)
-					{
-						_processingUploadTaskCount--;
-					}
-				}
+                lock (_processingUploadLock)
+                {
+                    if (_processingUploadTaskCount > 0)
+                    {
+                        _processingUploadTaskCount--;
+                    }
+                }
 
-				OnPendingUploadTaskListChanged(this, EventArgs.Empty);
-			}
-			catch (System.Exception exception)
-			{
-				LogManager.WriteLog(TraceType.EXCEPTION,
-					Resources.ExceptionUpdateFileCallback,
-					"PIS.Ground.Core.T2G.T2GFileDistributionManager",
-					exception,
-					EventIdEnum.GroundCore);
-				
-			}
+                OnPendingUploadTaskListChanged(this, EventArgs.Empty);
+            }
+            catch (ThreadAbortException exception)
+            {
+                // Log ThreadAbortException only for debugging purpose.
+                LogManager.WriteLog(TraceType.DEBUG,
+                    Resources.ExceptionUpdateFileCallback,
+                    "PIS.Ground.Core.T2G.T2GFileDistributionManager",
+                    exception,
+                    EventIdEnum.GroundCore);
+            }
+            catch (System.Exception exception)
+            {
+                LogManager.WriteLog(TraceType.EXCEPTION,
+                    Resources.ExceptionUpdateFileCallback,
+                    "PIS.Ground.Core.T2G.T2GFileDistributionManager",
+                    exception,
+                    EventIdEnum.GroundCore);
+
+            }
 
 			return strError;
 		}

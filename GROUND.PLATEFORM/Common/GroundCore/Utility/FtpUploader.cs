@@ -191,7 +191,16 @@ namespace PIS.Ground.Core.Utility
                     {
                         ftpState.FtpStatus.OperationException = ex;
                         ftpState.OperationComplete.Set();
-						LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Utility.FtpUtility.UploadFile", ex, EventIdEnum.GroundCore);
+
+                        // Avoid logging error for ThreadAbortException
+                        if (!(ex is ThreadAbortException))
+                        {
+                            LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Utility.FtpUtility.UploadFile", ex, EventIdEnum.GroundCore);
+                        }
+                        else
+                        {
+                            LogManager.WriteLog(TraceType.DEBUG, ex.Message, "PIS.Ground.Core.Utility.FtpUtility.UploadFile", ex, EventIdEnum.GroundCore);
+                        }
                     }
                 }
             }
