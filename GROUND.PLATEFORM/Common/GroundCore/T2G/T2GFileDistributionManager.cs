@@ -692,7 +692,7 @@ namespace PIS.Ground.Core.T2G
 								try
 								{
 									IFolderInfo lFolderInfo = GetFolderInformation(objFileDistributionRequest.Folder.FolderId, out strError);
-									if ((lFolderInfo.AcquisitionState == acquisitionStateEnum.acquisitionError) || (lFolderInfo.AcquisitionState == acquisitionStateEnum.notAcquired))
+									if (lFolderInfo == null || (lFolderInfo.AcquisitionState == acquisitionStateEnum.acquisitionError) || (lFolderInfo.AcquisitionState == acquisitionStateEnum.notAcquired))
 									{
 										objFileDistributionRequest.Folder.UploadingState = UploadingStateEnum.Failed;
 									}
@@ -1497,12 +1497,12 @@ namespace PIS.Ground.Core.T2G
                 }
                 catch (System.Web.Services.Protocols.SoapException ex)
                 {
-                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.CreateUploadFolder", ex, EventIdEnum.GroundCore);
+                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.T2G.T2GFileDistributionManager.GetFolderInformation", ex, EventIdEnum.GroundCore);
                     strError = ex.Code.Name;
                 }
                 catch (Exception ex)
                 {
-                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "Ground.Core.T2G.T2GClient.GetFolderInformation", ex, EventIdEnum.GroundCore);
+                    LogManager.WriteLog(TraceType.ERROR, ex.Message, "Ground.Core.T2G.T2GFileDistributionManager.GetFolderInformation", ex, EventIdEnum.GroundCore);
                     strError = ex.Message;
                     return null;
                 }
