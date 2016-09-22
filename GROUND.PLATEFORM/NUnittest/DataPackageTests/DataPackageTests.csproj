@@ -44,6 +44,10 @@
     <Compile Include="BaselineDistributionIntegrationTests.cs" />
     <Compile Include="BaselineStatusTests.cs" />
     <Compile Include="DataPackageServiceTests.cs" />
+    <Compile Include="Data\BaselinesDataStoreData.cs" />
+    <Compile Include="Data\DataPackagesDataStoreData.cs" />
+    <Compile Include="Data\ElementsDataStoreData.cs" />
+    <Compile Include="Data\RemoteDataStoreDataBase.cs" />
     <Compile Include="Generated\T2GFileTransferInterface.cs" />
     <Compile Include="Generated\T2GIdentificationInterface.cs" />
     <Compile Include="Generated\T2GNotificationService.cs" />

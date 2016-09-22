@@ -40,6 +40,9 @@ using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskS
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
 using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
 using PIS.Ground.RemoteDataStore;
+using DataPackageTests.Data;
+using PIS.Ground.Core.Data;
+using System.Configuration;
 
 
 namespace DataPackageTests
@@ -54,6 +57,7 @@ namespace DataPackageTests
     class BaselineDistributionIntegrationTests
     {
         #region Fields
+
 
         public const int ONE_SECOND = 1000;
 
@@ -82,6 +86,7 @@ namespace DataPackageTests
         private T2GVehicleInfoServiceStub _vehicleInfoServiceStub;
         private T2GNotificationServiceStub _notificationServiceStub;
         private DataPackageServiceStub _datapackageServiceStub;
+        private DataPackageCallbackService _datapackageCallbackService;
         private ServiceHost _hostIdentificationService;
         private ServiceHost _hostFileTransferService;
         private ServiceHost _hostVehicleInfoService;
@@ -103,6 +108,18 @@ namespace DataPackageTests
         private RequestContextFactory _requestFactory;
         private RequestManager _requestManager;
         private Guid _pisGroundSessionId;
+
+        #region RemoteDataStoreData
+
+        private object _dataStoreLock = new object();
+
+        /// <summary>
+        /// The content of table ElementsDataStore in remoteDataStore indexed by system id
+        /// </summary>
+        private Dictionary<string, ElementsDataStoreData> _dataStoreElementsData = new Dictionary<string, ElementsDataStoreData>(10, StringComparer.OrdinalIgnoreCase);
+
+        private Dictionary<string, BaselinesDataStoreData> _dateStoreBaselinesData = new Dictionary<string, BaselinesDataStoreData>(10, StringComparer.Ordinal);
+        #endregion
 
         #endregion
 
@@ -126,6 +143,10 @@ namespace DataPackageTests
         [TestFixtureSetUp]
         public void FixtureInit()
         {
+            ConfigurationSettings.AppSettings["DataStorePath"] = Path.Combine(ServiceConfiguration.AppDataPath, "RemoteDataStore");
+            ConfigurationSettings.AppSettings["RemoteDataStoreUrl"] = Path.Combine(ServiceConfiguration.AppDataPath, "RemoteDataStore");
+
+
             if (!HistoryLoggerConfiguration.Valid)
             {
                 throw new Exception("Test application is misconfigured. The history logger configuration is invalid");
@@ -230,6 +251,7 @@ namespace DataPackageTests
         [SetUp]
         public void Setup()
         {
+            _dataStoreElementsData.Clear();
             _notificationSenderMock = new Mock<INotificationSender>();
             _remoteDataStoreFactoryMock = new Mock<IRemoteDataStoreFactory>();
             _remoteDataStoreMock = new Mock<IRemoteDataStore>();
@@ -277,6 +299,7 @@ namespace DataPackageTests
             _sessionManager = null;
             _requestFactory = null;
             _remoteDataStoreFactoryMock = null;
+            _datapackageCallbackService = null;
 
         }
         #endregion
@@ -567,14 +590,33 @@ namespace DataPackageTests
         [Test]
         public void DistributeBaselineScenario_Nominal()
         {
+            // Common initialization
             CreateT2GServicesStub();
-            _remoteDataStoreMock.Setup(r => r.getAllBaselineDistributingSavedRequests()).Returns(new DataContainer());
+            InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1);
             InitializeDataPackageService();
             InitializePISGroundSession();
             WaitPisGroundIsConnectedWithT2G();
             WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
-            
+
+
+            // Initializations specific to this test.
+            ElementsDataStoreData data = new ElementsDataStoreData(TRAIN_NAME_1);
+
+            data.FutureBaseline = "1.0.0.0";
+            data.FutureBaselineActivationDate = RemoteDataStoreDataBase.ToString(DateTime.Today);
+            data.FutureBaselineExpirationDate = RemoteDataStoreDataBase.ToString(DateTime.Today.AddYears(1));
+
+            UpdateDataStore(data);
+            AddBaselineToRemoteDataStore("1.0.0.0");
+
+            // Request the datapackage service to distribute the baseline
+            DataPackageResult result = _datapackageServiceStub.distributeBaseline(_pisGroundSessionId, null, new TargetAddressType(TRAIN_NAME_1), CreateDistributionAttribute(), false);
+            Assert.AreEqual(DataPackageErrorEnum.REQUEST_ACCEPTED, result.error_code, "Distribute baseline to train {0} does not returned the expected value", TRAIN_NAME_1);
+
+            // Wait that folder on T2G was created
+
+            Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(60 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
         }
 
         #endregion
@@ -630,6 +672,8 @@ namespace DataPackageTests
                 _remoteDataStoreFactoryMock.Object,
                 _requestManager
                 );
+
+            _datapackageCallbackService = new DataPackageCallbackService();
         }
 
         /// <summary>
@@ -654,6 +698,11 @@ namespace DataPackageTests
 
             ServiceInfoData datapackageService = new  ServiceInfoData((ushort)eServiceID.eSrvSIF_DataPackageServer, SERVICE_NAME_DATA_PACKAGE, isOnline, ipAddress, dataPackagePort, (ushort) vehicleId, DEFAULT_CAR_ID);
             _vehicleInfoServiceStub.UpdateServiceData(trainId, datapackageService);
+
+            lock (_dataStoreLock)
+            {
+                _dataStoreElementsData.Add(trainId, new ElementsDataStoreData(trainId));
+            }
         }
 
 
@@ -706,7 +755,156 @@ namespace DataPackageTests
             }
 
         }
+
+        private static BaselineDistributionAttributes CreateDistributionAttribute()
+        {
+            BaselineDistributionAttributes transferAttributes = new BaselineDistributionAttributes();
+            transferAttributes.TransferMode = FileTransferMode.AnyBandwidth;
+            transferAttributes.priority = (sbyte)10;
+            transferAttributes.fileCompression = false;
+            transferAttributes.transferDate = DateTime.Now;
+            transferAttributes.transferExpirationDate = DateTime.Now.AddDays(1);
+            return transferAttributes;
+        }
+
+        #region RemoteDataStore
+
+        /// <summary>
+        /// Initializes the remote data store mock with default behavior.
+        /// </summary>
+        private void InitializeRemoteDataStoreMockWithDefaultBehavior()
+        {
+            _remoteDataStoreMock.Setup(r => r.getAllBaselineDistributingSavedRequests()).Returns(new DataContainer());
+            _remoteDataStoreMock.Setup(r => r.getElementBaselinesDefinitions(It.IsAny<string>())).Returns<string>(GetElementBaselineDefinitionImplementation);
+            _remoteDataStoreMock.Setup(r => r.getBaselineDefinition(It.IsAny<string>())).Returns<string>(GetBaselineDefinitionImplementation);
+            _remoteDataStoreMock.Setup(r => r.checkIfBaselineExists(It.IsAny<string>())).Returns<string>(CheckIfBaselineExistsImplementation);
+            _remoteDataStoreMock.Setup(r => r.checkDataPackagesAvailability(It.IsAny<Guid>(), It.IsAny<DataContainer>()));
+            _remoteDataStoreMock.Setup(r => r.getDataPackageCharacteristics(It.IsAny<string>(), It.IsAny<string>())).Returns<string, string>(GetDataPackageCharacteristicsImplementation);
+            _remoteDataStoreMock.Setup(r => r.checkIfElementExists(It.IsAny<string>())).Returns<string>(CheckIfElementExistsImplementation);
+            _remoteDataStoreMock.Setup(r => r.createBaselineFile(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns<Guid, string, string, string, string>(CreateBaselineFileImplementation);
+        }
+
+        private bool IsValidPackageType(string type)
+        {
+            return Enum.IsDefined(typeof(DataPackageType), type);
+        }
+
+        private string CreateBaselineFileImplementation(Guid requestId, string elementId, string baselineVersion, string activationDate, string expirationDate)
+        {
+            if (!CheckIfElementExistsImplementation(elementId))
+            {
+                throw new FaultException("Unknow ElementID", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_ELEMENT_ID.ToString()));
+            }
+
+            BaselinesDataStoreData definition = GetBaselineDefinitionImplementation(baselineVersion);
+
+            string outputPath = "/BaselinesDefinitions/" + requestId.ToString() + "/"
+                + elementId + "/" + "baseline-" + definition.BaselineVersion + ".xml";
+            return outputPath;
+
+        }
+
+        private DataContainer GetDataPackageCharacteristicsImplementation(string packageType, string version)
+        {
+            if (!IsValidPackageType(packageType))
+            {
+                throw new FaultException("Unknown DataPackage type", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_DATAPACKAGE_TYPE.ToString()));
+            }
+            else if (!CheckIfBaselineExistsImplementation(version))
+            {
+                throw new FaultException("Invalid DataPackage version", new FaultCode(RemoteDataStoreExceptionCodeEnum.INVALID_DATAPACKAGE_VERSION.ToString()));
+            }
+
+            return new DataPackagesDataStoreData((DataPackageType)Enum.Parse(typeof(DataPackageType), packageType), version);
+        }
+
+        private bool CheckIfElementExistsImplementation(string elementId)
+        {
+            lock (_dataStoreLock)
+            {
+                return _dataStoreElementsData.ContainsKey(elementId);
+            }
+        }
+
+        private bool CheckIfBaselineExistsImplementation(string baseline)
+        {
+            lock (_dataStoreLock)
+            {
+                return _dateStoreBaselinesData.ContainsKey(baseline);
+            }
+        }
+
+        private bool CheckDataPackagesAvailability(Guid requestId, DataContainer data)
+        {
+            BaselinesDataStoreData baselineData = new BaselinesDataStoreData(data);
+
+            bool available = baselineData.BaselineVersion == baselineData.PISBaseDataPackageVersion &&
+                baselineData.BaselineVersion == baselineData.PISInfotainmentDataPackageVersion &&
+                baselineData.BaselineVersion == baselineData.PISMissionDataPackageVersion &&
+                baselineData.BaselineVersion == baselineData.LMTDataPackageVersion &&
+                CheckIfBaselineExistsImplementation(baselineData.BaselineVersion);
+
+            if (!available)
+            {
+                Dictionary<string, string> restList = new Dictionary<string, string>(4);
+
+                restList.Add("PISBASE", baselineData.PISBaseDataPackageVersion);
+                restList.Add("PISMISSION", baselineData.PISMissionDataPackageVersion);
+                restList.Add("PISINFOTAINMENT", baselineData.PISInfotainmentDataPackageVersion);
+                restList.Add("LMT", baselineData.LMTDataPackageVersion);
+
+                _datapackageCallbackService.missingDataPackageNotification(requestId, restList);
+            }
             
+            return available;
+        }
+
+        private ElementsDataStoreData GetElementBaselineDefinitionImplementation(string elementId)
+        {
+            lock (_dataStoreLock)
+            {
+                ElementsDataStoreData definition;
+                if (_dataStoreElementsData.TryGetValue(elementId, out definition))
+                {
+                    return new ElementsDataStoreData(definition);
+                }
+            }
+
+            throw new FaultException("Unknow ElementID", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_ELEMENT_ID.ToString()));
+        }
+
+        private BaselinesDataStoreData GetBaselineDefinitionImplementation(string baseline)
+        {
+            lock (_dataStoreLock)
+            {
+                BaselinesDataStoreData definition;
+                if (_dateStoreBaselinesData.TryGetValue(baseline, out definition))
+                {
+                    return definition;
+                }
+
+                throw new FaultException("Unknown Baseline version", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_BASELINE_VERSION.ToString()));
+            }
+        }
+
+        private void AddBaselineToRemoteDataStore(string baselineVersion)
+        {
+            BaselinesDataStoreData baseline = new BaselinesDataStoreData(baselineVersion);
+            lock (_dataStoreLock)
+            {
+                _dateStoreBaselinesData.Add(baselineVersion, baseline);
+            }
+        }
+
+        private void UpdateDataStore(ElementsDataStoreData data)
+        {
+            lock (_dataStoreLock)
+            {
+                _dataStoreElementsData[data.ElementID] = new ElementsDataStoreData(data);
+            }
+        }
+
+        #endregion
 
         #endregion
     }
