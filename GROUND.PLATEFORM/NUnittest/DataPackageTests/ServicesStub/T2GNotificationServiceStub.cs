@@ -130,8 +130,9 @@ namespace DataPackageTests.ServicesStub
 
         public DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationOutput onMessageNotification(DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInput request)
         {
-            Implementation.onMessageNotification(request.Body.systemId, request.Body.systemId,
-                request.Body.fieldList.Select(f => f.AsImplementation).ToArray(), request.Body.timestamp, true, request.Body.inhibited, true);
+            var fieldValues = request.Body.fieldList.Select(f => f.AsImplementation).ToArray();
+            Implementation.onMessageNotification(request.Body.systemId, request.Body.messageId,
+               fieldValues , request.Body.timestamp, true, request.Body.inhibited, true);
             DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationOutputBody body = new DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationOutputBody();
             DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationOutput result = new DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationOutput(body);
             return result;
