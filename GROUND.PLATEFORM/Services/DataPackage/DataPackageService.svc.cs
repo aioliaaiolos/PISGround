@@ -1704,12 +1704,12 @@ namespace PIS.Ground.DataPackage
 						if (lResult.error_code == DataPackageErrorEnum.REQUEST_ACCEPTED)
 						{
 							List<DataPackageService.CancellableTransferTaskInfo> lCancellableTransfers;
-							if (getCancellableTransferTasks(out lCancellableTransfers) && lCancellableTransfers != null)
+							if (getCancellableTransferTasks(out lCancellableTransfers) && lCancellableTransfers != null && LogManager.IsTraceActive(TraceType.INFO))
 							{
-								string lCancellableTransfersInfo = string.Empty;
-								lCancellableTransfers.ForEach(lTask => lCancellableTransfersInfo += lTask.ToString() + " ");
+								StringBuilder lCancellableTransfersInfo = new StringBuilder(30 + 30 * lCancellableTransfers.Count);
+                                lCancellableTransfers.ForEach(lTask => lCancellableTransfersInfo.Append(lTask.ToString()).Append(' '));
 
-								mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_PENDING_TRANSFERS_LIST, lCancellableTransfersInfo);
+								mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_PENDING_TRANSFERS_LIST, lCancellableTransfersInfo.ToString());
 							}
 
 							foreach (string lElID in lElementsIDs)
