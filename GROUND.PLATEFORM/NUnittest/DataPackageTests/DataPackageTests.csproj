@@ -58,6 +58,7 @@
     <Compile Include="RequestMgt\RequestManagerTests.cs" />
     <Compile Include="ServicesStub\DataPackageServiceStub.cs" />
     <Compile Include="ServicesStub\FaultExceptionFactory.cs" />
+    <Compile Include="ServicesStub\RemoteDataStoreServiceStub.cs" />
     <Compile Include="ServicesStub\T2GFileTransferServiceStub.cs" />
     <Compile Include="ServicesStub\T2GIdentificationServiceStub.cs" />
     <Compile Include="ServicesStub\T2GNotificationServiceStub.cs" />
