@@ -55,7 +55,7 @@ namespace PIS.Ground.Core.LogMgmt
         #region Error Logs
 
         /// <summary>
-        /// Determines whether f trace is active for the specified trace lever.
+        /// Determines whether trace is active for the specified trace level.
         /// </summary>
         /// <param name="level">The level to evaluate.</param>
         /// <returns>true if the trace is active, false otherwise.</returns>
@@ -529,6 +529,18 @@ namespace PIS.Ground.Core.LogMgmt
         #endregion
 
         #region ILogManager Members
+
+        /// <summary>
+        /// Determines whether trace is active for the specified trace level.
+        /// </summary>
+        /// <param name="level">The level to evaluate.</param>
+        /// <returns>
+        /// true if the trace is active, false otherwise.
+        /// </returns>
+        bool ILogManager.IsTraceActive(TraceType level)
+        {
+            return LogManager.IsTraceActive(level);
+        }
 
         bool ILogManager.WriteLog(TraceType trace, string message, string context, Exception objEx, EventIdEnum eventId)
         {
