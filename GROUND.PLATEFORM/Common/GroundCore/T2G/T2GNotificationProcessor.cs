@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="T2GNotificationProcessor.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -9,6 +9,7 @@
 namespace PIS.Ground.Core.T2G
 {
     using System;
+    using System.Text;
     using PIS.Ground.Core.Data;
     using PIS.Ground.Core.LogMgmt;
     using PIS.Ground.Core.T2G.WebServices.Notification;
@@ -174,16 +175,23 @@ namespace PIS.Ground.Core.T2G
 					fdsArgs.TaskStatus = T2GDataConverter.BuildTaskState(taskState);
 					fdsArgs.CurrentTaskPhase = T2GDataConverter.BuildTaskPhase(taskPhase);
 
-					string msg = "(task=" + fdsArgs.TaskId.ToString() +
-						",request=" + fdsArgs.RequestId.ToString() +
-						",aftc=" + fdsArgs.ActiveFileTransferCount.ToString() +
-						",acp=" + fdsArgs.AcquisitionCompletionPercent.ToString() +
-						",dcp=" + fdsArgs.DistributionCompletionPercent.ToString() +
-						",tcp=" + fdsArgs.TransferCompletionPercent.ToString() +
-						",TaskStatus=" + fdsArgs.TaskStatus.ToString() +
-						",CurrentTaskPhase=" + fdsArgs.CurrentTaskPhase.ToString() + ")";
+                    if (LogManager.IsTraceActive(TraceType.INFO))
+                    {
+                        StringBuilder msg = new StringBuilder(200);
+                        msg.Append("OnFileTransferNotification(");
+                        msg.Append("task=").Append(fdsArgs.TaskId);
+                        msg.Append(",request=").Append(fdsArgs.RequestId);
+                        msg.Append(",aftc=").Append(fdsArgs.ActiveFileTransferCount);
+                        msg.Append(",acp=").Append(fdsArgs.AcquisitionCompletionPercent);
+                        msg.Append(",dcp=").Append(fdsArgs.DistributionCompletionPercent);
+                        msg.Append(",tcp=").Append(fdsArgs.TransferCompletionPercent);
+                        msg.Append(",TaskStatus=").Append(fdsArgs.TaskStatus);
+                        msg.Append(",CurrentTaskPhase=").Append(fdsArgs.CurrentTaskPhase);
+                        msg.Append(")");
 
-					LogManager.WriteLog(TraceType.WARNING, "OnFileTransferNotification" + msg, "", null, EventIdEnum.GroundCore);
+                        LogManager.WriteLog(TraceType.INFO, msg.ToString(), "PIS.Ground.Core.T2G.T2GNotificationProcessor.OnFileTransferNotification", null, EventIdEnum.GroundCore);
+
+                    }
 
 					_notifierTarget.RaiseOnFileDistributeNotificationEvent(fdsArgs, taskId);
 				}
