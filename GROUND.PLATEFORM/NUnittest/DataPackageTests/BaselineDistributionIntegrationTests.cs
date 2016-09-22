@@ -85,6 +85,8 @@ namespace DataPackageTests
         public const string SERVICE_NAME_DATA_PACKAGE = "PIS2G DataPackage";
         public const ushort DEFAULT_CAR_ID = 1;
 
+        public const string BASELINE_STATUS_UNKNOWN = "UNKNOWN";
+
         private T2GFileTransferServiceStub _fileTransferServiceStub;
         private T2GIdentificationServiceStub _identificationServiceStub;
         private T2GVehicleInfoServiceStub _vehicleInfoServiceStub;
@@ -599,6 +601,7 @@ namespace DataPackageTests
         [Test]
         public void DistributeBaselineScenario_Nominal()
         {
+            const string FUTURE_VERSION = "1.0.0.0";
             // Common initialization
             CreateT2GServicesStub();
             InitializeRemoteDataStoreMockWithDefaultBehavior();
@@ -612,12 +615,12 @@ namespace DataPackageTests
             // Initializations specific to this test.
             ElementsDataStoreData data = new ElementsDataStoreData(TRAIN_NAME_1);
 
-            data.FutureBaseline = "1.0.0.0";
+            data.FutureBaseline = FUTURE_VERSION;
             data.FutureBaselineActivationDate = RemoteDataStoreDataBase.ToString(DateTime.Today);
             data.FutureBaselineExpirationDate = RemoteDataStoreDataBase.ToString(DateTime.Today.AddYears(1));
 
             UpdateDataStore(data);
-            AddBaselineToRemoteDataStore("1.0.0.0");
+            AddBaselineToRemoteDataStore(FUTURE_VERSION);
 
             // Request the datapackage service to distribute the baseline
             DataPackageResult result = _datapackageServiceStub.distributeBaseline(_pisGroundSessionId, null, new TargetAddressType(TRAIN_NAME_1), CreateDistributionAttribute(), false);
@@ -634,7 +637,7 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            //VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, "3.0.0.0", "1.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
             for (int i = 0; i < (5 + 5 + 2); ++i)
             {
                 _fileTransferServiceStub.PerformTransferProgression();
@@ -642,8 +645,27 @@ namespace DataPackageTests
             }
 
             Thread.Sleep(5 * ONE_SECOND);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, "3.0.0.0", "1.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
 
+
+            // Simulate that train retrieved the baseline on embedded side.
+
+            BaselineMessage baselineInfo = new BaselineMessage(TRAIN_NAME_1);
+            baselineInfo.CurrentVersion = DEFAULT_BASELINE;
+            baselineInfo.FutureVersion = FUTURE_VERSION;
+            _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
+
+            WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.DEPLOYED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.DEPLOYED);
+
+            // Simulate that train replaced the current baseline with the future.
+            baselineInfo.ArchivedVersion = baselineInfo.CurrentVersion;
+            baselineInfo.CurrentVersion = baselineInfo.FutureVersion;
+            baselineInfo.FutureVersion = string.Empty;
+            _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
+
+            WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
         }
 
         #endregion
@@ -773,6 +795,33 @@ namespace DataPackageTests
 
         #endregion
 
+        /// <summary>
+        /// Gets the baseline progress in history log for a train.
+        /// </summary>
+        /// <param name="trainName">Name of the train to query.</param>
+        /// <returns>The baseline progress status. UNKNOWN if train name has no progress information</returns>
+        private BaselineProgressStatusEnum GetBaselineProgress(string trainName)
+        {
+            return GetBaselineProgress(trainName, BaselineProgressStatusEnum.UNKNOWN);
+        }
+
+        /// <summary>
+        /// Gets the baseline progress in history log for a train.
+        /// </summary>
+        /// <param name="trainName">Name of the train to query.</param>
+        /// <param name="defaultValue">The value to return if train is unknown in history log database.</param>
+        /// <returns>The baseline progress status. defaultValue if train name has no progress information</returns>
+        private BaselineProgressStatusEnum GetBaselineProgress(string trainName, BaselineProgressStatusEnum defaultValue)
+        {
+            Dictionary<string, TrainBaselineStatusData> statuses;
+
+            HistoryLogger.GetTrainBaselineStatus(out statuses);
+
+            TrainBaselineStatusData trainStatus;
+            return statuses.TryGetValue(trainName, out trainStatus) ? trainStatus.ProgressStatus : defaultValue;
+
+        }
+
         private void VerifyTrainBaselineStatusInHistoryLog(string systemId, bool expectedOnlineStatus, string expectedBaselineVersion, string expectedFutureVersion, Guid expectedRequestId, int expectedTaskId, BaselineProgressStatusEnum expectedProgress)
         {
             Dictionary<string, TrainBaselineStatusData> statuses;
@@ -784,9 +833,9 @@ namespace DataPackageTests
             Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId);
             Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId);
 //            Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId);
-            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
+//            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
             Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId);
-  //          Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId);
+            Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId);
         }
 
         private void WaitPisGroundIsConnectedWithT2G()
@@ -796,6 +845,16 @@ namespace DataPackageTests
         private void WaitTrainOnlineWithPISGround(string trainName, bool waitForDataPackage)
         {
             WaitTrainOnlineWithPISGround(trainName, waitForDataPackage, 3 *ONE_SECOND);
+        }
+
+        private void WaitBaselineStatusBecomeInState(string trainName, BaselineProgressStatusEnum expectedStatus)
+        {
+            WaitBaselineStatusBecomeInState(trainName, expectedStatus, 10 * ONE_SECOND);
+        }
+
+        private void WaitBaselineStatusBecomeInState(string trainName, BaselineProgressStatusEnum expectedStatus, int delay)
+        {
+            Assert.That(() => GetBaselineProgress(trainName), Is.EqualTo(expectedStatus).After(delay, ONE_SECOND / 3), "The baseline deployment status in history log database is no set to expected value for train '{0}'", trainName);
         }
 
         private void WaitTrainOnlineWithPISGround(string trainName, bool waitForDataPackage, int delay)
