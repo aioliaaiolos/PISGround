@@ -25,6 +25,8 @@ namespace DataPackageTests.Stubs
         private const string BEGIN_INSTR = "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n  <string>";
         private const string END_INSTR = "</string>\r\n</ArrayOfString>";
         private const string COMMA_INSTR = "</string>\r\n  <string>";
+        private const string EMPTY_VALUE = "<string />";
+        private const string NEW_EMPTY_VALUE = "<string></string>";
 
         /// <summary>
         /// Gets the notification identifier.
@@ -94,7 +96,7 @@ namespace DataPackageTests.Stubs
         /// <returns>Parameter values separated with comma character.</returns>
         public string GetParameterAsCommaDelimitedString()
         {
-            return Parameter.Replace(BEGIN_INSTR, string.Empty).Replace(END_INSTR, string.Empty).Replace(COMMA_INSTR, ", ");
+            return Parameter.Replace(EMPTY_VALUE, NEW_EMPTY_VALUE).Replace(BEGIN_INSTR, string.Empty).Replace(END_INSTR, string.Empty).Replace(COMMA_INSTR, ", ");
         }
     }
 }
