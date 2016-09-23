@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using PIS.Ground.Core.Data;
 using AcquisitionStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.acquisitionStateEnum;
 using FileInfoStruct = DataPackageTests.T2GServiceInterface.FileTransfer.fileInfoStruct;
 using FileList = DataPackageTests.T2GServiceInterface.FileTransfer.fileList;
@@ -281,6 +282,51 @@ namespace DataPackageTests.ServicesStub
                 bool inFinalState = taskSubState != TaskSubStateEnum.subtaskInProgress &&
                     (taskState == TaskStateEnum.taskCancelled || taskState == TaskStateEnum.taskError || taskState == TaskStateEnum.taskCompleted);
                 return inFinalState;
+            }
+        }
+
+        /// <summary>
+        /// Gets the expected baseline progress in history log database depending of the transfer status.
+        /// </summary>
+        public BaselineProgressStatusEnum BaselineProgress
+        {
+            get
+            {
+                BaselineProgressStatusEnum progress = BaselineProgressStatusEnum.UNKNOWN;
+                switch (taskState)
+                {
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskCancelled:
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskStopped:
+                        progress = BaselineProgressStatusEnum.TRANSFER_PAUSED;
+                        break;
+
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskError:
+                        progress = BaselineProgressStatusEnum.UNKNOWN;
+                        break;
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskCompleted:
+                        progress = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                        break;
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskCreated:
+                        progress = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                        break;
+                    case T2GServiceInterface.FileTransfer.taskStateEnum.taskStarted:
+                        switch (taskPhase)
+                        {
+                            case T2GServiceInterface.FileTransfer.taskPhaseEnum.creationPhase:
+                            case T2GServiceInterface.FileTransfer.taskPhaseEnum.acquisitionPhase:
+                                progress = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                                break;
+                            case T2GServiceInterface.FileTransfer.taskPhaseEnum.distributionPhase:
+                                progress = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                                break;
+                            case T2GServiceInterface.FileTransfer.taskPhaseEnum.transferPhase:
+                                progress = transferCompletionPercent != 0 ? BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS : BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                                break;
+                        }
+                        break;
+                }
+
+                return progress;
             }
         }
 
