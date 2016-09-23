@@ -427,7 +427,7 @@ namespace GroundCoreTests
             _remoteFolderMock.Setup(x => x.CRCGuid).Returns(lCRCGuid);
             _remoteFolderMock.Setup(x => x.FolderName).Returns(lRequestId.ToString() + lCRCGuid);
 
-            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null);
+            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null, null);
 
             _t2gFileDistMgr.GetFolderIdFromSimilarT2GFolder(ref lUploadFileRequest);
 
@@ -455,7 +455,7 @@ namespace GroundCoreTests
             _remoteFolderMock.SetupProperty(x => x.FolderId);
             _remoteFolderMock.SetupProperty(x => x.ExpirationDate);
 
-            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null);
+            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null, null);
 
             _t2gFileDistMgr.GetFolderIdFromSimilarT2GFolder(ref lUploadFileRequest);
 
@@ -484,7 +484,7 @@ namespace GroundCoreTests
             _remoteFolderMock.SetupProperty(x => x.FolderId);
             _remoteFolderMock.SetupProperty(x => x.ExpirationDate);
 
-            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null);
+            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null, null);
 
             _t2gFileDistMgr.GetFolderIdFromSimilarT2GFolder(ref lUploadFileRequest);
 
@@ -512,7 +512,7 @@ namespace GroundCoreTests
             _remoteFolderMock.SetupProperty(x => x.FolderId);
             _remoteFolderMock.SetupProperty(x => x.ExpirationDate);
 
-            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null);
+            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null, null);
 
             _t2gFileDistMgr.GetFolderIdFromSimilarT2GFolder(ref lUploadFileRequest);
 
@@ -540,7 +540,7 @@ namespace GroundCoreTests
             _remoteFolderMock.SetupProperty(x => x.FolderId);
             _remoteFolderMock.SetupProperty(x => x.ExpirationDate);
 
-            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null);
+            UploadFileDistributionRequest lUploadFileRequest = new UploadFileDistributionRequest(lRequestId, _remoteFolderMock.Object, new DateTime(2099, 12, 31), false, _recs, DateTime.Now, "", FileTransferMode.AnyBandwidth, 1, null, null);
 
             _t2gFileDistMgr.GetFolderIdFromSimilarT2GFolder(ref lUploadFileRequest);
 
