@@ -30,6 +30,7 @@ using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskS
 using TransferStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.transferStateEnum;
 using TransferTaskList = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskList;
 using TransferTaskStruct = DataPackageTests.T2GServiceInterface.FileTransfer.transferTaskStruct;
+using System.Threading;
 
 namespace DataPackageTests.ServicesStub
 {
@@ -793,9 +794,15 @@ namespace DataPackageTests.ServicesStub
                 }
             }
 
-            foreach (TransferTaskInfo task in _notificationList.Values)
+            if (_notificationList.Count > 0)
             {
-                NotifySubscribers(task);
+                foreach (TransferTaskInfo task in _notificationList.Values)
+                {
+                    NotifySubscribers(task);
+                }
+
+                // Wait one second to give a chance to background processing to be processed.
+                Thread.Sleep(1000);
             }
         }
 

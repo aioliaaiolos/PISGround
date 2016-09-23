@@ -10,8 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.ServiceModel;
+using System.Text;
 using System.Threading;
 using DataPackageTests.Data;
 using DataPackageTests.ServicesStub;
@@ -29,9 +31,9 @@ using PIS.Ground.DataPackage;
 using PIS.Ground.DataPackage.RemoteDataStoreFactory;
 using PIS.Ground.DataPackage.RequestMgt;
 using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
-using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
 using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
 using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
+using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
 
 
 namespace DataPackageTests
@@ -260,7 +262,7 @@ namespace DataPackageTests
 
             if (_requestManager != null)
             {
-                _requestManager.Uninitialize();
+                _requestManager.Dispose();
                 _requestManager = null;
             }
 
@@ -352,10 +354,13 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-            for (int i = 0; i < (5 + 5 + 2); ++i)
+            
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+            while (_fileTransferServiceStub.IsTaskRunning(transferTaskId))
             {
                 _fileTransferServiceStub.PerformTransferProgression();
+                BaselineProgressStatusEnum expectedProgress = _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress;
+                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, expectedProgress);
                 Thread.Sleep(ONE_SECOND / 4);
             }
 
@@ -424,15 +429,18 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-            for (int i = 0; i < 6; ++i)
+            while (_fileTransferServiceStub.GetTask(transferTaskId).taskPhase == T2GServiceInterface.FileTransfer.taskPhaseEnum.acquisitionPhase)
             {
+                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
                 _fileTransferServiceStub.PerformTransferProgression();
-                Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
-                Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
-                Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
+                AssertAll(
+                () => Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not"),
+                () => Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not"),
+                () => Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected"));
                 Thread.Sleep(ONE_SECOND / 4);
             }
+
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
 
             // Wait 2 minutes, check every seconds
             for (int t = 0; t < (2 * 60); ++t)
@@ -440,15 +448,14 @@ namespace DataPackageTests
                 Thread.Sleep(ONE_SECOND);
                 _fileTransferServiceStub.PerformTransferProgression();
 
-                Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
-                Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
-                {
-                    TransferTaskInfo task = _fileTransferServiceStub.GetTask(transferTaskId);
-                    Assert.IsTrue(task.IsRunning, "The transfer task is not running as expected");
-                    Assert.AreEqual(TaskPhaseEnum.transferPhase, task.taskPhase, "The transfer task phase is not the one expected");
-                    Assert.AreEqual(TaskSubStateEnum.subtaskWaitingLink, task.taskSubState, "The transfer task sub state is not the one expected");
-                }
-                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+                TransferTaskInfo task = _fileTransferServiceStub.GetTask(transferTaskId);
+                AssertAll(
+                 () => Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not"),
+                 () => Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not"),
+                 () => Assert.IsTrue(task.IsRunning, "The transfer task is not running as expected"),
+                 () => Assert.AreEqual(TaskPhaseEnum.transferPhase, task.taskPhase, "The transfer task phase is not the one expected"),
+                 () => Assert.AreEqual(TaskSubStateEnum.subtaskWaitingLink, task.taskSubState, "The transfer task sub state is not the one expected"));
+                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
             }
 
 
@@ -456,6 +463,7 @@ namespace DataPackageTests
             _identificationServiceStub.UpdateSystem(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, 0, DEFAULT_MISSION, CommLinkEnum.wifi, TRAIN_IP_1);
 
             Assert.That(() => { _fileTransferServiceStub.PerformTransferProgression(); return _fileTransferServiceStub.GetTask(transferTaskId).IsInFinalState; }, Is.True.After(10 * ONE_SECOND, ONE_SECOND / 4), "Transfer does not complete as expected");
+
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
             {
@@ -527,15 +535,16 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-            for (int i = 0; i < 6; ++i)
+            while (_fileTransferServiceStub.GetTask(transferTaskId).taskPhase == T2GServiceInterface.FileTransfer.taskPhaseEnum.acquisitionPhase)
             {
+                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
                 _fileTransferServiceStub.PerformTransferProgression();
                 Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
                 Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
                 Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
                 Thread.Sleep(ONE_SECOND / 4);
             }
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
 
             // Stop data package servie.
             StopDataPackageService();
@@ -552,9 +561,15 @@ namespace DataPackageTests
 
             // Wait 2 seconds
             Thread.Sleep(2 * ONE_SECOND);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
 
             // Update the communication link of the train
             _identificationServiceStub.UpdateSystem(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, 0, DEFAULT_MISSION, CommLinkEnum.wifi, TRAIN_IP_1);
+
+            _fileTransferServiceStub.PerformTransferProgression();
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
+            _fileTransferServiceStub.PerformTransferProgression();
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
 
             Assert.That(() => { _fileTransferServiceStub.PerformTransferProgression(); return _fileTransferServiceStub.GetTask(transferTaskId).IsInFinalState; }, Is.True.After(10 * ONE_SECOND, ONE_SECOND / 4), "Transfer does not complete as expected");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
@@ -627,14 +642,19 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.SetTransferExpiration(transferTaskId, DateTime.UtcNow.AddSeconds(10));
 
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+
             _fileTransferServiceStub.PerformTransferProgression();
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
             _fileTransferServiceStub.PerformTransferProgression();
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
             Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
             Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
 
             Thread.Sleep(15 * ONE_SECOND);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
             Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
@@ -730,13 +750,19 @@ namespace DataPackageTests
 
             if (_requestManager != null)
             {
-                _requestManager.Uninitialize();
+                _requestManager.Dispose();
                 _requestManager = null;
             }
 
             DataPackageService.Uninitialize();
             T2GManagerContainer.T2GManager = null;
-            _t2gManager = null;
+
+            if (_t2gManager != null)
+            {
+                _t2gManager.Dispose();
+                _t2gManager = null;
+            }
+
             _sessionManager = null;
             _requestFactory = null;
         }
@@ -846,12 +872,13 @@ namespace DataPackageTests
 
             TrainBaselineStatusData analysedTrain;
             Assert.IsTrue(statuses.TryGetValue(systemId, out analysedTrain), "History log database integrity error for train '{0}': no data found", systemId);
-            Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId);
-            Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId);
-            Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId);
-            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
-            Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId);
-            Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId);
+            AssertAll(
+            () => Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId),
+            () => Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId),
+            () => Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId),
+            () => Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId),
+            () => Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId),
+            () => Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId));
         }
 
         private void WaitPisGroundIsConnectedWithT2G()
@@ -899,6 +926,39 @@ namespace DataPackageTests
             return transferAttributes;
         }
 
+        /// <summary>
+        /// Utility function that allow to executed multiple asserts.
+        /// </summary>
+        /// <param name="assertionsToRun">The assertions to run.</param>
+        private static void AssertAll(params Action[] assertionsToRun)
+        {
+            StringBuilder errorsMessageString = null;
+            foreach (var action in assertionsToRun)
+            {
+                try
+                {
+                    action.Invoke();
+                }
+                catch (AssertionException exception)
+                {
+                    if (errorsMessageString == null)
+                    {
+                        errorsMessageString = new StringBuilder(exception.ToString());
+                    }
+                    else
+                    {
+                        errorsMessageString.AppendLine().AppendLine().Append(exception.ToString());
+                    }
+                }
+            }
+
+            if (errorsMessageString != null)
+            {
+
+                Assert.Fail(string.Format(CultureInfo.CurrentCulture, "The following condtions failed:{0}{1}",
+                             Environment.NewLine, errorsMessageString.ToString()));
+            }
+        }
         #endregion
     }
 }

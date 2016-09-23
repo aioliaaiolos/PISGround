@@ -86,6 +86,11 @@ namespace GroundCoreTests.T2G
 		[TearDown]
 		public void TearDown()
 		{
+            if (_t2gManager != null)
+            {
+                _t2gManager.Dispose();
+            }
+
 			_t2gManager = null;
 
 			_sessionData = null;
