@@ -44,6 +44,7 @@
     <Compile Include="BaselineDistributionIntegrationTests.cs" />
     <Compile Include="BaselineStatusTests.cs" />
     <Compile Include="DataPackageServiceTests.cs" />
+    <Compile Include="Data\BaselineDistributingTasksDataStoreData.cs" />
     <Compile Include="Data\BaselinesDataStoreData.cs" />
     <Compile Include="Data\DataPackagesDataStoreData.cs" />
     <Compile Include="Data\ElementsDataStoreData.cs" />
