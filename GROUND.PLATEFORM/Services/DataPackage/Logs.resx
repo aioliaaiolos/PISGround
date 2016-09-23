@@ -296,4 +296,13 @@
   <data name="WARNING_TASK_CANCELING_PROBLEM" xml:space="preserve">
     <value>Problem cancelling previous task(s): {0}.</value>
   </data>
+  <data name="WARNING_TASK_CREATED_NOTIFICATION_IGNORED_NO_DISTRIBUTION_FOR_TRAIN" xml:space="preserve">
+    <value>Notification about transfer task created to element '{0}' ignored because there is no distribution on that element.</value>
+    <comment>{0} : Train name</comment>
+  </data>
+  <data name="WARNING_TASK_CREATED_NOTIFICATION_IGNORED_REQUEST_ID_DIFFER" xml:space="preserve">
+    <value>Notification about transfer task created to element '{0}' ignored because the active distribution request id is not '{1}'.</value>
+    <comment>{0} : Train name
+{1}: Request id</comment>
+  </data>
 </root>

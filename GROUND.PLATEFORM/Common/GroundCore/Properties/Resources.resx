@@ -439,4 +439,8 @@
     <value>Error while removing all session data in database: {0}.</value>
     <comment>{0}: the exception message.</comment>
   </data>
+  <data name="FailedToNotifyDistributionTransferTaskCreated" xml:space="preserve">
+    <value>Error while notifying subscriber on transfer task created file distribution for request '{0}'.</value>
+    <comment>{0} = Request Id</comment>
+  </data>
 </root>

@@ -145,7 +145,8 @@ namespace PIS.Ground.DataPackage.RequestMgt
 													"Distribute baseline for element " + requestContext.ElementId,
 													requestContext.DistributionAttributes.TransferMode,
 													requestContext.DistributionAttributes.priority,
-													new EventHandler<FileDistributionStatusArgs>(DataPackageService.OnFileDistributeNotification));
+													new EventHandler<FileDistributionStatusArgs>(DataPackageService.OnFileDistributeNotification),
+                                                    new EventHandler<FileDistributionTaskCreatedArgs>(BaselineStatusUpdater.OnFileDistributionTaskCreated));
 
 												DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageFutureBaselineDefinition, stringWriter.ToString());
 

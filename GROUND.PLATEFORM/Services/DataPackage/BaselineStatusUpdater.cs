@@ -16,6 +16,7 @@ using PIS.Ground.Core.Data;
 using PIS.Ground.DataPackage.Notification;
 using PIS.Ground.RemoteDataStore;
 using PIS.Ground.Core.T2G;
+using System.Globalization;
 
 namespace PIS.Ground.DataPackage
 {
@@ -1770,5 +1771,85 @@ namespace PIS.Ground.DataPackage
 				}
 			}
 		}
-	}
+
+        /// <summary>
+        /// Called when the distribution of an upload request create the transfer task.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The arguments of the notification.</param>
+        public static void OnFileDistributionTaskCreated(object sender, FileDistributionTaskCreatedArgs e)
+        {
+            try
+            {
+                if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = "OnFileDistributionTaskCreated " + Environment.NewLine +
+                    "( " + Environment.NewLine +
+                    "  Request   : " + e.RequestId.ToString() + Environment.NewLine +
+                    "  Task id   : " + e.TaskId.ToString() + Environment.NewLine +
+                    "  Recipient : " + ((e.Recipients != null && e.Recipients.Count > 0) ? e.Recipients[0].SystemId??"" + e.Recipients[0].MissionId??"" : string.Empty) + Environment.NewLine +
+                    ")";
+
+                _logManager.WriteLog(TraceType.INFO,
+                    message,
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
+
+                lock (_baselineStatusUpdaterLock)
+                {
+                    // Checking initial conditions
+
+                    if (_isInitialized)
+                    {
+                        if (e.Recipients == null || e.Recipients.Count != 1 || string.IsNullOrEmpty(e.Recipients[0].SystemId))
+                        {
+                            _logManager.WriteLog(TraceType.DEBUG, "Notification excluded because the recipient count differ than one or the recipient system id is an empty string", "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                        }
+                        else
+                        {
+                            TrainBaselineStatusExtendedData lExtendedProgress = null;
+
+                            // Trim the strings passed as arguments
+                            // 
+                            string lTrainId = e.Recipients[0].SystemId;
+
+                            // Retrieve the status corresponding to that train if it already exists
+                            // 
+                            if (!TryGetEntry(lTrainId, out lExtendedProgress))
+                            {
+                                string message = string.Format(CultureInfo.CurrentCulture, Logs.WARNING_TASK_CREATED_NOTIFICATION_IGNORED_NO_DISTRIBUTION_FOR_TRAIN, lTrainId);
+                                _logManager.WriteLog(TraceType.WARNING, message, "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                            }
+                            else if (lExtendedProgress.Status == null || lExtendedProgress.Status.RequestId != e.RequestId)
+                            {
+                                string message = string.Format(CultureInfo.CurrentCulture, Logs.WARNING_TASK_CREATED_NOTIFICATION_IGNORED_REQUEST_ID_DIFFER, lTrainId, e.RequestId);
+                                _logManager.WriteLog(TraceType.WARNING, message, "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                            }
+                            else
+                            {
+                                lExtendedProgress.Status.TaskId = e.TaskId;
+                                LogProgress(lTrainId, lExtendedProgress);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_isHistoryLoggerAvailable)
+                        {
+                            throw (new InvalidOperationException("updater not initialized"));
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                _logManager.WriteLog(TraceType.EXCEPTION, exception.Message,
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                    exception, EventIdEnum.DataPackage);
+            }
+
+        }
+    }
 }

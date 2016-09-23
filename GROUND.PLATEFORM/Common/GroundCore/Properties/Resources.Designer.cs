@@ -385,6 +385,15 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while notifying subscriber on transfer task created file distribution for request &apos;{0}&apos;..
+        /// </summary>
+        internal static string FailedToNotifyDistributionTransferTaskCreated {
+            get {
+                return ResourceManager.GetString("FailedToNotifyDistributionTransferTaskCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Folder is not uploaded yet.
         /// </summary>
         internal static string FolderNotUploaded {

@@ -6,6 +6,8 @@ namespace PIS.Ground.Core.Data
     using System.Linq;
     using System.Net;
     using System.Text;
+    using PIS.Ground.Core.LogMgmt;
+    using System.Globalization;
 
     /// <summary>
     /// File distribution Request
@@ -63,11 +65,13 @@ namespace PIS.Ground.Core.Data
         private string systemId;
 
         /// <summary>
-        /// Folder objet that contains remote file. Calculate CRCGuid when files are added to it.
+        /// Folder object that contains remote file. Calculate CRCGuid when files are added to it.
         /// </summary>
         private IRemoteFolderClass folder;
 
         private event EventHandler<FileDistributionStatusArgs> onFileDistributeNotification;
+
+        private event EventHandler<FileDistributionTaskCreatedArgs> _onTaskCreatedNotification;
 
         #region Constructor
         /// <summary>
@@ -97,7 +101,9 @@ namespace PIS.Ground.Core.Data
         /// <param name="pstrDescription">A description of the file transfer task.</param>
         /// <param name="ptransferMode">File transfer mode</param>
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
-        public FileDistributionRequest(Guid prequestID, string pstrFolderName, DateTime pdtExpiration, List<string> plstFilePathList, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification)
+        /// <param name="pOnFileDistributeNotification">Event handler for notification on file distribute</param>
+        /// <param name="pOnTaskCreatedNotification">Event handler to be notified when transfer task is created.</param>
+        public FileDistributionRequest(Guid prequestID, string pstrFolderName, DateTime pdtExpiration, List<string> plstFilePathList, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, EventHandler<FileDistributionTaskCreatedArgs> pOnTaskCreatedNotification)
         {
             this.requestID = prequestID;
             this.expirationDate = pdtExpiration;
@@ -108,6 +114,7 @@ namespace PIS.Ground.Core.Data
             this.transferMode = ptransferMode;
             this.priority = ipriority;
             this.OnFileDistributeNotification = pOnFileDistributeNotification;
+            this._onTaskCreatedNotification = pOnTaskCreatedNotification;
 
             //create RemoteFolderClass
             this.folder = new RemoteFolderClass(pstrFolderName);
@@ -115,7 +122,7 @@ namespace PIS.Ground.Core.Data
             //Fill the folder with files. This will automatically generate CRC for each file and CRCGuid for the folder
             foreach (string lFilePath in plstFilePathList)
             {
-                //CRC Calculation is long. Developper can initialize file when required.
+                //CRC Calculation is long. Developer can initialize file when required.
                 this.folder.AddFileToFolder(new RemoteFileClass(lFilePath,false));
             }
 
@@ -134,7 +141,9 @@ namespace PIS.Ground.Core.Data
         /// <param name="pstrDescription">A description of the file transfer task.</param>
         /// <param name="ptransferMode">File transfer mode</param>
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
-        public FileDistributionRequest(Guid prequestID, IRemoteFolderClass pfolder, DateTime pdtExpiration, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification)
+        /// <param name="pOnFileDistributeNotification">Event handler for notification on file distribute</param>
+        /// <param name="pOnTaskCreatedNotification">Event handler to be notified when transfer task is created.</param>
+        public FileDistributionRequest(Guid prequestID, IRemoteFolderClass pfolder, DateTime pdtExpiration, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, EventHandler<FileDistributionTaskCreatedArgs> pOnTaskCreatedNotification)
         {
             this.requestID = prequestID;
             this.expirationDate = pdtExpiration;
@@ -145,6 +154,7 @@ namespace PIS.Ground.Core.Data
             this.transferMode = ptransferMode;
             this.priority = ipriority;
             this.OnFileDistributeNotification = pOnFileDistributeNotification;
+            this._onTaskCreatedNotification = pOnTaskCreatedNotification;
 
             //assign RemoteFolderClass
             this.folder = pfolder;
@@ -166,7 +176,9 @@ namespace PIS.Ground.Core.Data
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
         /// <param name="pOnFileDistributeNotification">File Transfer notification event handler</param>
         /// <param name="pfolderId">folder id to be downloaded</param>
-        public FileDistributionRequest(Guid prequestID, DateTime pdtExpiration, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, int pfolderId)
+        /// <param name="pOnFileDistributeNotification">Event handler for notification on file distribute</param>
+        /// <param name="pOnTaskCreatedNotification">Event handler to be notified when transfer task is created.</param>
+        public FileDistributionRequest(Guid prequestID, DateTime pdtExpiration, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, int pfolderId, EventHandler<FileDistributionTaskCreatedArgs> pOnTaskCreatedNotification)
         {
             this.requestID = prequestID;
             this.expirationDate = pdtExpiration;
@@ -176,6 +188,7 @@ namespace PIS.Ground.Core.Data
             this.strDescription = pstrDescription;
             this.priority = ipriority;
             this.onFileDistributeNotification = pOnFileDistributeNotification;
+            this._onTaskCreatedNotification = pOnTaskCreatedNotification;
             this.transferMode = ptransferMode;
 
             //create RemoteFolderClass
@@ -353,7 +366,22 @@ namespace PIS.Ground.Core.Data
 
             set
             {
-                this.taskId = value;
+                if (this.taskId != value)
+                {
+                    this.taskId = value;
+
+                    if (value != 0 && _onTaskCreatedNotification != null)
+                    {
+                        try
+                        {
+                            _onTaskCreatedNotification(this, new FileDistributionTaskCreatedArgs(value, RequestId, RecipientList));
+                        }
+                        catch (System.Exception ex)
+                        {
+                            LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Properties.Resources.FailedToNotifyDistributionTransferTaskCreated, RequestId), "PIS.Ground.Core.Data.FileDistributionRequest.TaskId", ex, EventIdEnum.GroundCore);
+                        }
+                    }
+                }
             }
         }
 

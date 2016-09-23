@@ -1,4 +1,11 @@
-﻿/// 
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="DownloadFileDistributionRequest.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.Data
 {
     using System;
@@ -7,7 +14,7 @@ namespace PIS.Ground.Core.Data
     using System.Text;
 
     /// <summary>
-    /// Class represtenting Download file distribution request
+    /// Class representing Download file distribution request
     /// </summary>
     public class DownloadFileDistributionRequest : FileDistributionRequest
     {
@@ -66,7 +73,7 @@ namespace PIS.Ground.Core.Data
         /// <param name="ptransferMode">File transfer mode</param>
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
         public DownloadFileDistributionRequest(Guid prequestID, string pstrFolderName, DateTime pdtExpiration, List<string> plstFilePathList, bool pbCompression, string pftpServerIP, ushort pftpPortNumber, string pftpUserName, string pftpPassword, string pftpDirectory, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification)
-            : base(prequestID, pstrFolderName, pdtExpiration, plstFilePathList, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification)
+            : base(prequestID, pstrFolderName, pdtExpiration, plstFilePathList, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification, null)
         {
             this.ftpServerIP = pftpServerIP;
             this.ftpPortNumber = pftpPortNumber;

@@ -68,8 +68,10 @@ namespace PIS.Ground.Core.Data
         /// <param name="pstrDescription">A description of the file transfer task.</param>
         /// <param name="ptransferMode">File transfer mode</param>
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
-        public UploadFileDistributionRequest(Guid prequestID, string pstrFolderName, DateTime pdtExpiration, List<string> plstFilePathList, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification)
-            : base(prequestID, pstrFolderName, pdtExpiration, plstFilePathList, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification)
+        /// <param name="pOnFileDistributeNotification">Event handler to be notified on file distribution progress.</param>
+        /// <param name="pOnTaskCreatedNotification">Event handler to be notified when transfer task is created.</param>
+        public UploadFileDistributionRequest(Guid prequestID, string pstrFolderName, DateTime pdtExpiration, List<string> plstFilePathList, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, EventHandler<FileDistributionTaskCreatedArgs> pOnTaskCreatedNotification)
+            : base(prequestID, pstrFolderName, pdtExpiration, plstFilePathList, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification, pOnTaskCreatedNotification)
         {
             this.associatedRequestId = new List<Guid>();
         }
@@ -86,8 +88,10 @@ namespace PIS.Ground.Core.Data
         /// <param name="pstrDescription">A description of the file transfer task.</param>
         /// <param name="ptransferMode">File transfer mode</param>
         /// <param name="ipriority">The priority of the transfer: a number between 0 and 32 (0 being the highest priority).</param>
-        public UploadFileDistributionRequest(Guid prequestID, IRemoteFolderClass pFolder, DateTime pdtExpiration, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification)
-            : base(prequestID, pFolder, pdtExpiration, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification)
+        /// <param name="pOnFileDistributeNotification">Event handler to be notified on file distribution progress.</param>
+        /// <param name="pOnTaskCreatedNotification">Event handler to be notified when transfer task is created.</param>
+        public UploadFileDistributionRequest(Guid prequestID, IRemoteFolderClass pFolder, DateTime pdtExpiration, bool pbCompression, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription, FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification, EventHandler<FileDistributionTaskCreatedArgs> pOnTaskCreatedNotification)
+            : base(prequestID, pFolder, pdtExpiration, pbCompression, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification, pOnTaskCreatedNotification)
         {
             this.associatedRequestId = new List<Guid>();
         }

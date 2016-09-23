@@ -819,7 +819,10 @@ namespace PIS.Ground.Core.T2G
 
 					if ((taskid > 0) && (strError.CompareTo(string.Empty) == 0))
 					{
-						LogManager.WriteLog(TraceType.INFO, String.Format(CultureInfo.CurrentCulture, Resources.RequestAndTaskInfo, objFileDistributionRequest.RequestId.ToString(), objFileDistributionRequest.Folder.CRCGuid, objFileDistributionRequest.Folder.FolderId.ToString(), taskid.ToString()), "Ground.Core.T2G.T2GClient.CreateAndStartTask", null, EventIdEnum.GroundCore);
+                        if (LogManager.IsTraceActive(TraceType.INFO))
+                        {
+                            LogManager.WriteLog(TraceType.INFO, String.Format(CultureInfo.CurrentCulture, Resources.RequestAndTaskInfo, objFileDistributionRequest.RequestId.ToString(), objFileDistributionRequest.Folder.CRCGuid, objFileDistributionRequest.Folder.FolderId, taskid), "Ground.Core.T2G.T2GClient.CreateAndStartTask", null, EventIdEnum.GroundCore);
+                        }
 
 						objFileDistributionRequest.TaskId = taskid;
 
@@ -1182,14 +1185,17 @@ namespace PIS.Ground.Core.T2G
         /// <param name="objFileDistributionRequest">File distribution request.</param>
         private void UpdateRequestList(FileDistributionRequest objFileDistributionRequest)
         {
-            LogManager.WriteLog(TraceType.INFO, "UpdateRequestList called, request id =" + objFileDistributionRequest.RequestId, "PIS.Ground.Core.T2G.T2GFileDistributionManager", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                LogManager.WriteLog(TraceType.INFO, "UpdateRequestList called, request id =" + objFileDistributionRequest.RequestId, "PIS.Ground.Core.T2G.T2GFileDistributionManager", null, EventIdEnum.GroundCore);
+            }
 
             lock (_fileDistributionRequestsLock)
             {
                 if (_fileDistributionRequests.ContainsKey(objFileDistributionRequest.RequestId))
                 {
-                    LogManager.WriteLog(TraceType.INFO, "UpdateRequestList updated distribution requests", "PIS.Ground.Core.T2G.T2GFileDistributionManager", null, EventIdEnum.GroundCore);
                     _fileDistributionRequests[objFileDistributionRequest.RequestId] = objFileDistributionRequest;
+                    LogManager.WriteLog(TraceType.DEBUG, "UpdateRequestList updated distribution requests", "PIS.Ground.Core.T2G.T2GFileDistributionManager", null, EventIdEnum.GroundCore);
                 }
             }
         }
