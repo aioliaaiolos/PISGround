@@ -12,11 +12,12 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Moq;
+using PIS.Ground.DataPackage;
 
 namespace DataPackageTests.RequestMgt
 {
 	/// <summary>Request manager tests.</summary>
-	[TestFixture]
+	[TestFixture, Category("RequestManager")]
 	class RequestManagerTests
 	{
 		/// <summary>The train 2ground manager mock.</summary>
@@ -38,7 +39,7 @@ namespace DataPackageTests.RequestMgt
 		Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore> _remoteDataStoreMock;
 
 		/// <summary>The tested instance.</summary>
-		PIS.Ground.DataPackage.RequestMgt.RequestManager _testedInstance;
+		RequestManagerMonitor _testedInstance;
 
 		/// <summary>Initializes a new instance of the RequestManagerTests class.</summary>
 		public RequestManagerTests()
@@ -51,7 +52,7 @@ namespace DataPackageTests.RequestMgt
 		{
 			_train2groundManagerMock = new Mock<PIS.Ground.Core.T2G.IT2GManager>();
 			_notificationSenderMock = new Mock<PIS.Ground.Core.Common.INotificationSender>();
-			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.RequestManager();
+			_testedInstance = new RequestManagerMonitor();
 			_testedInstance.Initialize(_train2groundManagerMock.Object, _notificationSenderMock.Object);
 
 			_sessionMgrMock = new Mock<PIS.Ground.Core.SessionMgmt.ISessionManager>();
@@ -72,6 +73,12 @@ namespace DataPackageTests.RequestMgt
 		[TearDown]
 		protected void TearDown()
 		{
+            if (_testedInstance != null)
+            {
+                _testedInstance.Dispose();
+            }
+
+            DataPackageService.Uninitialize();
 		}
 
 		#region Initialize
@@ -112,6 +119,7 @@ namespace DataPackageTests.RequestMgt
 			requestContext.Setup(f => f.RequestId).Returns(Guid.NewGuid());
 
 			_testedInstance.AddRequest(requestContext.Object);
+            Assert.IsTrue(_testedInstance.WaitRequestProcessed(new TimeSpan(0, 0, 5)), "New requests were not processes at least one time by request processor");
 
 			requestContext.Verify(f => f.State, Times.AtLeastOnce());
 			_remoteDataStoreMock.Verify(f => f.saveBaselineDistributingRequest(It.IsAny<PIS.Ground.RemoteDataStore.DataContainer>()), Times.Never());
@@ -134,6 +142,7 @@ namespace DataPackageTests.RequestMgt
 					DateTime.Now.AddHours(1));
 
 			_testedInstance.AddRequest(requestContext);
+            Assert.IsTrue(_testedInstance.WaitRequestProcessed(new TimeSpan(0, 0, 5)), "New requests were not processes at least one time by request processor");
 
 			_remoteDataStoreFactoryMock.Verify(f => f.GetRemoteDataStoreInstance(), Times.Once());
 		}
@@ -143,7 +152,7 @@ namespace DataPackageTests.RequestMgt
 		#region AddRequestRange
 
 		/// <summary>Adds a null request list.</summary>
-		[Test]
+        [Test, Category("AddRequestRange")]
 		public void AddRequestRangeNullList()
 		{
 			List<PIS.Ground.Core.Data.IRequestContext> requestContextList = null;
@@ -151,7 +160,7 @@ namespace DataPackageTests.RequestMgt
 		}
 
 		/// <summary>Adds an empty request list.</summary>
-		[Test]
+        [Test, Category("AddRequestRange")]
 		public void AddRequestRangeEmptyList()
 		{
 			List<PIS.Ground.Core.Data.IRequestContext> requestContextList = new List<PIS.Ground.Core.Data.IRequestContext>();
@@ -159,7 +168,7 @@ namespace DataPackageTests.RequestMgt
 		}
 
 		/// <summary>Adds a request list with one element.</summary>
-		[Test]
+        [Test, Category("AddRequestRange")]
 		public void AddRequestRangeOneElementList()
 		{
 			List<PIS.Ground.Core.Data.IRequestContext> requestContextList = new List<PIS.Ground.Core.Data.IRequestContext>();
@@ -172,12 +181,13 @@ namespace DataPackageTests.RequestMgt
 			requestContextList.Add(requestContext.Object);
 
 			_testedInstance.AddRequestRange(requestContextList);
+            Assert.IsTrue(_testedInstance.WaitRequestProcessed(new TimeSpan(0, 0, 5)), "New requests were not processes at least one time by request processor");
 
 			requestContext.Verify(f => f.State, Times.AtLeastOnce());
 		}
 
 		/// <summary>Adds a request list with two elements.</summary>
-		[Test]
+        [Test, Category("AddRequestRange")]
 		public void AddRequestRangeTwoElementsList()
 		{
 			List<PIS.Ground.Core.Data.IRequestContext> requestContextList = new List<PIS.Ground.Core.Data.IRequestContext>();
@@ -195,6 +205,7 @@ namespace DataPackageTests.RequestMgt
 			requestContextList.Add(requestContextTwo.Object);
 
 			_testedInstance.AddRequestRange(requestContextList);
+            Assert.IsTrue(_testedInstance.WaitRequestProcessed(new TimeSpan(0, 0, 5)), "New requests were not processes at least one time by request processor");
 
 			requestContextOne.Verify(f => f.State, Times.AtLeastOnce());
 			requestContextTwo.Verify(g => g.State, Times.AtLeastOnce());
