@@ -65,6 +65,8 @@
     <Compile Include="ServicesStub\T2GNotificationServiceStub.cs" />
     <Compile Include="ServicesStub\T2GVehicleInfoServiceStub.cs" />
     <Compile Include="ServicesStub\TrainDataPackageServiceStub.cs" />
+    <Compile Include="Stubs\NotificationInfo.cs" />
+    <Compile Include="Stubs\NotificationSenderStub.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DevExpress.Data.v12.2, Version=12.2.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
