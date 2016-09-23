@@ -719,6 +719,33 @@ namespace DataPackageTests.ServicesStub
             }
         }
 
+        /// <summary>
+        /// Determines whether if specified task is running or not.
+        /// </summary>
+        /// <param name="taskId">The task identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified task is running; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsTaskRunning(int taskId)
+        {
+            return GetTask(taskId).IsRunning;
+        }
+
+        public TransferTaskInfo GetTask(int taskId)
+        {
+            lock (_lock)
+            {
+                if (taskId > 0 && taskId <= _transfers.Count)
+                {
+                    TransferTaskInfo task =  _transfers[taskId - 1];
+                    if (task != null)
+                        return task.Clone();
+                }
+            }
+
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Task {0} does not exist", taskId), "taskId");
+        }
+
         #endregion
 
         #region FileTransferPortType Members

@@ -27,7 +27,11 @@ namespace DataPackageTests.ServicesStub
 
         private Mock<IRemoteDataStore> _remoteDataStoreMock;
 
-        private DataPackageCallbackService _datapackageCallbackService = new DataPackageCallbackService();
+        /// <summary>
+        /// The datapackage callback service.
+        /// </summary>
+        /// <remarks>Needs to be created only on demande, otherwise an error will occur.</remarks>
+        private DataPackageCallbackService _datapackageCallbackService;
 
         private object _dataStoreLock = new object();
 
@@ -76,7 +80,7 @@ namespace DataPackageTests.ServicesStub
         /// </summary>
         public RemoteDataStoreServiceStub()
         {
-            /* No logic body */
+            _remoteDataStoreMock = new Mock<IRemoteDataStore>();
         }
 
         #endregion
@@ -218,7 +222,7 @@ namespace DataPackageTests.ServicesStub
                 restList.Add("PISINFOTAINMENT", baselineData.PISInfotainmentDataPackageVersion);
                 restList.Add("LMT", baselineData.LMTDataPackageVersion);
 
-                _datapackageCallbackService.missingDataPackageNotification(requestId, restList);
+                GetOrCreateCallbackService().missingDataPackageNotification(requestId, restList);
             }
 
             return available;
@@ -250,6 +254,20 @@ namespace DataPackageTests.ServicesStub
 
                 throw new FaultException("Unknown Baseline version", new FaultCode(RemoteDataStoreExceptionCodeEnum.UNKNOWN_BASELINE_VERSION.ToString()));
             }
+        }
+
+        /// <summary>
+        /// Gets the or create callback service.
+        /// </summary>
+        /// <returns>The object instance to use.</returns>
+        private DataPackageCallbackService GetOrCreateCallbackService()
+        {
+            if (_datapackageCallbackService == null)
+            {
+                _datapackageCallbackService = new DataPackageCallbackService();
+            }
+
+            return _datapackageCallbackService;
         }
 
         #endregion
