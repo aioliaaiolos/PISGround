@@ -14,17 +14,12 @@ using System.Text;
 namespace PIS.Ground.DataPackage.RequestMgt
 {
 	/// <summary>Interface for request manager.</summary>
-	public interface IRequestManager
+	public interface IRequestManager: IDisposable
 	{
 		/// <summary>Initializes this object.</summary>
 		/// <param name="train2groundManager">T2GManager instance.</param>
 		/// <param name="notificationSender">The notification sender.</param>
 		void Initialize(Ground.Core.T2G.IT2GManager train2groundManager, PIS.Ground.Core.Common.INotificationSender notificationSender);
-
-        /// <summary>
-        /// Uninitializes this instance.
-        /// </summary>
-        void Uninitialize();
 
 		/// <summary>Adds a request.</summary>
 		/// <param name="requestContext">Context for the request.</param>
