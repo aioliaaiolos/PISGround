@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="BaselineStatusUpdater.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -8,6 +8,7 @@
 //---------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
@@ -261,8 +262,10 @@ namespace PIS.Ground.DataPackage
 
 		/// <summary>Initializes BaselineStatusUpdater. Must be called before any other public methods.</summary>
 		/// <param name="t2g">The client providing access to the T2G server. Must not be null.</param>
+        /// <param name="availableElements">List of available elements.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>		
-		public static bool Initialize(IT2GFileDistributionManager t2g)
+		public static bool Initialize(IT2GFileDistributionManager t2g,
+            ElementList<AvailableElementData> availableElements)
 		{
 			_logManager.WriteLog(TraceType.INFO,
 				"Initialize()",
@@ -343,7 +346,8 @@ namespace PIS.Ground.DataPackage
 						new BaselineProgressUpdateProcedure(UpdateProgressOnHistoryLogger),
 						new BaselineProgressRemoveProcedure(RemoveProgressFromHistoryLogger),
 						t2g,
-                        _logManager);
+                        _logManager,
+                        availableElements);
 				}
 			}
 			catch (ArgumentNullException lException)
@@ -381,13 +385,15 @@ namespace PIS.Ground.DataPackage
 		/// <param name="baselineProgressRemoveProcedure">The baseline progress remove procedure from persistent storage.</param>///
 		/// <param name="t2g">The client providing access to the T2G server.</param>
         /// <param name="logManager">The ILogManager interface reference. Added for unit test purposes.</param>
+        /// <param name="availableElementData">List of available elements.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>	
 		private static bool Initialize(
 			Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
 			BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
 			BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
 			IT2GFileDistributionManager t2g,
-            ILogManager logManager)
+            ILogManager logManager,
+            ElementList<AvailableElementData> availableElementData)
 		{
 			// Save the method arguments to class fields
 			// 
@@ -404,7 +410,7 @@ namespace PIS.Ground.DataPackage
 			// For now, assume all elements are off-line and that we do not know
 			// the different baselines and software versions and other information that could have changed
 			// 
-			ResetStatusEntries();
+			ResetStatusEntries(availableElementData);
 
 			return _isInitialized;
 		}
@@ -431,7 +437,8 @@ namespace PIS.Ground.DataPackage
 
 
 		/// <summary>Resets all status entries by clearing the fields that might have changed.</summary>
-		public static void ResetStatusEntries()
+        /// <param name="availableElements">List of available elements</param>
+		public static void ResetStatusEntries(ElementList<AvailableElementData> availableElements)
 		{
 			try
 			{
@@ -459,7 +466,7 @@ namespace PIS.Ground.DataPackage
 									// Make sure that all trains will be fully investigated the next time we hear from them
 									lExtendedStatus.IsT2GPollingRequired = true;
 
-									lStatus.OnlineStatus = false;
+									lStatus.OnlineStatus = (availableElements != null && availableElements.Any(e => e.OnlineStatus && e.ElementNumber == lTrainId));
 
 									LogProgress(lTrainId, lExtendedStatus);
 								}
