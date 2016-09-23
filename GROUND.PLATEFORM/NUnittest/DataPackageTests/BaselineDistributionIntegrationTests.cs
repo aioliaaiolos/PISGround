@@ -322,7 +322,7 @@ namespace DataPackageTests
             CreateT2GServicesStub();
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1);
-            InitializeDataPackageService();
+            InitializeDataPackageService(false);
             InitializePISGroundSession();
             WaitPisGroundIsConnectedWithT2G();
             WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
@@ -384,17 +384,17 @@ namespace DataPackageTests
         }
 
         /// <summary>
-        /// Test a distribute baseline scenario that cause the transfer to wait for a communication link during 2 minutes and then commplete.
+        /// Test a distribute baseline scenario that cause the transfer to wait for a communication link during 2 minutes and then complete.
         /// </summary>
         [Test]
-        public void DistributeBaselineScenario_WaitForCommunicationLinkDuring_TwoMinutes()
+        public void DistributeBaselineScenario_WaitForCommunicationLinkDuringTwoMinutes()
         {
             const string FUTURE_VERSION = "1.0.0.0";
             // Common initialization
             CreateT2GServicesStub();
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, CommLinkEnum.notApplicable);
-            InitializeDataPackageService();
+            InitializeDataPackageService(false);
             InitializePISGroundSession();
             WaitPisGroundIsConnectedWithT2G();
             WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
@@ -485,6 +485,107 @@ namespace DataPackageTests
             VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
         }
 
+
+        /// <summary>
+        /// Test a distribute baseline scenario that cause the transfer to wait for a communication link, then datapackage service is restarted and then transfer complete.
+        /// </summary>
+        [Test, Category("Restart")]
+        public void DistributeBaselineScenario_WaitForCommunicationLink_RestartPisGround_ThenDistributionComplete()
+        {
+            const string FUTURE_VERSION = "1.0.0.0";
+            // Common initialization
+            CreateT2GServicesStub();
+            _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
+            InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, CommLinkEnum.notApplicable);
+            InitializeDataPackageService(false);
+            InitializePISGroundSession();
+            WaitPisGroundIsConnectedWithT2G();
+            WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
+
+            // Initializations specific to this test.
+            ElementsDataStoreData data = new ElementsDataStoreData(TRAIN_NAME_1);
+
+            data.FutureBaseline = FUTURE_VERSION;
+            data.FutureBaselineActivationDate = RemoteDataStoreDataBase.ToString(DateTime.Today);
+            data.FutureBaselineExpirationDate = RemoteDataStoreDataBase.ToString(DateTime.Now.AddMinutes(20));
+
+            _dataStoreServiceStub.UpdateDataStore(data);
+            _dataStoreServiceStub.AddBaselineToRemoteDataStore(FUTURE_VERSION);
+
+            // Request the datapackage service to distribute the baseline
+            DataPackageResult result = _datapackageServiceStub.distributeBaseline(_pisGroundSessionId, null, new TargetAddressType(TRAIN_NAME_1), CreateDistributionAttribute(), false);
+            Assert.AreEqual(DataPackageErrorEnum.REQUEST_ACCEPTED, result.error_code, "Distribute baseline to train {0} does not returned the expected value", TRAIN_NAME_1);
+
+            // Wait that folder on T2G was created
+
+            Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
+            int transferFolderId = _fileTransferServiceStub.LastCreatedFolder.Value;
+            _fileTransferServiceStub.LastCreatedFolder = null;
+            Assert.That(() => _fileTransferServiceStub.LastCreatedTransfer.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer task on T2G service not created", TRAIN_NAME_1);
+            int transferTaskId = _fileTransferServiceStub.LastCreatedTransfer.Value;
+            _fileTransferServiceStub.LastCreatedTransfer = null;
+
+            _fileTransferServiceStub.PerformTransferProgression();
+
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            for (int i = 0; i < 6; ++i)
+            {
+                _fileTransferServiceStub.PerformTransferProgression();
+                Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+                Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
+                Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
+                Thread.Sleep(ONE_SECOND / 4);
+            }
+
+            // Stop data package servie.
+            StopDataPackageService();
+
+            // Wait 2 seconds
+            Thread.Sleep(2 * ONE_SECOND);
+
+            // Restart the datapackage service
+            InitializeDataPackageService(true);
+
+            WaitPisGroundIsConnectedWithT2G();
+            WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
+
+
+            // Wait 2 seconds
+            Thread.Sleep(2 * ONE_SECOND);
+
+            // Update the communication link of the train
+            _identificationServiceStub.UpdateSystem(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, 0, DEFAULT_MISSION, CommLinkEnum.wifi, TRAIN_IP_1);
+
+            Assert.That(() => { _fileTransferServiceStub.PerformTransferProgression(); return _fileTransferServiceStub.GetTask(transferTaskId).IsInFinalState; }, Is.True.After(10 * ONE_SECOND, ONE_SECOND / 4), "Transfer does not complete as expected");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
+            {
+                TransferTaskInfo task = _fileTransferServiceStub.GetTask(transferTaskId);
+                Assert.AreEqual(TaskStateEnum.taskCompleted, task.taskState, "Transfer does not complete as expected");
+            }
+            WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+
+            // Simulate that train retrieved the baseline on embedded side.
+
+            BaselineMessage baselineInfo = new BaselineMessage(TRAIN_NAME_1);
+            baselineInfo.CurrentVersion = DEFAULT_BASELINE;
+            baselineInfo.FutureVersion = FUTURE_VERSION;
+            _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
+
+            WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.DEPLOYED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.DEPLOYED);
+
+            // Simulate that train replaced the current baseline with the future.
+            baselineInfo.ArchivedVersion = baselineInfo.CurrentVersion;
+            baselineInfo.CurrentVersion = baselineInfo.FutureVersion;
+            baselineInfo.FutureVersion = string.Empty;
+            _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
+
+            WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
+        }
+
         #endregion
 
         #region Utilities methods
@@ -520,7 +621,8 @@ namespace DataPackageTests
         /// <summary>
         /// Initializes the data package service.
         /// </summary>
-        private void InitializeDataPackageService()
+        /// <param name="isRestart">Parameter that indicates if it is a restart simulation of the services.</param>
+        private void InitializeDataPackageService(bool isRestart)
         {
             Assert.IsTrue(HistoryLoggerConfiguration.Used, "The test application is misconfigured. HistoryLoggerConfiguration.Used is not set to proper value");
             Assert.IsTrue(HistoryLoggerConfiguration.Valid, "The test application is misconfigured. HistoryLoggerConfiguration.Valid is not set to proper value");
@@ -529,7 +631,11 @@ namespace DataPackageTests
             _t2gManager = T2GManagerContainer.T2GManager;
             _sessionManager = new SessionManager();
 
-            Assert.IsEmpty(_sessionManager.RemoveAllSessions(), "Cannot empty the session database");
+            if (!isRestart)
+            {
+                Assert.IsEmpty(_sessionManager.RemoveAllSessions(), "Cannot empty the session database");
+            }
+
             _requestFactory = new RequestContextFactory();
             _requestManager = new RequestManager();
 
@@ -540,6 +646,30 @@ namespace DataPackageTests
                 _remoteDataStoreFactoryMock.Object,
                 _requestManager
                 );
+        }
+
+        /// <summary>
+        /// Stops the data package service.
+        /// </summary>
+        private void StopDataPackageService()
+        {
+            if (_datapackageServiceStub != null)
+            {
+                _datapackageServiceStub.Dispose();
+                _datapackageServiceStub = null;
+            }
+
+            if (_requestManager != null)
+            {
+                _requestManager.Uninitialize();
+                _requestManager = null;
+            }
+
+            DataPackageService.Uninitialize();
+            T2GManagerContainer.T2GManager = null;
+            _t2gManager = null;
+            _sessionManager = null;
+            _requestFactory = null;
         }
 
         /// <summary>
