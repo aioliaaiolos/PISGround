@@ -586,11 +586,21 @@ namespace DataPackageTests.ServicesStub
                 // Update the task in distribution phase
                 foreach (TransferTaskInfo t in _startedList.Where(t => t.taskPhase == TaskPhaseEnum.distributionPhase))
                 {
-                    t.Recipient.distributedApplicationIds = t.Recipient.applicationIds;
-                    t.Recipient.distributionDate = DateTime.UtcNow;
-                    t.distributionCompletionPercent = 100;
-                    t.completionDate = DateTime.UtcNow;
-                    t.taskState = TaskStateEnum.taskCompleted;
+                    if (t.expirationDate != TransferTaskInfo.NullDate && DateTime.UtcNow > t.expirationDate)
+                    {
+                        t.Recipient.error = "Expired";
+                        t.Recipient.transferState = T2GServiceInterface.FileTransfer.transferStateEnum.notificationError;
+                        t.taskState = T2GServiceInterface.FileTransfer.taskStateEnum.taskError;
+                    }
+                    else
+                    {
+                        t.Recipient.distributedApplicationIds = t.Recipient.applicationIds;
+                        t.Recipient.distributionDate = DateTime.UtcNow;
+                        t.distributionCompletionPercent = 100;
+                        t.completionDate = DateTime.UtcNow;
+                        t.taskState = TaskStateEnum.taskCompleted;
+                    }
+
                     t.UpdateProgress();
                     _notificationList[t.taskId] = t.Clone();
                 }
@@ -598,7 +608,15 @@ namespace DataPackageTests.ServicesStub
                 // Update the waiting state for task in transfer phase
                 foreach (TransferTaskInfo t in _startedList.Where(t => t.taskPhase == TaskPhaseEnum.transferPhase))
                 {
-                    if (_identificationService.IsSystemOnline(t.Recipient.systemId))
+                    if (t.expirationDate != TransferTaskInfo.NullDate && DateTime.UtcNow > t.expirationDate)
+                    {
+                        t.Recipient.error = "Expired";
+                        t.Recipient.transferState = T2GServiceInterface.FileTransfer.transferStateEnum.transferError;
+                        t.taskState = T2GServiceInterface.FileTransfer.taskStateEnum.taskError;
+                        t.UpdateProgress();
+                        _notificationList[t.taskId] = t.Clone();
+                    }
+                    else if (_identificationService.IsSystemOnline(t.Recipient.systemId))
                     {
                         if (t.Recipient.transferState != TransferStateEnum.waitingForSpace)
                         {
@@ -683,30 +701,46 @@ namespace DataPackageTests.ServicesStub
                 }
 
                 // Update the task in acquisition phase
-                foreach (TransferTaskInfo t in  _startedList.Where(t => t.taskPhase == TaskPhaseEnum.acquisitionPhase))
+                foreach (TransferTaskInfo t in _startedList.Where(t => t.taskPhase == TaskPhaseEnum.acquisitionPhase))
                 {
-                    if (t.SourceFolder.currentFilesCount < t.SourceFolder.Files.Count)
+                    if (t.SourceFolder.acquisitionState != T2GServiceInterface.FileTransfer.acquisitionStateEnum.acquisitionError)
                     {
-                        int updatedIndex = (int)t.SourceFolder.currentFilesCount;
-                        t.SourceFolder.currentFilesCount = t.SourceFolder.currentFilesCount + 1;
-                        t.SourceFolder.Files[updatedIndex].AcquiredSize = t.SourceFolder.Files[updatedIndex].size;
-                        t.SourceFolder.Files[updatedIndex].actualChecksum = t.SourceFolder.Files[updatedIndex].expectedChecksum;
-                    }
-
-                    t.SourceFolder.currentFilesSize = t.SourceFolder.Files.Select(f => f.AcquiredSize).Sum();
-                    t.acquisitionCompletionPercent = ComputePercent(t.SourceFolder.currentFilesSize, t.SourceFolder.totalFilesSize);
-                    if (t.acquisitionCompletionPercent == (sbyte)100)
-                    {
-                        t.SourceFolder.acquisitionState = AcquisitionStateEnum.acquisitionSuccess;
-                        if (t.SourceFolder.acquisitionDate == TransferTaskInfo.NullDate)
+                        if ((t.SourceFolder.expirationDate != TransferTaskInfo.NullDate && DateTime.UtcNow > t.SourceFolder.expirationDate) ||
+                            (t.expirationDate != TransferTaskInfo.NullDate && DateTime.UtcNow > t.expirationDate))
                         {
-                            t.SourceFolder.acquisitionDate = DateTime.UtcNow;
+                            t.SourceFolder.acquisitionError = "Expired";
+                            t.SourceFolder.acquisitionState = T2GServiceInterface.FileTransfer.acquisitionStateEnum.acquisitionError;
+                            t.taskState = T2GServiceInterface.FileTransfer.taskStateEnum.taskError;
+                            if (t.SourceFolder.acquisitionDate == TransferTaskInfo.NullDate)
+                            {
+                                t.SourceFolder.acquisitionDate = DateTime.UtcNow;
+                            }
                         }
+                        else
+                        {
+                            if (t.SourceFolder.currentFilesCount < t.SourceFolder.Files.Count)
+                            {
+                                int updatedIndex = (int)t.SourceFolder.currentFilesCount;
+                                t.SourceFolder.currentFilesCount = t.SourceFolder.currentFilesCount + 1;
+                                t.SourceFolder.Files[updatedIndex].AcquiredSize = t.SourceFolder.Files[updatedIndex].size;
+                                t.SourceFolder.Files[updatedIndex].actualChecksum = t.SourceFolder.Files[updatedIndex].expectedChecksum;
+                            }
 
-                        t.taskPhase = TaskPhaseEnum.transferPhase;
-                        t.Recipient.transferState = TransferStateEnum.waitingInQueue;
+                            t.SourceFolder.currentFilesSize = t.SourceFolder.Files.Select(f => f.AcquiredSize).Sum();
+                            t.acquisitionCompletionPercent = ComputePercent(t.SourceFolder.currentFilesSize, t.SourceFolder.totalFilesSize);
+                            if (t.acquisitionCompletionPercent == (sbyte)100)
+                            {
+                                t.SourceFolder.acquisitionState = AcquisitionStateEnum.acquisitionSuccess;
+                                if (t.SourceFolder.acquisitionDate == TransferTaskInfo.NullDate)
+                                {
+                                    t.SourceFolder.acquisitionDate = DateTime.UtcNow;
+                                }
+
+                                t.taskPhase = TaskPhaseEnum.transferPhase;
+                                t.Recipient.transferState = TransferStateEnum.waitingInQueue;
+                            }
+                        }
                     }
-
 
                     t.UpdateProgress();
                     _notificationList[t.taskId] = t.Clone();
@@ -744,6 +778,24 @@ namespace DataPackageTests.ServicesStub
             }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Task {0} does not exist", taskId), "taskId");
+        }
+
+        public void SetTransferExpiration(int taskId, DateTime expirationDate)
+        {
+            lock (_lock)
+            {
+                if (taskId > 0 && taskId <= _transfers.Count)
+                {
+                    TransferTaskInfo task = _transfers[taskId - 1];
+                    task.SourceFolder.expirationDate = expirationDate;
+                    task.expirationDate = expirationDate;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Task {0} does not exist", taskId), "taskId");
+                }
+            }
+
         }
 
         #endregion
