@@ -139,7 +139,7 @@ namespace PIS.Ground.DataPackage
             RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
             RequestMgt.IRequestManager requestManager)
         {
-            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager);
+            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, true);
         }
 
 		#endregion
@@ -210,6 +210,7 @@ namespace PIS.Ground.DataPackage
             // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
             // and registering a T2G client object to be used for updating those statuses
             //
+
             BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager);
 
             _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
@@ -237,13 +238,15 @@ namespace PIS.Ground.DataPackage
         /// <param name="requestsFactory">The requests factory.</param>
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
+        /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
 		public static void Initialize(
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
 			IT2GManager t2gManager,
 			RequestMgt.IRequestContextFactory requestsFactory,
 			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-			RequestMgt.IRequestManager requestManager)
+			RequestMgt.IRequestManager requestManager,
+            bool executeCommonLogic)
 		{
             lock (_initializationLock)
             {
@@ -255,7 +258,11 @@ namespace PIS.Ground.DataPackage
                 _requestFactory = requestsFactory;
                 _remoteDataStoreFactory = remoteDataStoreFactory;
                 _requestManager = requestManager;
-                CommonInitialize();
+
+                if (executeCommonLogic)
+                {
+                    CommonInitialize();
+                }
             }
 		}
 
@@ -301,7 +308,10 @@ namespace PIS.Ground.DataPackage
 
                 if (_t2gManager != null)
                 {
-                    _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(null);
+                    if (_t2gManager.T2GFileDistributionManager != null)
+                    {
+                        _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(null);
+                    }
                     
                     _t2gManager.UnsubscribeFromSystemDeletedNotification(SubscriberId);
                     _t2gManager.UnsubscribeFromT2GOnlineStatusNotification(SubscriberId);
