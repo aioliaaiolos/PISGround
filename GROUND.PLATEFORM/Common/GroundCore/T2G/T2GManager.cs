@@ -500,9 +500,7 @@ namespace PIS.Ground.Core.T2G
 		{
 			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataList called", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataList", null, EventIdEnum.GroundCore);
 
-			elementDataList = new ElementList<AvailableElementData>(); // always return an object
-
-			T2GManagerErrorEnum result = T2GManagerErrorEnum.eFailed;
+			T2GManagerErrorEnum result;
 
 			if (T2GServerConnectionStatus)
 			{
@@ -512,7 +510,8 @@ namespace PIS.Ground.Core.T2G
 			}
 			else
 			{
-				result = T2GManagerErrorEnum.eT2GServerOffline;
+                elementDataList = new ElementList<AvailableElementData>(); // always return an object
+                result = T2GManagerErrorEnum.eT2GServerOffline;
 			}
 
 			return result;
