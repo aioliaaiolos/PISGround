@@ -574,6 +574,7 @@ namespace RealTimeTests
             ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_RealTimeServer, "RealTimeDataServer", 0, 0, isTrain1Online, "127.0.0.1" /* ip */, "", "", 8201 /* port */);
             Uri trainServiceAddress = new Uri("http://127.0.0.1:8201/");
 
+            _train2groundClientMock.Setup(x => x.T2GServerConnectionStatus).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataListByMissionCode(missionCode, out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -851,6 +852,7 @@ namespace RealTimeTests
             ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_RealTimeServer, "RealTimeDataServer", 0, 0, isTrain1Online, "127.0.0.1" /* ip */, "", "", 8201 /* port */);
             Uri trainServiceAddress = new Uri("http://127.0.0.1:8201/");
 
+            _train2groundClientMock.Setup(x => x.T2GServerConnectionStatus).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataListByMissionCode(missionCode, out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
