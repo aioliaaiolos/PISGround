@@ -64,7 +64,8 @@ namespace DataPackageTests.RequestMgt
 				_train2groundManagerMock.Object,
 				_requestFactoryMock.Object,
 				_remoteDataStoreFactoryMock.Object,
-				_testedInstance);
+				_testedInstance,
+                false);
 		}
 
 		/// <summary>Tear down.</summary>
