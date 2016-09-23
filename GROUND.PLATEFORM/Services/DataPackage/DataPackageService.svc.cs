@@ -210,8 +210,9 @@ namespace PIS.Ground.DataPackage
             // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
             // and registering a T2G client object to be used for updating those statuses
             //
-
-            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager);
+            ElementList<AvailableElementData> availableElements;
+            _t2gManager.GetAvailableElementDataList(out availableElements);
+            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
 
             _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
 
@@ -287,7 +288,7 @@ namespace PIS.Ground.DataPackage
 
                 if (_requestManager != null)
                 {
-                    _requestManager.Uninitialize();
+                    _requestManager.Dispose();
                     _requestManager = null;
                 }
 
@@ -317,6 +318,8 @@ namespace PIS.Ground.DataPackage
                     _t2gManager.UnsubscribeFromT2GOnlineStatusNotification(SubscriberId);
                     _t2gManager.UnsubscribeFromElementChangeNotification(SubscriberId);
                     _t2gManager.UnsubscribeFromFileDistributionNotifications(SubscriberId);
+
+                    _t2gManager.Dispose();
                 }
 
                 BaselineStatusUpdater.Uninitialize();
@@ -425,11 +428,11 @@ namespace PIS.Ground.DataPackage
 		{
 			if (pNotification != null)
 			{
-				mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : ", pNotification.online.ToString());
+                mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
 
 				if (pNotification.online == false)
 				{
-					BaselineStatusUpdater.ResetStatusEntries();
+					BaselineStatusUpdater.ResetStatusEntries(null);
 				}
 			}
 		}

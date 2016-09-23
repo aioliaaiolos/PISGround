@@ -787,5 +787,79 @@ namespace PIS.Ground.Core.T2G
             }
 			return lReturn;
 		}
-	}
+
+        #region IDisposable Members
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_connectionManager != null)
+                {
+                    _connectionManager.Dispose();
+                }
+
+                if (_subscriberLock != null)
+                {
+                    lock (_subscriberLock)
+                    {
+                        if (_systemChangedEventHandlers != null)
+                        {
+                            _systemChangedEventHandlers.Clear();
+                        }
+
+                        if (_systemDeletedEventHandlers != null)
+                        {
+                            _systemDeletedEventHandlers.Clear();
+                        }
+
+                        if (_T2GOnlineOfflineEventHandlers != null)
+                        {
+                            _T2GOnlineOfflineEventHandlers.Clear();
+                        }
+
+                        if (_elementEventHandlers != null)
+                        {
+                            _elementEventHandlers.Clear();
+                        }
+
+                        if (_filePublicationNotificationEventHandlers != null)
+                        {
+                            _filePublicationNotificationEventHandlers.Clear();
+                        }
+
+                        if (_filePublishedNotificationEventHandlers != null)
+                        {
+                            _filePublishedNotificationEventHandlers.Clear();
+                        }
+
+                        if (_fileReceivedNotificationEventHandlers != null)
+                        {
+                            _fileReceivedNotificationEventHandlers.Clear();
+                        }
+
+                        if (_fileDistributionEventHandlers != null)
+                        {
+                            _fileDistributionEventHandlers.Clear();
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+    }
 }
