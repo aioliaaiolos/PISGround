@@ -45,6 +45,11 @@ namespace DataPackageTests.ServicesStub
         /// </summary>
         private Dictionary<string, BaselinesDataStoreData> _dateStoreBaselinesData = new Dictionary<string, BaselinesDataStoreData>(10, StringComparer.Ordinal);
 
+        /// <summary>
+        /// The content of table BaselineDistributingTasksDataStore in remoteDataStore indexed by element id.
+        /// </summary>
+        private Dictionary<string, BaselineDistributingTasksDataStoreData> _dataStoreBaselinesDistributingTasks = new Dictionary<string, BaselineDistributingTasksDataStoreData>(10, StringComparer.Ordinal);
+
         #endregion
 
         #region Properties
@@ -105,15 +110,17 @@ namespace DataPackageTests.ServicesStub
         /// </summary>
         public void InitializeRemoteDataStoreMockWithDefaultBehavior()
         {
-            _remoteDataStoreMock.Setup(r => r.getAllBaselineDistributingSavedRequests()).Returns(new DataContainer());
+            _remoteDataStoreMock.Setup(r => r.getAllBaselineDistributingSavedRequests()).Returns(GetAllBaselineDistributingSavedRequestsImplementation);
             _remoteDataStoreMock.Setup(r => r.getElementBaselinesDefinitions(It.IsAny<string>())).Returns<string>(GetElementBaselineDefinitionImplementation);
             _remoteDataStoreMock.Setup(r => r.getBaselineDefinition(It.IsAny<string>())).Returns<string>(GetBaselineDefinitionImplementation);
             _remoteDataStoreMock.Setup(r => r.checkIfBaselineExists(It.IsAny<string>())).Returns<string>(CheckIfBaselineExistsImplementation);
-            _remoteDataStoreMock.Setup(r => r.checkDataPackagesAvailability(It.IsAny<Guid>(), It.IsAny<DataContainer>()));
+            _remoteDataStoreMock.Setup(r => r.checkDataPackagesAvailability(It.IsAny<Guid>(), It.IsAny<DataContainer>())).Callback<Guid, DataContainer>(CheckDataPackagesAvailability);
             _remoteDataStoreMock.Setup(r => r.getDataPackageCharacteristics(It.IsAny<string>(), It.IsAny<string>())).Returns<string, string>(GetDataPackageCharacteristicsImplementation);
             _remoteDataStoreMock.Setup(r => r.checkIfElementExists(It.IsAny<string>())).Returns<string>(CheckIfElementExistsImplementation);
             _remoteDataStoreMock.Setup(r => r.createBaselineFile(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns<Guid, string, string, string, string>(CreateBaselineFileImplementation);
             _remoteDataStoreMock.Setup(r => r.checkIfDataPackageExists(It.IsAny<string>(), It.IsAny<string>())).Returns<string, string>(CheckIfDataPackageExistsImplementation);
+            _remoteDataStoreMock.Setup(r => r.saveBaselineDistributingRequest(It.IsAny<DataContainer>())).Callback<DataContainer>(SaveBaselineDistributingRequestImplementation);
+            _remoteDataStoreMock.Setup(r => r.deleteBaselineDistributingRequest(It.IsAny<string>())).Callback<string>(DeleteBaselineDistributingRequestImplementation);
         }
 
         /// <summary>
@@ -203,7 +210,7 @@ namespace DataPackageTests.ServicesStub
             }
         }
 
-        private bool CheckDataPackagesAvailability(Guid requestId, DataContainer data)
+        private void CheckDataPackagesAvailability(Guid requestId, DataContainer data)
         {
             BaselinesDataStoreData baselineData = new BaselinesDataStoreData(data);
 
@@ -224,8 +231,6 @@ namespace DataPackageTests.ServicesStub
 
                 GetOrCreateCallbackService().missingDataPackageNotification(requestId, restList);
             }
-
-            return available;
         }
 
         private ElementsDataStoreData GetElementBaselineDefinitionImplementation(string elementId)
@@ -268,6 +273,51 @@ namespace DataPackageTests.ServicesStub
             }
 
             return _datapackageCallbackService;
+        }
+
+
+        private void SaveBaselineDistributingRequestImplementation(DataContainer baselineDistributingTask)
+        {
+            if (baselineDistributingTask == null)
+            {
+                throw new ArgumentNullException("baselineDistributingTask");
+            }
+
+            BaselineDistributingTasksDataStoreData newData = new BaselineDistributingTasksDataStoreData(baselineDistributingTask);
+
+            lock (_dataStoreLock)
+            {
+                _dataStoreBaselinesDistributingTasks[newData.ElementId] = newData;
+            }
+        }
+
+        private void DeleteBaselineDistributingRequestImplementation(string elementId)
+        {
+            if (string.IsNullOrEmpty(elementId))
+            {
+                throw new ArgumentNullException("elementId");
+            }
+
+            lock (_dataStoreLock)
+            {
+                _dataStoreBaselinesDistributingTasks.Remove(elementId);
+            }
+        }
+
+        private BaselineDistributingTasksDataStoreData GetAllBaselineDistributingSavedRequestsImplementation()
+        {
+            BaselineDistributingTasksDataStoreData data = new BaselineDistributingTasksDataStoreData();
+
+            lock (_dataStoreLock)
+            {
+                data.Rows.Capacity = _dataStoreBaselinesDistributingTasks.Count * data.Columns.Count;
+                foreach (var item in _dataStoreBaselinesDistributingTasks)
+                {
+                    data.Rows.AddRange(item.Value.Rows);
+                }
+            }
+
+            return data;
         }
 
         #endregion

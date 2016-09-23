@@ -15,7 +15,7 @@ using PIS.Ground.RemoteDataStore;
 namespace DataPackageTests.Data
 {
     /// <summary>
-    /// Describes the data for BaselinesDataStor table in remote data store.
+    /// Describes the data for BaselinesDataStore table in remote data store.
     /// </summary>
     /// <seealso cref="DataPackageTests.Data.RemoteDataStoreDataBase" />
     class BaselinesDataStoreData : RemoteDataStoreDataBase
