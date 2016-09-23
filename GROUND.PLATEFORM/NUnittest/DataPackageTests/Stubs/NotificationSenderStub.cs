@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using PIS.Ground.Core.Common;
+using PIS.Ground.GroundCore.AppGround;
 
 namespace DataPackageTests.Stubs
 {
@@ -78,6 +79,22 @@ namespace DataPackageTests.Stubs
             }
         }
 
+        /// <summary>
+        /// Determines whether if the specified notification has been send.
+        /// </summary>
+        /// <param name="id">The notification identifier.</param>
+        /// <param name="requestId">The request identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified notifications was send; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsNotification(NotificationIdEnum id, Guid requestId)
+        {
+            lock (_lock)
+            {
+                return _notifications.Any(n => n.Id == id && n.RequestId == requestId);
+            }
+        }
+
         #region INotificationSender Members
 
         /// <summary>
@@ -86,7 +103,7 @@ namespace DataPackageTests.Stubs
         /// <param name="notificationId">The notification identifier.</param>
         /// <param name="parameter">The parameter.</param>
         /// <param name="requestId">The request identifier.</param>
-        public void SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum notificationId, string parameter, Guid requestId)
+        public void SendNotification(NotificationIdEnum notificationId, string parameter, Guid requestId)
         {
             Add(new NotificationInfo(notificationId, requestId, parameter));
         }
@@ -96,7 +113,7 @@ namespace DataPackageTests.Stubs
         /// </summary>
         /// <param name="notificationId">The notification identifier.</param>
         /// <param name="parameter">The parametr.</param>
-        public void SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum notificationId, string parameter)
+        public void SendNotification(NotificationIdEnum notificationId, string parameter)
         {
             Add(new NotificationInfo(notificationId, Guid.Empty, parameter));
         }
@@ -106,7 +123,7 @@ namespace DataPackageTests.Stubs
         /// </summary>
         /// <param name="notificationId">The notification identifier.</param>
         /// <param name="requestId">The request identifier.</param>
-        public void SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum notificationId, Guid requestId)
+        public void SendNotification(NotificationIdEnum notificationId, Guid requestId)
         {
             Add(new NotificationInfo(notificationId, requestId));
         }
@@ -115,7 +132,7 @@ namespace DataPackageTests.Stubs
         /// Sends the notification.
         /// </summary>
         /// <param name="notificationId">The notification identifier.</param>
-        public void SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum notificationId)
+        public void SendNotification(NotificationIdEnum notificationId)
         {
             Add(new NotificationInfo(notificationId));
         }
