@@ -42,7 +42,7 @@ namespace DataPackageTests
     /// This class simulate T2G, services on train to perform a complete validation of expected status of every stages of a baseline distribution.
     /// This class also validate the history log database and the notifications send by PIS-Ground.
     /// </summary>
-    [TestFixture, Category("DistributionScenario")]
+    [TestFixture, Category("DistributionScenario"), Timeout(5 * 60 * 1000)]
     class BaselineDistributionIntegrationTests : AssertionHelper
     {
         #region Fields
@@ -352,7 +352,7 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
             for (int i = 0; i < (5 + 5 + 2); ++i)
             {
                 _fileTransferServiceStub.PerformTransferProgression();
@@ -360,7 +360,7 @@ namespace DataPackageTests
             }
 
             Thread.Sleep(5 * ONE_SECOND);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
 
 
             // Simulate that train retrieved the baseline on embedded side.
@@ -424,7 +424,7 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
             for (int i = 0; i < 6; ++i)
             {
                 _fileTransferServiceStub.PerformTransferProgression();
@@ -448,7 +448,7 @@ namespace DataPackageTests
                     Assert.AreEqual(TaskPhaseEnum.transferPhase, task.taskPhase, "The transfer task phase is not the one expected");
                     Assert.AreEqual(TaskSubStateEnum.subtaskWaitingLink, task.taskSubState, "The transfer task sub state is not the one expected");
                 }
-                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+                VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
             }
 
 
@@ -463,7 +463,7 @@ namespace DataPackageTests
                 Assert.AreEqual(TaskStateEnum.taskCompleted, task.taskState, "Transfer does not complete as expected");
             }
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
 
             // Simulate that train retrieved the baseline on embedded side.
 
@@ -527,7 +527,7 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
             for (int i = 0; i < 6; ++i)
             {
                 _fileTransferServiceStub.PerformTransferProgression();
@@ -564,7 +564,7 @@ namespace DataPackageTests
                 Assert.AreEqual(TaskStateEnum.taskCompleted, task.taskState, "Transfer does not complete as expected");
             }
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BASELINE_STATUS_UNKNOWN, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
 
             // Simulate that train retrieved the baseline on embedded side.
 
@@ -584,6 +584,75 @@ namespace DataPackageTests
 
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
             VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
+        }
+
+        /// <summary>
+        /// Test a distribute baseline scenario that cause the transfer to expire while performing the acquisition.
+        /// </summary>
+        [Test, Category("Restart"), Category("Error")]
+        public void DistributeBaselineScenario_TransferTask_Expire_During_Acquisition()
+        {
+            const string FUTURE_VERSION = "1.0.0.0";
+            // Common initialization
+            CreateT2GServicesStub();
+            _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
+            InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, CommLinkEnum.notApplicable);
+            InitializeDataPackageService(false);
+            InitializePISGroundSession();
+            WaitPisGroundIsConnectedWithT2G();
+            WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
+
+            // Initializations specific to this test.
+            ElementsDataStoreData data = new ElementsDataStoreData(TRAIN_NAME_1);
+
+            data.FutureBaseline = FUTURE_VERSION;
+            data.FutureBaselineActivationDate = RemoteDataStoreDataBase.ToString(DateTime.Today);
+            data.FutureBaselineExpirationDate = RemoteDataStoreDataBase.ToString(DateTime.Now.AddSeconds(40));
+
+            _dataStoreServiceStub.UpdateDataStore(data);
+            _dataStoreServiceStub.AddBaselineToRemoteDataStore(FUTURE_VERSION);
+
+            // Request the datapackage service to distribute the baseline
+            DataPackageResult result = _datapackageServiceStub.distributeBaseline(_pisGroundSessionId, null, new TargetAddressType(TRAIN_NAME_1), CreateDistributionAttribute(), false);
+            Assert.AreEqual(DataPackageErrorEnum.REQUEST_ACCEPTED, result.error_code, "Distribute baseline to train {0} does not returned the expected value", TRAIN_NAME_1);
+
+            // Wait that folder on T2G was created
+
+            Assert.That(() => _fileTransferServiceStub.LastCreatedFolder.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer folder on T2G service not created", TRAIN_NAME_1);
+            int transferFolderId = _fileTransferServiceStub.LastCreatedFolder.Value;
+            _fileTransferServiceStub.LastCreatedFolder = null;
+            Assert.That(() => _fileTransferServiceStub.LastCreatedTransfer.HasValue, Is.True.After(30 * ONE_SECOND, ONE_SECOND / 4), "Distribute baseline to train {0} failure. Transfer task on T2G service not created", TRAIN_NAME_1);
+            int transferTaskId = _fileTransferServiceStub.LastCreatedTransfer.Value;
+            _fileTransferServiceStub.LastCreatedTransfer = null;
+
+            _fileTransferServiceStub.SetTransferExpiration(transferTaskId, DateTime.UtcNow.AddSeconds(10));
+
+            _fileTransferServiceStub.PerformTransferProgression();
+            _fileTransferServiceStub.PerformTransferProgression();
+            Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
+            Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
+
+            Thread.Sleep(15 * ONE_SECOND);
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
+            Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
+            Assert.IsTrue(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is not running as expected");
+            _fileTransferServiceStub.PerformTransferProgression();
+            Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
+            Assert.IsFalse(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is running while expecting not");
+
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, string.Empty, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
+
+            // Wait 5 seconds
+            Thread.Sleep(5 * ONE_SECOND);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, string.Empty, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
+
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
+            Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
         }
 
         #endregion
@@ -779,8 +848,8 @@ namespace DataPackageTests
             Assert.IsTrue(statuses.TryGetValue(systemId, out analysedTrain), "History log database integrity error for train '{0}': no data found", systemId);
             Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId);
             Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId);
-//            Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId);
-//            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
+            Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId);
+            Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId);
             Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId);
             Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId);
         }
