@@ -116,7 +116,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 										{
 											try
 											{
-                                                using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                                using (IRemoteDataStoreClient remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                                                 {
                                                     filesUrlsList.Add(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"]
                                                         + remoteDataStore.createBaselineFile(
@@ -284,7 +284,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 				{
 					try
 					{
-                        using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        using (IRemoteDataStoreClient remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                         {
                             if (remoteDataStore.checkIfBaselineExists(baselineVersion))
                             {

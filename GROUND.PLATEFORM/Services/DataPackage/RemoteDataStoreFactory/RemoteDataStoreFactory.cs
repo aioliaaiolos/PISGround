@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RemoteDataStoreFactory.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -25,9 +25,9 @@ namespace PIS.Ground.DataPackage.RemoteDataStoreFactory
 
 		#region IRemoteDataStoreFactory Members
 
-		/// <summary>Gets remote data store instance.</summary>
-		/// <returns>The remote data store instance.</returns>
-		PIS.Ground.RemoteDataStore.IRemoteDataStore IRemoteDataStoreFactory.GetRemoteDataStoreInstance()
+        /// <summary>Gets remote data store client.</summary>
+        /// <returns>The remote data store client.</returns>
+        PIS.Ground.RemoteDataStore.IRemoteDataStoreClient IRemoteDataStoreFactory.GetRemoteDataStoreInstance()
 		{
 			return new RemoteDataStoreProxy();
 		}

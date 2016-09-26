@@ -16,8 +16,7 @@ namespace PIS.Ground.RemoteDataStore
     public class RemoteDataStoreProxy :
         //WCF create proxy for IRemoteDataStore using ClientBase
         ClientBase<IRemoteDataStore>,
-        IRemoteDataStore,
-        IDisposable
+        IRemoteDataStoreClient
     {
 
         /// <summary>

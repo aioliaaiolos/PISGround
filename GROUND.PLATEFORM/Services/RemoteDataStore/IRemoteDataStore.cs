@@ -19,13 +19,8 @@ namespace PIS.Ground.RemoteDataStore
     ///  Define a Service Contract to access the Remote Data Store
     /// </summary>
     [ServiceContract]
-    public interface IRemoteDataStore : IDisposable
+    public interface IRemoteDataStore
     {
-        /// <summary>
-        /// Gets or sets the operation timeout.
-        /// </summary>
-        TimeSpan OperationTimeout { get; set; }
-
         /// <summary>
         /// Download a file from an url in the Remote Data Store
         /// </summary>

@@ -33,7 +33,7 @@ namespace PIS.Ground.RemoteDataStore
     /// Implement the IRemoteDataStore service contract in service class
     /// </summary>
     [ServiceBehavior]
-    public class RemoteDataStoreService : IRemoteDataStore
+    public class RemoteDataStoreService : IRemoteDataStore, IDisposable
     {
         private DatabaseAccessImplClass _dBAccess;
         private string _dataStorePath;

@@ -388,7 +388,7 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-                using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     currentBaseline = lRemDSProxy.getAssignedCurrentBaselineVersion(trainId);
                     futureBaseline = lRemDSProxy.getAssignedFutureBaselineVersion(trainId);
@@ -585,7 +585,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         mWriteLog(TraceType.DEBUG, "assignFutureBaseline", null, Logs.DEBUG_ASSIGN_FUTURE_BASELINE, pBLVersion, pElementId);
 
@@ -702,7 +702,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         mWriteLog(TraceType.DEBUG, "assignCurrentBaseline", null, Logs.DEBUG_ASSIGN_CURRENT_BASELINE, pBLVersion, pElementId);
 
@@ -1017,7 +1017,7 @@ namespace PIS.Ground.DataPackage
 			{
                 lock (_distributingElementDic)
                 {
-                    IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance();
+                    IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance();
                     try
                     {
                         foreach (var pair in _distributingElementDic)
@@ -1186,7 +1186,7 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     DataContainer baselineDistributingTask = DataTypeConversion.fromBaselineDistributingRequestToDataContainer(processBaselineDistributingRequest);
                     remoteDataStoreProxy.saveBaselineDistributingRequest(baselineDistributingTask);
@@ -1214,7 +1214,7 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
                     requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
@@ -1246,7 +1246,7 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-                using (IRemoteDataStore remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     remoteDataStoreProxy.deleteBaselineDistributingRequest(elementId);
                 }
@@ -1295,7 +1295,7 @@ namespace PIS.Ground.DataPackage
 
 						try
 						{
-                            using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                             {
                                 DataContainer lElDescrCont = lRemDSProxy.getElementBaselinesDefinitions(lEID);
                                 lElDescr = DataTypeConversion.fromDataContainerToElementDescription(lElDescrCont);
@@ -1387,7 +1387,7 @@ namespace PIS.Ground.DataPackage
 									//Add baseline description from RemoteDataStore
 									try
 									{
-                                        using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                                         {
                                             if (!string.IsNullOrEmpty(lElDescr.ElementArchivedBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementArchivedBaseline.BaselineVersion) == true)
                                             {
@@ -1842,7 +1842,7 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-                using (IRemoteDataStore remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     DataContainer elementDescription = remoteDataStore.getElementBaselinesDefinitions(lElID);
                     baselineVersion = elementDescription.getStrValue("AssignedFutureBaseline");
@@ -2085,7 +2085,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         if (lRemDSProxy.checkIfElementExists(pEID))
                         {
@@ -2428,7 +2428,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         if (pListType == BaselinesListType.ALL ||
                             pListType == BaselinesListType.DEFINED)
@@ -2529,7 +2529,7 @@ namespace PIS.Ground.DataPackage
 							Uri lUri = new Uri(lFile);
 							try
 							{
-                                using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                                 {
                                     if (!lRemProx.checkUrl(lrequestId, lFile))
                                     {
@@ -2567,7 +2567,7 @@ namespace PIS.Ground.DataPackage
 						{
 							try
 							{
-                                using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                                 {
                                     lRemProx.moveTheNewDataPackageFiles(lrequestId, lFile);
                                 }
@@ -2641,7 +2641,7 @@ namespace PIS.Ground.DataPackage
 					{
 						try
 						{
-                            using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                             {
                                 DataContainer lBLDef = DataTypeConversion.fromBaselineDefinitionToDataContainer(pBLDef);
                                 lRemProx.setNewBaselineDefinition(lrequestId, lBLDef);
@@ -2725,7 +2725,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         DataContainer lBLList = lRemProx.getBaselinesDefinitions();
                         List<BaselineDefinition> lBaselines = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lBLList);
@@ -2960,7 +2960,7 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-                using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     // search a baseline in datastore with the packages versions provided
                     string lBaselineVersion = "";
@@ -3089,7 +3089,7 @@ namespace PIS.Ground.DataPackage
 				{
 					try
 					{
-                        using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                         {
                             lRemProx.unassignFutureBaselineFromElement(pElementId);
                             lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
@@ -3150,7 +3150,7 @@ namespace PIS.Ground.DataPackage
 				{
 					try
 					{
-                        using (IRemoteDataStore lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                         {
                             lRemProx.unassignCurrentBaselineFromElement(pElementId);
                             lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
@@ -3206,7 +3206,7 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-                    using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                     {
                         DataContainer lDPList = lRemDSProxy.getDataPackagesList();
 
@@ -3293,7 +3293,7 @@ namespace PIS.Ground.DataPackage
 					{
 						try
 						{
-                            using (IRemoteDataStore lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
                             {
                                 if (lRemDSProxy.checkIfDataPackageExists(pPackageType.ToString(), pPackageVersion) == false)
                                 {

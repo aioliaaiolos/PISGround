@@ -38,7 +38,7 @@ namespace PIS.Ground.DataPackage.DataPackageSync
 
             try
             {
-                using (IRemoteDataStore lRemDSProxy = DataPackageService.RemoteDataStoreFactory.GetRemoteDataStoreInstance())
+                using (IRemoteDataStoreClient lRemDSProxy = DataPackageService.RemoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     try
                     {

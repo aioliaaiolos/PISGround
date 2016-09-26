@@ -25,12 +25,12 @@ namespace DataPackageTests.ServicesStub
     {
         #region Fields
 
-        private Mock<IRemoteDataStore> _remoteDataStoreMock;
+        private Mock<IRemoteDataStoreClient> _remoteDataStoreMock;
 
         /// <summary>
         /// The datapackage callback service.
         /// </summary>
-        /// <remarks>Needs to be created only on demande, otherwise an error will occur.</remarks>
+        /// <remarks>Needs to be created only on demand, otherwise an error will occur.</remarks>
         private DataPackageCallbackService _datapackageCallbackService;
 
         private object _dataStoreLock = new object();
@@ -57,7 +57,7 @@ namespace DataPackageTests.ServicesStub
         /// <summary>
         /// Gets the mock object that implement the remote data store..
         /// </summary>
-        public Mock<IRemoteDataStore> Mock
+        public Mock<IRemoteDataStoreClient> Mock
         {
             get
             {
@@ -68,7 +68,7 @@ namespace DataPackageTests.ServicesStub
         /// <summary>
         /// Gets the interface on the remote data store.
         /// </summary>
-        public IRemoteDataStore Interface
+        public IRemoteDataStoreClient Interface
         {
             get
             {
@@ -85,7 +85,7 @@ namespace DataPackageTests.ServicesStub
         /// </summary>
         public RemoteDataStoreServiceStub()
         {
-            _remoteDataStoreMock = new Mock<IRemoteDataStore>();
+            _remoteDataStoreMock = new Mock<IRemoteDataStoreClient>();
         }
 
         #endregion
