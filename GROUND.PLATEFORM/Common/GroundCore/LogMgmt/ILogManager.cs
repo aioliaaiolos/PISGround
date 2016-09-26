@@ -22,7 +22,8 @@ namespace PIS.Ground.Core.LogMgmt
     public interface ILogManager
     {
         
-        #region Error Logs
+        #region Execution trace logs
+        
         /// <summary>
         /// Logs the errors to log file.
         /// </summary>
@@ -35,6 +36,17 @@ namespace PIS.Ground.Core.LogMgmt
         bool WriteLog(TraceType trace, string message, string context, Exception objEx, EventIdEnum eventId);
 
         /// <summary>
+        /// Determines whether trace is active for the specified trace level.
+        /// </summary>
+        /// <param name="level">The level to evaluate.</param>
+        /// <returns>true if the trace is active, false otherwise.</returns>
+        bool IsTraceActive(TraceType level);
+
+        #endregion
+
+        #region Database management 
+
+        /// <summary>
         /// Method to get the Database Version.
         /// </summary>      
         /// <param name="version">Database version</param>
@@ -42,11 +54,29 @@ namespace PIS.Ground.Core.LogMgmt
         ResultCodeEnum GetDatabaseVersion(out string version);
 
         /// <summary>
+        /// Get Database Version From configuration file.
+        /// </summary>
+        /// <returns> return data base version</returns>
+        string GetDatabaseVersionFromFile();
+
+        /// <summary>
         /// Method to insert the Database Version.
         /// </summary>      
         /// <param name="version">Database version</param>
         /// <returns>Error code if any</returns>
         ResultCodeEnum InsertDatabaseVersion(string version);
+
+        #endregion
+
+        #region Instant Message logs
+
+        /// <summary>Method to update the message status.</summary>
+        /// <param name="trainId">list of train ids.</param>
+        /// <param name="requestId">request id of the message.</param>
+        /// <param name="messageStatus">message status.</param>
+        /// <param name="commandType">The type of message to update.</param>
+        /// <returns>Error code if any.</returns>
+        ResultCodeEnum UpdateMessageStatus(string trainId, Guid requestId, MessageStatusType messageStatus, PIS.Ground.Core.Data.CommandType commandType);
 
         /// <summary>
         /// Method used to write history log details.
@@ -120,6 +150,10 @@ namespace PIS.Ground.Core.LogMgmt
         /// <returns>Error code if any</returns>
         ResultCodeEnum CleanLog(List<PIS.Ground.Core.Data.CommandType> commandList);
 
+        #endregion
+
+        #region Train baseline statuses
+
         /// <summary>
         /// Method used to get all the status of the baselines
         /// </summary>
@@ -149,20 +183,6 @@ namespace PIS.Ground.Core.LogMgmt
         /// <param name="trainId">train id.</param>
         /// <returns>Error code if any</returns>
         ResultCodeEnum CleanTrainBaselineStatus(string trainId);
-
-		/// <summary>Method to update the message status.</summary>
-		/// <param name="trainId">list of train ids.</param>
-		/// <param name="requestId">request id of the message.</param>
-		/// <param name="messageStatus">message status.</param>
-		/// <param name="commandType">The type of message to update.</param>
-		/// <returns>Error code if any.</returns>
-		ResultCodeEnum UpdateMessageStatus(string trainId, Guid requestId, MessageStatusType messageStatus, PIS.Ground.Core.Data.CommandType commandType);
-
-        /// <summary>
-        /// Get Database Version From configuration file.
-        /// </summary>
-        /// <returns> return data base version</returns>
-        string GetDatabaseVersionFromFile();
 
         #endregion
     }

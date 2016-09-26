@@ -106,7 +106,7 @@ namespace PIS.Ground.Core.Data
         /// <param name="pOnFileDistributeNotification">File Transfer notification event handler</param>
         /// <param name="pfolderId">folder id to be downloaded</param>
         public DownloadFolderRequest(Guid prequestID, DateTime pdtExpiration, string pDownloadFolderPath, List<RecipientId> plstRecipient, DateTime pstartDate, string pstrDescription,FileTransferMode ptransferMode, sbyte ipriority, EventHandler<FileDistributionStatusArgs> pOnFileDistributeNotification,int pfolderId)
-            : base(prequestID, pdtExpiration, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification,pfolderId)
+            : base(prequestID, pdtExpiration, plstRecipient, pstartDate, pstrDescription, ptransferMode, ipriority, pOnFileDistributeNotification,pfolderId, null)
         {
             //this.requestID = prequestID;
             //this.expirationDate = pdtExpiration;

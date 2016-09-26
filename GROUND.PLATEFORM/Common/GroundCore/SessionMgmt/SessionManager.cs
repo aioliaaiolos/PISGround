@@ -25,11 +25,21 @@ namespace PIS.Ground.Core.SessionMgmt
         /// Query to delete Session Data Table
         /// </summary>
         private const string DeleteSessionDataQuery = "Delete from SessionData where SessionID = '{0}'";
+
+        /// <summary>
+        /// Query to delete all Session Data Table
+        /// </summary>
+        private const string DeleteAllSessionDataQuery = "Delete from SessionData";
         
         /// <summary>
         /// Query to delete Session Table
         /// </summary>
         private const string DeleteSessionQuery = "Delete from Session where SessionID = '{0}'";
+
+        /// <summary>
+        /// Query to delete all Session Table
+        /// </summary>
+        private const string DeleteAllSessionQuery = "Delete from Session";
         
         /// <summary>
         /// Query to select NotificationURL by RequestID
@@ -268,6 +278,35 @@ namespace PIS.Ground.Core.SessionMgmt
             else
             {
                 error = string.Format(CultureInfo.CurrentCulture, Resources.ErrorSessionNotFound, sessionId);
+            }
+
+            return error;
+        }
+
+        /// <summary>
+        /// Removes all session.
+        /// </summary>
+        /// <returns>The error message. Empty string on success.</returns>
+        public string RemoveAllSessions()
+        {
+            string error = string.Empty;
+            List<string> lstQuery = new List<string>(2);
+            lstQuery.Add(DeleteAllSessionDataQuery);
+            lstQuery.Add(DeleteAllSessionQuery);
+            try
+            {
+                using (SQLiteWrapperClass objSqlWpr = new SQLiteWrapperClass(ServiceConfiguration.SessionSqLiteDBPath))
+                {
+                    lock (locker)
+                    {
+                        objSqlWpr.mExecuteTransactionQuery(lstQuery);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                error = string.Format(CultureInfo.CurrentCulture, Resources.ExRemoveAllSession,ex.Message);
+                LogManager.WriteLog(TraceType.ERROR, error , "PIS.Ground.Core.SessionMgmt.SessionManager.RemoveAllSessions", ex, EventIdEnum.GroundCore);
             }
 
             return error;
@@ -756,6 +795,12 @@ namespace PIS.Ground.Core.SessionMgmt
         /// </summary>
         internal void SetSessionCheckTimer()
         {
+            if (timer != null)
+            {
+                timer.Enabled = false;
+                timer.Dispose();
+            }
+
             timer = new Timer(ServiceConfiguration.SessionTimerCheck);
             timer.Elapsed += this.CheckSessions;
             timer.Enabled = true;

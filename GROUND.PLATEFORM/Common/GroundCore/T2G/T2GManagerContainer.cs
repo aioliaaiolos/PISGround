@@ -58,7 +58,7 @@ namespace PIS.Ground.Core.T2G
                 lock (_initializationLock)
                 {
                     _t2gManager = value;
-                    _initialized = true;
+                    _initialized = value != null;
                 }
             }
         }        

@@ -1,10 +1,11 @@
-﻿// <copyright file="HistoryLogger.cs" company="Alstom Transport Telecite Inc.">
-// Copyright by Alstom Transport Telecite Inc. 2016.  All rights reserved.
-// 
-// The informiton contained herein is confidential property of Alstom
-// Transport Telecite Inc.  The use, copy, transfer or disclosure of such
-// information is prohibited except by express written agreement with Alstom
-// Transport Telecite Inc.
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="HistoryLogger.cs" company="Alstom">
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//		  This computer program may not be used, copied, distributed, corrected, modified, translated,
+//		  transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
 namespace PIS.Ground.Core.LogMgmt
 {
     using System;
@@ -1155,12 +1156,12 @@ namespace PIS.Ground.Core.LogMgmt
                     parameters.Add(trainId);
                     parameters.Add(requestId.ToString());
                     parameters.Add(taskId);
-                    parameters.Add(trainNumber);
+                    parameters.Add(trainNumber ?? string.Empty);
                     parameters.Add(Convert.ToInt32(onlineStatus));
                     parameters.Add((int)progressStatus);
-                    parameters.Add(currentBaselineVersion);
-                    parameters.Add(futureBaselineVersion);
-                    parameters.Add(pisOnBoardVersion);
+                    parameters.Add(currentBaselineVersion ?? string.Empty);
+                    parameters.Add(futureBaselineVersion ?? string.Empty);
+                    parameters.Add(pisOnBoardVersion??string.Empty);
 
                     int response = SqlHelper.ExecuteNonQuery(HistoryLoggerConfiguration.SqlConnectionString, SpUpdateTrainBaselineStatus, parameters);
                     if (response > 0)

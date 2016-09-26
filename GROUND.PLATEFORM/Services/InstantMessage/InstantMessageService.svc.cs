@@ -193,6 +193,7 @@ namespace PIS.Ground.InstantMessage
 					if (_train2groundManager != null)
 					{
 						_train2groundManager.UnsubscribeFromElementChangeNotification(SubscriberId);
+                        _train2groundManager.Dispose();
 						_train2groundManager = null;
 					}
 

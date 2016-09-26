@@ -29,6 +29,24 @@ namespace PIS.Ground.Core.Data
     [DataContract(Namespace = "http://alstom.com/pacis/pis/schema/", Name = "TargetAddressType")]
     public class TargetAddressType
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TargetAddressType"/> class.
+        /// </summary>
+        public TargetAddressType()
+        {
+            // No logic body
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TargetAddressType"/> class with an train name.
+        /// </summary>
+        /// <param name="elementId">The element identifier.</param>
+        public TargetAddressType(string elementId)
+        {
+            Type = AddressTypeEnum.Element;
+            Id = elementId;
+        }
+
         [DataMember(IsRequired = true)]
         public AddressTypeEnum Type;
 

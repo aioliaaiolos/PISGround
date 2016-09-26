@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="BaselineStatusUpdater.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -8,6 +8,7 @@
 //---------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
@@ -16,6 +17,7 @@ using PIS.Ground.Core.Data;
 using PIS.Ground.DataPackage.Notification;
 using PIS.Ground.RemoteDataStore;
 using PIS.Ground.Core.T2G;
+using System.Globalization;
 
 namespace PIS.Ground.DataPackage
 {
@@ -260,8 +262,10 @@ namespace PIS.Ground.DataPackage
 
 		/// <summary>Initializes BaselineStatusUpdater. Must be called before any other public methods.</summary>
 		/// <param name="t2g">The client providing access to the T2G server. Must not be null.</param>
+        /// <param name="availableElements">List of available elements.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>		
-		public static bool Initialize(IT2GFileDistributionManager t2g)
+		public static bool Initialize(IT2GFileDistributionManager t2g,
+            ElementList<AvailableElementData> availableElements)
 		{
 			_logManager.WriteLog(TraceType.INFO,
 				"Initialize()",
@@ -342,7 +346,8 @@ namespace PIS.Ground.DataPackage
 						new BaselineProgressUpdateProcedure(UpdateProgressOnHistoryLogger),
 						new BaselineProgressRemoveProcedure(RemoveProgressFromHistoryLogger),
 						t2g,
-                        _logManager);
+                        _logManager,
+                        availableElements);
 				}
 			}
 			catch (ArgumentNullException lException)
@@ -380,13 +385,15 @@ namespace PIS.Ground.DataPackage
 		/// <param name="baselineProgressRemoveProcedure">The baseline progress remove procedure from persistent storage.</param>///
 		/// <param name="t2g">The client providing access to the T2G server.</param>
         /// <param name="logManager">The ILogManager interface reference. Added for unit test purposes.</param>
+        /// <param name="availableElementData">List of available elements.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>	
 		private static bool Initialize(
 			Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
 			BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
 			BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
 			IT2GFileDistributionManager t2g,
-            ILogManager logManager)
+            ILogManager logManager,
+            ElementList<AvailableElementData> availableElementData)
 		{
 			// Save the method arguments to class fields
 			// 
@@ -403,13 +410,35 @@ namespace PIS.Ground.DataPackage
 			// For now, assume all elements are off-line and that we do not know
 			// the different baselines and software versions and other information that could have changed
 			// 
-			ResetStatusEntries();
+			ResetStatusEntries(availableElementData);
 
 			return _isInitialized;
 		}
 
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public static void Uninitialize()
+        {
+            lock (_baselineStatusUpdaterLock)
+            {
+                _isInitialized = false;
+                _isHistoryLoggerAvailable = true;
+                _t2g = null;
+                if (_baselineProgresses != null)
+                {
+                    _baselineProgresses.Clear();
+                }
+                _baselineProgresses = null;
+                _baselineProgressUpdateProcedure = null;
+                _baselineProgressRemoveProcedure = null;
+            }
+        }
+
+
 		/// <summary>Resets all status entries by clearing the fields that might have changed.</summary>
-		public static void ResetStatusEntries()
+        /// <param name="availableElements">List of available elements</param>
+		public static void ResetStatusEntries(ElementList<AvailableElementData> availableElements)
 		{
 			try
 			{
@@ -437,7 +466,7 @@ namespace PIS.Ground.DataPackage
 									// Make sure that all trains will be fully investigated the next time we hear from them
 									lExtendedStatus.IsT2GPollingRequired = true;
 
-									lStatus.OnlineStatus = false;
+									lStatus.OnlineStatus = (availableElements != null && availableElements.Any(e => e.OnlineStatus && e.ElementNumber == lTrainId));
 
 									LogProgress(lTrainId, lExtendedStatus);
 								}
@@ -531,19 +560,22 @@ namespace PIS.Ground.DataPackage
 			string futureBaseline,
 			string assignedFutureBaseline)
 		{
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessDistributeBaselineRequest" + Environment.NewLine +
-				"(" + Environment.NewLine +
-				"  trainId                  : " + trainId + Environment.NewLine +
-				"  requestId                : " + requestId.ToString() + Environment.NewLine +
-				"  onLine                   : " + onLine.ToString() + Environment.NewLine +
-				"  currentBaseline          : " + currentBaseline + Environment.NewLine +
-				"  futureBaseline           : " + futureBaseline + Environment.NewLine +
-				"  assignedFutureBaseline   : " + assignedFutureBaseline + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
-				null,
-				EventIdEnum.DataPackage);
+            if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                _logManager.WriteLog(TraceType.INFO,
+                    "ProcessDistributeBaselineRequest" + Environment.NewLine +
+                    "(" + Environment.NewLine +
+                    "  trainId                  : " + trainId + Environment.NewLine +
+                    "  requestId                : " + requestId.ToString() + Environment.NewLine +
+                    "  onLine                   : " + onLine.ToString() + Environment.NewLine +
+                    "  currentBaseline          : " + currentBaseline + Environment.NewLine +
+                    "  futureBaseline           : " + futureBaseline + Environment.NewLine +
+                    "  assignedFutureBaseline   : " + assignedFutureBaseline + Environment.NewLine +
+                    ")",
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessDistributeBaselineRequest",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
 
 			try
 			{
@@ -644,16 +676,19 @@ namespace PIS.Ground.DataPackage
 			Guid requestId,
 			int taskId)
 		{
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessTaskId" + Environment.NewLine +
-				"(" + Environment.NewLine +
-				"  trainId   : " + trainId + Environment.NewLine +
-				"  requestId : " + requestId.ToString() + Environment.NewLine +
-				"  taskId    : " + taskId + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessTaskId",
-				null,
-				EventIdEnum.DataPackage);
+            if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                _logManager.WriteLog(TraceType.INFO,
+                    "ProcessTaskId" + Environment.NewLine +
+                    "(" + Environment.NewLine +
+                    "  trainId   : " + trainId + Environment.NewLine +
+                    "  requestId : " + requestId.ToString() + Environment.NewLine +
+                    "  taskId    : " + taskId + Environment.NewLine +
+                    ")",
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessTaskId",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
 
 			try
 			{
@@ -725,15 +760,18 @@ namespace PIS.Ground.DataPackage
 		public static void ProcessFileTransferNotification(
 			FileDistributionStatusArgs notification)
 		{
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessFileTransferNotification" + Environment.NewLine +
-				"(" + Environment.NewLine +
-				"  notification: " + Environment.NewLine +
-				ToString(notification) + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessFileTransferNotification",
-				null,
-				EventIdEnum.DataPackage);
+            if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                _logManager.WriteLog(TraceType.INFO,
+                    "ProcessFileTransferNotification" + Environment.NewLine +
+                    "(" + Environment.NewLine +
+                    "  notification: " + Environment.NewLine +
+                    ToString(notification) + Environment.NewLine +
+                    ")",
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessFileTransferNotification",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
 
 			try
 			{
@@ -813,15 +851,18 @@ namespace PIS.Ground.DataPackage
 			string lNotificationString =
 				Enum.GetName(typeof(PIS.Ground.GroundCore.AppGround.NotificationIdEnum), notification);
 
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessSIFNotification" + Environment.NewLine +
-				"(" + Environment.NewLine +
-				"  trainId      : " + trainId + Environment.NewLine +
-				"  notification : " + lNotificationString + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSIFNotification",
-				null,
-				EventIdEnum.DataPackage);
+            if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                _logManager.WriteLog(TraceType.INFO,
+                    "ProcessSIFNotification" + Environment.NewLine +
+                    "(" + Environment.NewLine +
+                    "  trainId      : " + trainId + Environment.NewLine +
+                    "  notification : " + lNotificationString + Environment.NewLine +
+                    ")",
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSIFNotification",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
 
 			try
 			{
@@ -963,17 +1004,20 @@ namespace PIS.Ground.DataPackage
 			string assignedCurrentBaseline,
 			string assignedFutureBaseline)
 		{
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessSystemChangedNotification " + Environment.NewLine +
-				"( " + Environment.NewLine +
-				"  notification            : " + Environment.NewLine +
-				ToString(notification) + Environment.NewLine +
-				"  assignedCurrentBaseline : " + assignedCurrentBaseline + Environment.NewLine +
-				"  assignedFutureBaseline  : " + assignedFutureBaseline + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
-				null,
-				EventIdEnum.DataPackage);
+            if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                _logManager.WriteLog(TraceType.INFO,
+                    "ProcessSystemChangedNotification " + Environment.NewLine +
+                    "( " + Environment.NewLine +
+                    "  notification            : " + Environment.NewLine +
+                    ToString(notification) + Environment.NewLine +
+                    "  assignedCurrentBaseline : " + assignedCurrentBaseline + Environment.NewLine +
+                    "  assignedFutureBaseline  : " + assignedFutureBaseline + Environment.NewLine +
+                    ")",
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessSystemChangedNotification",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
 
 			try
 			{
@@ -1391,22 +1435,25 @@ namespace PIS.Ground.DataPackage
 				string lProgressStatusString =
 					Enum.GetName(typeof(BaselineProgressStatusEnum), progressInfo.ProgressStatus);
 
-				_logManager.WriteLog(TraceType.INFO,
-					"UpdateProgressOnHistoryLogger" + Environment.NewLine +
-					"(" + Environment.NewLine +
-					"  TrainId                  : " + trainId + Environment.NewLine +
-					"  RequestId                : " + progressInfo.RequestId.ToString() + Environment.NewLine +
-					"  TaskId                   : " + progressInfo.TaskId + Environment.NewLine +
-					"  TrainNumber              : " + progressInfo.TrainNumber + Environment.NewLine +
-					"  OnlineStatus             : " + progressInfo.OnlineStatus.ToString() + Environment.NewLine +
-					"  ProgressStatus           : " + lProgressStatusString + Environment.NewLine +
-					"  CurrentBaselineVersion   : " + progressInfo.CurrentBaselineVersion + Environment.NewLine +
-					"  FutureBaselineVersion    : " + progressInfo.FutureBaselineVersion + Environment.NewLine +
-					"  PisOnBoardVersion        : " + progressInfo.PisOnBoardVersion + Environment.NewLine +
-					")",
-					"PIS.Ground.DataPackage.BaselineStatusUpdater.UpdateProgressOnHistoryLogger",
-					null,
-					EventIdEnum.DataPackage);
+                if (_logManager.IsTraceActive(TraceType.INFO))
+                {
+                    _logManager.WriteLog(TraceType.INFO,
+                        "UpdateProgressOnHistoryLogger" + Environment.NewLine +
+                        "(" + Environment.NewLine +
+                        "  TrainId                  : " + trainId + Environment.NewLine +
+                        "  RequestId                : " + progressInfo.RequestId.ToString() + Environment.NewLine +
+                        "  TaskId                   : " + progressInfo.TaskId + Environment.NewLine +
+                        "  TrainNumber              : " + progressInfo.TrainNumber + Environment.NewLine +
+                        "  OnlineStatus             : " + progressInfo.OnlineStatus.ToString() + Environment.NewLine +
+                        "  ProgressStatus           : " + lProgressStatusString + Environment.NewLine +
+                        "  CurrentBaselineVersion   : " + progressInfo.CurrentBaselineVersion + Environment.NewLine +
+                        "  FutureBaselineVersion    : " + progressInfo.FutureBaselineVersion + Environment.NewLine +
+                        "  PisOnBoardVersion        : " + progressInfo.PisOnBoardVersion + Environment.NewLine +
+                        ")",
+                        "PIS.Ground.DataPackage.BaselineStatusUpdater.UpdateProgressOnHistoryLogger",
+                        null,
+                        EventIdEnum.DataPackage);
+                }
 
 				BaselineStatusResponse lResult = new BaselineStatusResponse();
 				lResult.ResultCode = _logManager.UpdateTrainBaselineStatus(
@@ -1731,5 +1778,85 @@ namespace PIS.Ground.DataPackage
 				}
 			}
 		}
-	}
+
+        /// <summary>
+        /// Called when the distribution of an upload request create the transfer task.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The arguments of the notification.</param>
+        public static void OnFileDistributionTaskCreated(object sender, FileDistributionTaskCreatedArgs e)
+        {
+            try
+            {
+                if (_logManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = "OnFileDistributionTaskCreated " + Environment.NewLine +
+                    "( " + Environment.NewLine +
+                    "  Request   : " + e.RequestId.ToString() + Environment.NewLine +
+                    "  Task id   : " + e.TaskId.ToString() + Environment.NewLine +
+                    "  Recipient : " + ((e.Recipients != null && e.Recipients.Count > 0) ? e.Recipients[0].SystemId??"" + e.Recipients[0].MissionId??"" : string.Empty) + Environment.NewLine +
+                    ")";
+
+                _logManager.WriteLog(TraceType.INFO,
+                    message,
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                    null,
+                    EventIdEnum.DataPackage);
+            }
+
+                lock (_baselineStatusUpdaterLock)
+                {
+                    // Checking initial conditions
+
+                    if (_isInitialized)
+                    {
+                        if (e.Recipients == null || e.Recipients.Count != 1 || string.IsNullOrEmpty(e.Recipients[0].SystemId))
+                        {
+                            _logManager.WriteLog(TraceType.DEBUG, "Notification excluded because the recipient count differ than one or the recipient system id is an empty string", "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                        }
+                        else
+                        {
+                            TrainBaselineStatusExtendedData lExtendedProgress = null;
+
+                            // Trim the strings passed as arguments
+                            // 
+                            string lTrainId = e.Recipients[0].SystemId;
+
+                            // Retrieve the status corresponding to that train if it already exists
+                            // 
+                            if (!TryGetEntry(lTrainId, out lExtendedProgress))
+                            {
+                                string message = string.Format(CultureInfo.CurrentCulture, Logs.WARNING_TASK_CREATED_NOTIFICATION_IGNORED_NO_DISTRIBUTION_FOR_TRAIN, lTrainId);
+                                _logManager.WriteLog(TraceType.WARNING, message, "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                            }
+                            else if (lExtendedProgress.Status == null || lExtendedProgress.Status.RequestId != e.RequestId)
+                            {
+                                string message = string.Format(CultureInfo.CurrentCulture, Logs.WARNING_TASK_CREATED_NOTIFICATION_IGNORED_REQUEST_ID_DIFFER, lTrainId, e.RequestId);
+                                _logManager.WriteLog(TraceType.WARNING, message, "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated", null, EventIdEnum.DataPackage);
+                            }
+                            else
+                            {
+                                lExtendedProgress.Status.TaskId = e.TaskId;
+                                LogProgress(lTrainId, lExtendedProgress);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_isHistoryLoggerAvailable)
+                        {
+                            throw (new InvalidOperationException("updater not initialized"));
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                _logManager.WriteLog(TraceType.EXCEPTION, exception.Message,
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                    exception, EventIdEnum.DataPackage);
+            }
+
+        }
+    }
 }

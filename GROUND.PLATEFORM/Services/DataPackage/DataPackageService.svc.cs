@@ -45,6 +45,8 @@ namespace PIS.Ground.DataPackage
 		private static volatile bool _initialized = false;
 
 		private static object _initializationLock = new object();
+        
+        private static volatile bool _stopRequested;
 
 		/// <summary>Maximum end date for enumerating transfer tasks on the T2G.
 		/// DateTime.MaxValue cannot be used as the
@@ -105,6 +107,10 @@ namespace PIS.Ground.DataPackage
 		#endregion
 
 		#region constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// </summary>
 		public DataPackageService()
 		{
             if (Thread.CurrentThread.Name == null)
@@ -114,11 +120,48 @@ namespace PIS.Ground.DataPackage
 
 			Initialize();
 		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="requestsFactory">The requests factory.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="requestManager">The request manager.</param>
+        /// <remarks>Available for automated testing.</remarks>
+        protected DataPackageService(
+            ISessionManager sessionManager,
+            INotificationSender notificationSender,
+            IT2GManager t2gManager,
+            RequestMgt.IRequestContextFactory requestsFactory,
+            RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
+            RequestMgt.IRequestManager requestManager)
+        {
+            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, true);
+        }
+
 		#endregion
 
-		#region private static methods
+        #region Public static properties
 
-		public static void Initialize()
+        /// <summary>
+        /// Gets the remote data store factory.
+        /// </summary>
+        public static RemoteDataStoreFactory.IRemoteDataStoreFactory RemoteDataStoreFactory
+        {
+            get
+            {
+                return _remoteDataStoreFactory;
+            }
+        }
+
+        #endregion
+
+        #region private static methods
+
+        public static void Initialize()
 		{
 			if (!_initialized)
 			{
@@ -135,36 +178,12 @@ namespace PIS.Ground.DataPackage
 							_t2gManager = T2GManagerContainer.T2GManager;
 
 							_remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
+                            _requestManager = new RequestMgt.RequestManager();
+                            _requestFactory = new RequestMgt.RequestContextFactory();
 
-							_baselineStatusThread = new Thread(new ThreadStart(OnBaselineStatusEvent));
-                            _baselineStatusThread.Name = "Baseline Status";
+                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
-							// Baseline Deployments Status
-
-							// Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
-							// and registering a T2G client object to be used for updating those statuses
-							//
-							BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager);
-
-							_t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
-
-							_t2gManager.SubscribeToSystemDeletedNotification(SubscriberId, new EventHandler<SystemDeletedNotificationArgs>(OnSystemDeleted));
-							_t2gManager.SubscribeToT2GOnlineStatusNotification(SubscriberId, new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline), false);
-							_t2gManager.SubscribeToElementChangeNotification(SubscriberId, new EventHandler<ElementEventArgs>(OnElementInfoChanged));
-							_t2gManager.SubscribeToFileDistributionNotifications(SubscriberId, new EventHandler<FileDistributionStatusArgs>(OnFileTransfer));
-
-							_baselineStatusThread.Start();
-
-							_updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
-
-							_requestFactory = new RequestMgt.RequestContextFactory();
-
-							_remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
-
-							_requestManager = new RequestMgt.RequestManager();
-							_requestManager.Initialize(_t2gManager, _notificationSender);
-							_requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
-                            _initialized = true;
+                            CommonInitialize();
 						}
 						catch (Exception e)
 						{
@@ -175,21 +194,147 @@ namespace PIS.Ground.DataPackage
 			}
 		}
 
-		internal static void Initialize(
+        /// <summary>
+        /// Implements the common logic of initialization function.
+        /// </summary>
+        private static void CommonInitialize()
+        {
+            _stopRequested = false;
+            _baselineStatusSystemInformationQueue.Clear();
+            _remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
+            _baselineStatusThread = new Thread(new ThreadStart(OnBaselineStatusEvent));
+            _baselineStatusThread.Name = "Baseline Status";
+
+            // Baseline Deployments Status
+
+            // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
+            // and registering a T2G client object to be used for updating those statuses
+            //
+            ElementList<AvailableElementData> availableElements;
+            _t2gManager.GetAvailableElementDataList(out availableElements);
+            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
+
+            _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
+
+            _t2gManager.SubscribeToSystemDeletedNotification(SubscriberId, new EventHandler<SystemDeletedNotificationArgs>(OnSystemDeleted));
+            _t2gManager.SubscribeToT2GOnlineStatusNotification(SubscriberId, new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline), false);
+            _t2gManager.SubscribeToElementChangeNotification(SubscriberId, new EventHandler<ElementEventArgs>(OnElementInfoChanged));
+            _t2gManager.SubscribeToFileDistributionNotifications(SubscriberId, new EventHandler<FileDistributionStatusArgs>(OnFileTransfer));
+
+            _baselineStatusThread.Start();
+
+            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
+
+            _requestManager.Initialize(_t2gManager, _notificationSender);
+            _requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
+            _initialized = true;
+        }
+
+        /// <summary>
+        /// Initializes this instance by providing objects to use.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="requestsFactory">The requests factory.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="requestManager">The request manager.</param>
+        /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
+		public static void Initialize(
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
 			IT2GManager t2gManager,
 			RequestMgt.IRequestContextFactory requestsFactory,
 			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-			RequestMgt.IRequestManager requestManager)
+			RequestMgt.IRequestManager requestManager,
+            bool executeCommonLogic)
 		{
-			_sessionManager = sessionManager;
-			_notificationSender = notificationSender;
-			_t2gManager = t2gManager;
-			_requestFactory = requestsFactory;
-			_remoteDataStoreFactory = remoteDataStoreFactory;
-			_requestManager = requestManager;
+            lock (_initializationLock)
+            {
+                Uninitialize();
+
+                _sessionManager = sessionManager;
+                _notificationSender = notificationSender;
+                _t2gManager = t2gManager;
+                _requestFactory = requestsFactory;
+                _remoteDataStoreFactory = remoteDataStoreFactory;
+                _requestManager = requestManager;
+
+                if (executeCommonLogic)
+                {
+                    CommonInitialize();
+                }
+            }
 		}
+
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public static void Uninitialize()
+        {
+            lock (_initializationLock)
+            {
+                _stopRequested = true;
+                if (_baselineStatusEvent != null && _baselineStatusThread != null)
+                {
+                    _baselineStatusEvent.Set();
+                }
+
+                if (_updateBaseLineTimer != null)
+                {
+                    _updateBaseLineTimer.Dispose();
+                    _updateBaseLineTimer = null;
+                }
+
+                if (_requestManager != null)
+                {
+                    _requestManager.Dispose();
+                    _requestManager = null;
+                }
+
+                if (_baselineStatusThread != null)
+                {
+                    if (_baselineStatusThread.ThreadState != ThreadState.Unstarted)
+                    {
+                        if (!_baselineStatusThread.Join(new TimeSpan(0, 1, 0)))
+                        {
+                            // Force the thread to stop
+                            _baselineStatusThread.Abort();
+                            _baselineStatusThread.Join(new TimeSpan(0, 1, 0));
+                        }
+                    }
+
+                    _baselineStatusThread = null;
+                }
+
+                if (_t2gManager != null)
+                {
+                    if (_t2gManager.T2GFileDistributionManager != null)
+                    {
+                        _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(null);
+                    }
+                    
+                    _t2gManager.UnsubscribeFromSystemDeletedNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromT2GOnlineStatusNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromElementChangeNotification(SubscriberId);
+                    _t2gManager.UnsubscribeFromFileDistributionNotifications(SubscriberId);
+
+                    _t2gManager.Dispose();
+                }
+
+                BaselineStatusUpdater.Uninitialize();
+
+                if (_baselineStatusSystemInformationQueue != null)
+                {
+                    _baselineStatusSystemInformationQueue.Clear();
+                }
+
+                _remoteDateStoreUrl = null;
+                _initialized = false;
+                _stopRequested = false;
+            }
+
+        }
 
 		/// <summary>Called when the UploadFile method completes.</summary>
 		/// <param name="request">The request information from UploadFile.</param>
@@ -243,21 +388,11 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-				{
-					try
-					{
-						currentBaseline = lRemDSProxy.getAssignedCurrentBaselineVersion(trainId);
-						futureBaseline = lRemDSProxy.getAssignedFutureBaselineVersion(trainId);
-					}
-					finally
-					{
-						if (lRemDSProxy.State == CommunicationState.Faulted)
-						{
-							lRemDSProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    currentBaseline = lRemDSProxy.getAssignedCurrentBaselineVersion(trainId);
+                    futureBaseline = lRemDSProxy.getAssignedFutureBaselineVersion(trainId);
+                }
 			}
 			catch (Exception lException)
 			{
@@ -293,11 +428,11 @@ namespace PIS.Ground.DataPackage
 		{
 			if (pNotification != null)
 			{
-				mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : ", pNotification.online.ToString());
+                mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
 
 				if (pNotification.online == false)
 				{
-					BaselineStatusUpdater.ResetStatusEntries();
+					BaselineStatusUpdater.ResetStatusEntries(null);
 				}
 			}
 		}
@@ -450,33 +585,21 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							mWriteLog(TraceType.DEBUG, "assignFutureBaseline", null, Logs.DEBUG_ASSIGN_FUTURE_BASELINE, pBLVersion, pElementId);
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        mWriteLog(TraceType.DEBUG, "assignFutureBaseline", null, Logs.DEBUG_ASSIGN_FUTURE_BASELINE, pBLVersion, pElementId);
 
-							lRemProx.assignAFutureBaselineToElement(pResult.reqId, pElementId, pBLVersion, pActDate, pExpDate);
-							pResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                        lRemProx.assignAFutureBaselineToElement(pResult.reqId, pElementId, pBLVersion, pActDate, pExpDate);
+                        pResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
 
-							lock (_distributingElementDic)
-							{
-								if (_distributingElementDic.ContainsKey(pElementId))
-								{
-									_distributingElementDic.Remove(pElementId);
-								}
-							}
-						}
-						finally
-						{
-							if (lRemProx.State == CommunicationState.Faulted)
-							{
-								mWriteLog(TraceType.EXCEPTION, "assignFutureBaseline", null, Logs.ERROR_REMOTEDATASTORE_FAULTED);
-
-								lRemProx.Abort();
-							}
-						}
-					}
+                        lock (_distributingElementDic)
+                        {
+                            if (_distributingElementDic.ContainsKey(pElementId))
+                            {
+                                _distributingElementDic.Remove(pElementId);
+                            }
+                        }
+                    }
 				}
 				catch (TimeoutException ex)
 				{
@@ -579,25 +702,13 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							mWriteLog(TraceType.DEBUG, "assignCurrentBaseline", null, Logs.DEBUG_ASSIGN_CURRENT_BASELINE, pBLVersion, pElementId);
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        mWriteLog(TraceType.DEBUG, "assignCurrentBaseline", null, Logs.DEBUG_ASSIGN_CURRENT_BASELINE, pBLVersion, pElementId);
 
-							lRemProx.assignACurrentBaselineToElement(pResult.reqId, pElementId, pBLVersion, pExpDate);
-							pResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
-						}
-						finally
-						{
-							if (lRemProx.State == CommunicationState.Faulted)
-							{
-								mWriteLog(TraceType.EXCEPTION, "assignCurrentBaseline", null, Logs.ERROR_REMOTEDATASTORE_FAULTED);
-
-								lRemProx.Abort();
-							}
-						}
-					}
+                        lRemProx.assignACurrentBaselineToElement(pResult.reqId, pElementId, pBLVersion, pExpDate);
+                        pResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                    }
 				}
 				catch (TimeoutException ex)
 				{
@@ -846,13 +957,16 @@ namespace PIS.Ground.DataPackage
             {
                 SystemInfo lNextSystemInfo = null;
 
-                while (true)
+                while (!_stopRequested)
                 {
                     mWriteLog(TraceType.INFO, "OnBaselineStatusEvent", null, Logs.INFO_NO_EVENTS_TO_PROCESS);
 
                     _baselineStatusEvent.WaitOne();
 
                     mWriteLog(TraceType.INFO, "OnBaselineStatusEvent", null, Logs.INFO_NEW_EVENTS_TO_PROCESS);
+
+                    if (_stopRequested)
+                        break;
 
                     int lRemainingCount = 0;
 
@@ -884,7 +998,7 @@ namespace PIS.Ground.DataPackage
                             }
                         }
                     }
-                    while (lRemainingCount > 0);
+                    while (lRemainingCount > 0 && !_stopRequested);
                 }
             }
             catch (ThreadAbortException)
@@ -901,60 +1015,62 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-				lock (_distributingElementDic)
-				{
-					using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							foreach (var pair in _distributingElementDic)
-							{
-								try
-								{
-									DataContainer lElDescrCont = lRemDSProxy.getElementBaselinesDefinitions(pair.Key);
-									ElementDescription lElDescr = DataTypeConversion.fromDataContainerToElementDescription(lElDescrCont);
-									//condition to check if future baseline activation date is reached/has passed
-									if (DateTime.Compare(DateTime.Now, lElDescr.AssignedFutureBaselineActivationDate) >= 0)
-									{
-										//condition to check if future baseline version is different from current baseline version
-										if (string.Compare(lElDescr.AssignedFutureBaseline, lElDescr.AssignedCurrentBaseline) != 0)
-										{
-											//assigning future baseline version to current baseline version
-											lRemDSProxy.assignACurrentBaselineToElement(Guid.Empty, pair.Key, lElDescr.AssignedFutureBaseline, lElDescr.AssignedFutureBaselineExpirationDate);
-										}
-										//condition to check if DistributionStatus is completed
-										if (pair.Value.distributionStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.Completed)
-										{
-											//assigning future baseline version as ""
-											lRemDSProxy.unassignFutureBaselineFromElement(pair.Key);
-										}
-									}
-								}
-								catch (System.Exception lEx)
-								{
-									LogManager.WriteLog(
-										TraceType.EXCEPTION,
-										lEx.Message,
-										string.Format(CultureInfo.CurrentCulture, "{0}({1})", "PIS.Ground.DataPackage.DataPackageService.mUpdateBaselinesAssignation", pair.Key),
-										lEx,
-										EventIdEnum.DataPackage);
+                lock (_distributingElementDic)
+                {
+                    IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance();
+                    try
+                    {
+                        foreach (var pair in _distributingElementDic)
+                        {
+                            if (_stopRequested)
+                            {
+                                break;
+                            }
 
-									if (lRemDSProxy.State == CommunicationState.Faulted)
-									{
-										lRemDSProxy.Abort();
-									}
-								}
-							}
-						}
-						finally
-						{
-							if (lRemDSProxy.State == CommunicationState.Faulted)
-							{
-								lRemDSProxy.Abort();
-							}
-						}
-					}
-				}
+                            try
+                            {
+                                DataContainer lElDescrCont = lRemDSProxy.getElementBaselinesDefinitions(pair.Key);
+                                if (_stopRequested)
+                                {
+                                    break;
+                                }
+
+                                ElementDescription lElDescr = DataTypeConversion.fromDataContainerToElementDescription(lElDescrCont);
+                                //condition to check if future baseline activation date is reached/has passed
+                                if (DateTime.Compare(DateTime.Now, lElDescr.AssignedFutureBaselineActivationDate) >= 0)
+                                {
+                                    //condition to check if future baseline version is different from current baseline version
+                                    if (string.Compare(lElDescr.AssignedFutureBaseline, lElDescr.AssignedCurrentBaseline) != 0)
+                                    {
+                                        //assigning future baseline version to current baseline version
+                                        lRemDSProxy.assignACurrentBaselineToElement(Guid.Empty, pair.Key, lElDescr.AssignedFutureBaseline, lElDescr.AssignedFutureBaselineExpirationDate);
+                                    }
+                                    //condition to check if DistributionStatus is completed
+                                    if (pair.Value.distributionStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.Completed)
+                                    {
+                                        //assigning future baseline version as ""
+                                        lRemDSProxy.unassignFutureBaselineFromElement(pair.Key);
+                                    }
+                                }
+                            }
+                            catch (System.Exception lEx)
+                            {
+                                LogManager.WriteLog(
+                                    TraceType.EXCEPTION,
+                                    lEx.Message,
+                                    string.Format(CultureInfo.CurrentCulture, "{0}({1})", "PIS.Ground.DataPackage.DataPackageService.mUpdateBaselinesAssignation", pair.Key),
+                                    lEx,
+                                    EventIdEnum.DataPackage);
+                                lRemDSProxy.Dispose();
+                                lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance();
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        lRemDSProxy.Dispose();
+                    }
+                }
 			}
 			catch (System.Exception lEx)
 			{
@@ -1070,21 +1186,11 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer baselineDistributingTask = DataTypeConversion.fromBaselineDistributingRequestToDataContainer(processBaselineDistributingRequest);
-						remoteDataStoreProxy.saveBaselineDistributingRequest(baselineDistributingTask);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer baselineDistributingTask = DataTypeConversion.fromBaselineDistributingRequestToDataContainer(processBaselineDistributingRequest);
+                    remoteDataStoreProxy.saveBaselineDistributingRequest(baselineDistributingTask);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1108,25 +1214,15 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
-						requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
-							baselineDistributingSavedRequestsList,
-							_requestFactory,
-							_remoteDataStoreFactory,
-							_t2gManager);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
+                    requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
+                        baselineDistributingSavedRequestsList,
+                        _requestFactory,
+                        _remoteDataStoreFactory,
+                        _t2gManager);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1150,20 +1246,10 @@ namespace PIS.Ground.DataPackage
 		{
 			try
 			{
-				using (var remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						remoteDataStoreProxy.deleteBaselineDistributingRequest(elementId);
-					}
-					finally
-					{
-						if (remoteDataStoreProxy.State == CommunicationState.Faulted)
-						{
-							remoteDataStoreProxy.Abort();
-						}
-					}
-				}
+                using (IRemoteDataStoreClient remoteDataStoreProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    remoteDataStoreProxy.deleteBaselineDistributingRequest(elementId);
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -1209,30 +1295,20 @@ namespace PIS.Ground.DataPackage
 
 						try
 						{
-							using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-							{
-								try
-								{
-									DataContainer lElDescrCont = lRemDSProxy.getElementBaselinesDefinitions(lEID);
-									lElDescr = DataTypeConversion.fromDataContainerToElementDescription(lElDescrCont);
+                            using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            {
+                                DataContainer lElDescrCont = lRemDSProxy.getElementBaselinesDefinitions(lEID);
+                                lElDescr = DataTypeConversion.fromDataContainerToElementDescription(lElDescrCont);
 
-									if (lElDescr != null)
-									{
-										// Fill in the train id field if still missing
-										if (string.IsNullOrEmpty(lElDescr.ElementID))
-										{
-											lElDescr.ElementID = lEID;
-										}
-									}
-								}
-								finally
-								{
-									if (lRemDSProxy.State == CommunicationState.Faulted)
-									{
-										lRemDSProxy.Abort();
-									}
-								}
-							}
+                                if (lElDescr != null)
+                                {
+                                    // Fill in the train id field if still missing
+                                    if (string.IsNullOrEmpty(lElDescr.ElementID))
+                                    {
+                                        lElDescr.ElementID = lEID;
+                                    }
+                                }
+                            }
 						}
 						catch (FaultException lEx)
 						{
@@ -1311,34 +1387,24 @@ namespace PIS.Ground.DataPackage
 									//Add baseline description from RemoteDataStore
 									try
 									{
-										using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-										{
-											try
-											{
-												if (!string.IsNullOrEmpty(lElDescr.ElementArchivedBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementArchivedBaseline.BaselineVersion) == true)
-												{
-													BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementArchivedBaseline.BaselineVersion));
-													lElDescr.ElementArchivedBaseline.BaselineDescription = lBlDef.BaselineDescription;
-												}
-												if (!string.IsNullOrEmpty(lElDescr.ElementCurrentBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementCurrentBaseline.BaselineVersion) == true)
-												{
-													BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementCurrentBaseline.BaselineVersion));
-													lElDescr.ElementCurrentBaseline.BaselineDescription = lBlDef.BaselineDescription;
-												}
-												if (!string.IsNullOrEmpty(lElDescr.ElementFutureBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementFutureBaseline.BaselineVersion) == true)
-												{
-													BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementFutureBaseline.BaselineVersion));
-													lElDescr.ElementArchivedBaseline.BaselineDescription = lBlDef.BaselineDescription;
-												}
-											}
-											finally
-											{
-												if (lRemProx.State == CommunicationState.Faulted)
-												{
-													lRemProx.Abort();
-												}
-											}
-										}
+                                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                        {
+                                            if (!string.IsNullOrEmpty(lElDescr.ElementArchivedBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementArchivedBaseline.BaselineVersion) == true)
+                                            {
+                                                BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementArchivedBaseline.BaselineVersion));
+                                                lElDescr.ElementArchivedBaseline.BaselineDescription = lBlDef.BaselineDescription;
+                                            }
+                                            if (!string.IsNullOrEmpty(lElDescr.ElementCurrentBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementCurrentBaseline.BaselineVersion) == true)
+                                            {
+                                                BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementCurrentBaseline.BaselineVersion));
+                                                lElDescr.ElementCurrentBaseline.BaselineDescription = lBlDef.BaselineDescription;
+                                            }
+                                            if (!string.IsNullOrEmpty(lElDescr.ElementFutureBaseline.BaselineVersion) && lRemProx.checkIfBaselineExists(lElDescr.ElementFutureBaseline.BaselineVersion) == true)
+                                            {
+                                                BaselineDefinition lBlDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemProx.getBaselineDefinition(lElDescr.ElementFutureBaseline.BaselineVersion));
+                                                lElDescr.ElementArchivedBaseline.BaselineDescription = lBlDef.BaselineDescription;
+                                            }
+                                        }
 									}
 									catch (TimeoutException lEx)
 									{
@@ -1651,12 +1717,12 @@ namespace PIS.Ground.DataPackage
 						if (lResult.error_code == DataPackageErrorEnum.REQUEST_ACCEPTED)
 						{
 							List<DataPackageService.CancellableTransferTaskInfo> lCancellableTransfers;
-							if (getCancellableTransferTasks(out lCancellableTransfers) && lCancellableTransfers != null)
+							if (getCancellableTransferTasks(out lCancellableTransfers) && lCancellableTransfers != null && LogManager.IsTraceActive(TraceType.INFO))
 							{
-								string lCancellableTransfersInfo = string.Empty;
-								lCancellableTransfers.ForEach(lTask => lCancellableTransfersInfo += lTask.ToString() + " ");
+								StringBuilder lCancellableTransfersInfo = new StringBuilder(30 + 30 * lCancellableTransfers.Count);
+                                lCancellableTransfers.ForEach(lTask => lCancellableTransfersInfo.Append(lTask.ToString()).Append(' '));
 
-								mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_PENDING_TRANSFERS_LIST, lCancellableTransfersInfo);
+								mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_PENDING_TRANSFERS_LIST, lCancellableTransfersInfo.ToString());
 							}
 
 							foreach (string lElID in lElementsIDs)
@@ -1776,34 +1842,23 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (var remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance() as RemoteDataStoreProxy)
-				{
-					try
-					{
-						DataContainer elementDescription = remoteDataStore.getElementBaselinesDefinitions(lElID);
-						baselineVersion = elementDescription.getStrValue("AssignedFutureBaseline");
-						if (!string.IsNullOrEmpty(baselineVersion) && remoteDataStore.checkIfBaselineExists(baselineVersion))
-						{
-							mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_FUTURE_BASELINE, lElID, baselineVersion);
-							DataContainer baselineDefinitionContainer = remoteDataStore.getBaselineDefinition(baselineVersion);
-							remoteDataStore.checkDataPackagesAvailability(lResult.reqId, baselineDefinitionContainer);
-							baselineActivationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineActivationDate"));
-							baselineExpirationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineExpirationDate"));
-						}
-						else
-						{
-							lResult.error_code = DataPackageErrorEnum.INVALID_BASELINE_VERSION;
-						}
-					}
-					finally
-					{
-						if (remoteDataStore.State == CommunicationState.Faulted)
-						{
-							remoteDataStore.Abort();
-							mWriteLog(TraceType.EXCEPTION, "distributeBaseline", null, Logs.ERROR_REMOTEDATASTORE_FAULTED);
-						}
-					}
-				}
+                using (IRemoteDataStoreClient remoteDataStore = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    DataContainer elementDescription = remoteDataStore.getElementBaselinesDefinitions(lElID);
+                    baselineVersion = elementDescription.getStrValue("AssignedFutureBaseline");
+                    if (!string.IsNullOrEmpty(baselineVersion) && remoteDataStore.checkIfBaselineExists(baselineVersion))
+                    {
+                        mWriteLog(TraceType.INFO, "distributeBaseline", null, Logs.INFO_FUTURE_BASELINE, lElID, baselineVersion);
+                        DataContainer baselineDefinitionContainer = remoteDataStore.getBaselineDefinition(baselineVersion);
+                        remoteDataStore.checkDataPackagesAvailability(lResult.reqId, baselineDefinitionContainer);
+                        baselineActivationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineActivationDate"));
+                        baselineExpirationDate = DateTime.Parse(elementDescription.getStrValue("AssignedFutureBaselineExpirationDate"));
+                    }
+                    else
+                    {
+                        lResult.error_code = DataPackageErrorEnum.INVALID_BASELINE_VERSION;
+                    }
+                }
 			}
 			catch (FaultException ex)
 			{
@@ -2030,24 +2085,13 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							if (lRemDSProxy.checkIfElementExists(pEID))
-							{
-								lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
-							}
-						}
-						finally
-						{
-							if (lRemDSProxy.State == CommunicationState.Faulted)
-							{
-								lRemDSProxy.Abort();
-								lResult = DataPackageErrorEnum.REMOTEDATASTORE_NOT_ACCESSIBLE;
-							}
-						}
-					}
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        if (lRemDSProxy.checkIfElementExists(pEID))
+                        {
+                            lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                        }
+                    }
 				}
 				catch (TimeoutException)
 				{
@@ -2384,48 +2428,38 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							if (pListType == BaselinesListType.ALL ||
-								pListType == BaselinesListType.DEFINED)
-							{
-								DataContainer lBLList = lRemDSProxy.getBaselinesDefinitions();
-								lResult.baselineDef = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lBLList);
-							}
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        if (pListType == BaselinesListType.ALL ||
+                            pListType == BaselinesListType.DEFINED)
+                        {
+                            DataContainer lBLList = lRemDSProxy.getBaselinesDefinitions();
+                            lResult.baselineDef = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lBLList);
+                        }
 
-							if (pListType == BaselinesListType.ALL ||
-								pListType == BaselinesListType.UNDEFINED)
-							{
-								DataContainer lUBLList = lRemDSProxy.getUndefinedBaselinesList();
-								List<BaselineDefinition> lBaselinesList = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lUBLList);
+                        if (pListType == BaselinesListType.ALL ||
+                            pListType == BaselinesListType.UNDEFINED)
+                        {
+                            DataContainer lUBLList = lRemDSProxy.getUndefinedBaselinesList();
+                            List<BaselineDefinition> lBaselinesList = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lUBLList);
 
-								if (lBaselinesList.Count > 0)
-								{
-									foreach (BaselineDefinition lBLDef in lBaselinesList)
-									{
-										if (string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
-											string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
-											string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
-											string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion))
-										{
-											continue;
-										}
+                            if (lBaselinesList.Count > 0)
+                            {
+                                foreach (BaselineDefinition lBLDef in lBaselinesList)
+                                {
+                                    if (string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
+                                        string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
+                                        string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion) ||
+                                        string.IsNullOrEmpty(lBLDef.PISBaseDataPackageVersion))
+                                    {
+                                        continue;
+                                    }
 
-										lResult.baselineDef.Add(lBLDef);
-									}
-								}
-							}
-						}
-						finally
-						{
-							if (lRemDSProxy.State == CommunicationState.Faulted)
-							{
-								lRemDSProxy.Abort();
-							}
-						}
-					}
+                                    lResult.baselineDef.Add(lBLDef);
+                                }
+                            }
+                        }
+                    }
 				}
 				catch (TimeoutException ex)
 				{
@@ -2495,23 +2529,13 @@ namespace PIS.Ground.DataPackage
 							Uri lUri = new Uri(lFile);
 							try
 							{
-								using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-								{
-									try
-									{
-										if (!lRemProx.checkUrl(lrequestId, lFile))
-										{
-											lResult.error_code = DataPackageErrorEnum.FILE_NOT_FOUND;
-										}
-									}
-									finally
-									{
-										if (lRemProx.State == CommunicationState.Faulted)
-										{
-											lRemProx.Abort();
-										}
-									}
-								}
+                                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                {
+                                    if (!lRemProx.checkUrl(lrequestId, lFile))
+                                    {
+                                        lResult.error_code = DataPackageErrorEnum.FILE_NOT_FOUND;
+                                    }
+                                }
 							}
 							catch (TimeoutException ex)
 							{
@@ -2543,20 +2567,10 @@ namespace PIS.Ground.DataPackage
 						{
 							try
 							{
-								using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-								{
-									try
-									{
-										lRemProx.moveTheNewDataPackageFiles(lrequestId, lFile);
-									}
-									finally
-									{
-										if (lRemProx.State == CommunicationState.Faulted)
-										{
-											lRemProx.Abort();
-										}
-									}
-								}
+                                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                                {
+                                    lRemProx.moveTheNewDataPackageFiles(lrequestId, lFile);
+                                }
 							}
 							catch (TimeoutException ex)
 							{
@@ -2627,49 +2641,39 @@ namespace PIS.Ground.DataPackage
 					{
 						try
 						{
-							using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-							{
-								try
-								{
-									DataContainer lBLDef = DataTypeConversion.fromBaselineDefinitionToDataContainer(pBLDef);
-									lRemProx.setNewBaselineDefinition(lrequestId, lBLDef);
-									lRemProx.checkDataPackagesAvailability(lrequestId, lBLDef);
-									lResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                            using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            {
+                                DataContainer lBLDef = DataTypeConversion.fromBaselineDefinitionToDataContainer(pBLDef);
+                                lRemProx.setNewBaselineDefinition(lrequestId, lBLDef);
+                                lRemProx.checkDataPackagesAvailability(lrequestId, lBLDef);
+                                lResult.error_code = DataPackageErrorEnum.REQUEST_ACCEPTED;
 
-									// Check if there are any elements that are waiting for a baseline confirmation
-									//  with the provided packages version. If so - send them a "SetBaselineVersionRequest"
-									//  and clear the undefined baseline packages version in "ElementsDataStore" table
-									DataContainer pEList = lRemProx.getElementsDescription();
-									List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(pEList);
+                                // Check if there are any elements that are waiting for a baseline confirmation
+                                //  with the provided packages version. If so - send them a "SetBaselineVersionRequest"
+                                //  and clear the undefined baseline packages version in "ElementsDataStore" table
+                                DataContainer pEList = lRemProx.getElementsDescription();
+                                List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(pEList);
 
-									foreach (ElementDescription lEDsc in lElements)
-									{
-										if (lEDsc.UndefinedBaselinePisBaseVersion == pBLDef.PISBaseDataPackageVersion &&
-											lEDsc.UndefinedBaselinePisMissionVersion == pBLDef.PISMissionDataPackageVersion &&
-											lEDsc.UndefinedBaselinePisInfotainmentVersion == pBLDef.PISInfotainmentDataPackageVersion &&
-											lEDsc.UndefinedBaselineLmtVersion == pBLDef.LMTDataPackageVersion)
-										{
-											// Reset the undefined baseline packages version in ElementDataStore table
-											lRemProx.setElementUndefinedBaselineParams(lEDsc.ElementID, "", "", "", "");
+                                foreach (ElementDescription lEDsc in lElements)
+                                {
+                                    if (lEDsc.UndefinedBaselinePisBaseVersion == pBLDef.PISBaseDataPackageVersion &&
+                                        lEDsc.UndefinedBaselinePisMissionVersion == pBLDef.PISMissionDataPackageVersion &&
+                                        lEDsc.UndefinedBaselinePisInfotainmentVersion == pBLDef.PISInfotainmentDataPackageVersion &&
+                                        lEDsc.UndefinedBaselineLmtVersion == pBLDef.LMTDataPackageVersion)
+                                    {
+                                        // Reset the undefined baseline packages version in ElementDataStore table
+                                        lRemProx.setElementUndefinedBaselineParams(lEDsc.ElementID, "", "", "", "");
 
-											DataPackageResult lCommandResult = ProcessSetBaselineVersionCommand(
-												lEDsc.ElementID,
-												pBLDef.BaselineVersion,
-												pBLDef.PISBaseDataPackageVersion,
-												pBLDef.PISMissionDataPackageVersion,
-												pBLDef.PISInfotainmentDataPackageVersion,
-												pBLDef.LMTDataPackageVersion);
-										}
-									}
-								}
-								finally
-								{
-									if (lRemProx.State == CommunicationState.Faulted)
-									{
-										lRemProx.Abort();
-									}
-								}
-							}
+                                        DataPackageResult lCommandResult = ProcessSetBaselineVersionCommand(
+                                            lEDsc.ElementID,
+                                            pBLDef.BaselineVersion,
+                                            pBLDef.PISBaseDataPackageVersion,
+                                            pBLDef.PISMissionDataPackageVersion,
+                                            pBLDef.PISInfotainmentDataPackageVersion,
+                                            pBLDef.LMTDataPackageVersion);
+                                    }
+                                }
+                            }
 						}
 						catch (TimeoutException ex)
 						{
@@ -2721,70 +2725,60 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							DataContainer lBLList = lRemProx.getBaselinesDefinitions();
-							List<BaselineDefinition> lBaselines = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lBLList);
+                    using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        DataContainer lBLList = lRemProx.getBaselinesDefinitions();
+                        List<BaselineDefinition> lBaselines = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(lBLList);
 
-							DataContainer lEList = lRemProx.getAssignedBaselinesVersions();
-							List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(lEList);
+                        DataContainer lEList = lRemProx.getAssignedBaselinesVersions();
+                        List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(lEList);
 
-							bool lFound = false;
-							bool lAssigned = false;
+                        bool lFound = false;
+                        bool lAssigned = false;
 
-							foreach (BaselineDefinition lBaseline in lBaselines)
-							{
-								if (DataPackageService.mDoesVersionMatchPattern(lBaseline.BaselineVersion, pVersion))
-								{
-									lFound = true;
+                        foreach (BaselineDefinition lBaseline in lBaselines)
+                        {
+                            if (DataPackageService.mDoesVersionMatchPattern(lBaseline.BaselineVersion, pVersion))
+                            {
+                                lFound = true;
 
-									foreach (ElementDescription lElem in lElements)
-									{
-										if (lBaseline.BaselineVersion == lElem.AssignedCurrentBaseline ||
-											lBaseline.BaselineVersion == lElem.AssignedFutureBaseline)
-										{
-											lAssigned = true;
+                                foreach (ElementDescription lElem in lElements)
+                                {
+                                    if (lBaseline.BaselineVersion == lElem.AssignedCurrentBaseline ||
+                                        lBaseline.BaselineVersion == lElem.AssignedFutureBaseline)
+                                    {
+                                        lAssigned = true;
 
-											break;
-										}
-									}
+                                        break;
+                                    }
+                                }
 
-									if (!lAssigned)
-									{
-										lRemProx.deleteBaselineDefinition(lBaseline.BaselineVersion);
-									}
-								}
-							}
+                                if (!lAssigned)
+                                {
+                                    lRemProx.deleteBaselineDefinition(lBaseline.BaselineVersion);
+                                }
+                            }
+                        }
 
-							if (!lFound)
-							{
-								lResult = DataPackageErrorEnum.BASELINE_NOT_FOUND;
-								mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_BASELINE_NOT_FOUND);
-							}
-							else if (lAssigned)
-							{
-								if (DataPackageService.mIsVersionValid(pVersion, false) == true)
-								{
-									lResult = DataPackageErrorEnum.BASELINE_IS_ASSIGNED;
-									mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_BASELINE_IS_ASSIGNED, pVersion);
-								}
-								else
-								{
-									lResult = DataPackageErrorEnum.SOME_BASELINES_ARE_ASSIGNED;
-									mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_SOME_BASELINE_ARE_ASSIGNED);
-								}
-							}
-						}
-						finally
-						{
-							if (lRemProx.State == CommunicationState.Faulted)
-							{
-								lRemProx.Abort();
-							}
-						}
-					}
+                        if (!lFound)
+                        {
+                            lResult = DataPackageErrorEnum.BASELINE_NOT_FOUND;
+                            mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_BASELINE_NOT_FOUND);
+                        }
+                        else if (lAssigned)
+                        {
+                            if (DataPackageService.mIsVersionValid(pVersion, false) == true)
+                            {
+                                lResult = DataPackageErrorEnum.BASELINE_IS_ASSIGNED;
+                                mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_BASELINE_IS_ASSIGNED, pVersion);
+                            }
+                            else
+                            {
+                                lResult = DataPackageErrorEnum.SOME_BASELINES_ARE_ASSIGNED;
+                                mWriteLog(TraceType.ERROR, "deleteBaselineDefinition", null, Logs.ERROR_SOME_BASELINE_ARE_ASSIGNED);
+                            }
+                        }
+                    }
 				}
 				catch (TimeoutException ex)
 				{
@@ -2966,74 +2960,64 @@ namespace PIS.Ground.DataPackage
 
 			try
 			{
-				using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-				{
-					try
-					{
-						// search a baseline in datastore with the packages versions provided
-						string lBaselineVersion = "";
+                using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                {
+                    // search a baseline in datastore with the packages versions provided
+                    string lBaselineVersion = "";
 
-						DataContainer BLList = lRemProx.getBaselinesDefinitions();
+                    DataContainer BLList = lRemProx.getBaselinesDefinitions();
 
-						List<BaselineDefinition> lBaselines = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(BLList);
+                    List<BaselineDefinition> lBaselines = DataTypeConversion.fromDataContainerToBaselinesDefinitionsList(BLList);
 
-						foreach (BaselineDefinition lBaseline in lBaselines)
-						{
-							if (lBaseline.PISBaseDataPackageVersion == pPisBaseVersion &&
-								lBaseline.PISMissionDataPackageVersion == pPisMissionVersion &&
-								lBaseline.PISInfotainmentDataPackageVersion == pPisInfotainmentVersion &&
-								lBaseline.LMTDataPackageVersion == pLmtVersion)
-							{
-								lBaselineVersion = lBaseline.BaselineVersion;
+                    foreach (BaselineDefinition lBaseline in lBaselines)
+                    {
+                        if (lBaseline.PISBaseDataPackageVersion == pPisBaseVersion &&
+                            lBaseline.PISMissionDataPackageVersion == pPisMissionVersion &&
+                            lBaseline.PISInfotainmentDataPackageVersion == pPisInfotainmentVersion &&
+                            lBaseline.LMTDataPackageVersion == pLmtVersion)
+                        {
+                            lBaselineVersion = lBaseline.BaselineVersion;
 
-								break;
-							}
-						}
+                            break;
+                        }
+                    }
 
-						if (lBaselineVersion.Length > 0)
-						{
-							// if a baseline was found - call the function that will process SetBaselineVersionRequest
-							DataPackageResult lCommandResult = ProcessSetBaselineVersionCommand(pElementAddress, lBaselineVersion, pPisBaseVersion, pPisMissionVersion, pPisInfotainmentVersion, pLmtVersion);
+                    if (lBaselineVersion.Length > 0)
+                    {
+                        // if a baseline was found - call the function that will process SetBaselineVersionRequest
+                        DataPackageResult lCommandResult = ProcessSetBaselineVersionCommand(pElementAddress, lBaselineVersion, pPisBaseVersion, pPisMissionVersion, pPisInfotainmentVersion, pLmtVersion);
 
-							lResult = lCommandResult.error_code;
-						}
-						else
-						{
-							// if there is no any baseline with packages version provided -
-							// save these packages version in UndefinedBaselines table in datastore and
-							// send the "Get Baseline Definition" notification to the GroundApp
+                        lResult = lCommandResult.error_code;
+                    }
+                    else
+                    {
+                        // if there is no any baseline with packages version provided -
+                        // save these packages version in UndefinedBaselines table in datastore and
+                        // send the "Get Baseline Definition" notification to the GroundApp
 
-							// Save undefined baseline packages version in ElementDataStore table
-							lRemProx.setElementUndefinedBaselineParams(
-								pElementAddress,
-								pPisBaseVersion,
-								pPisMissionVersion,
-								pPisInfotainmentVersion,
-								pLmtVersion);
+                        // Save undefined baseline packages version in ElementDataStore table
+                        lRemProx.setElementUndefinedBaselineParams(
+                            pElementAddress,
+                            pPisBaseVersion,
+                            pPisMissionVersion,
+                            pPisInfotainmentVersion,
+                            pLmtVersion);
 
-							// Serialize the parameters to send in the notification.
-							List<string> lParamList = new List<string>();
+                        // Serialize the parameters to send in the notification.
+                        List<string> lParamList = new List<string>();
 
-							lParamList.Add(pPisBaseVersion);
-							lParamList.Add(pPisMissionVersion);
-							lParamList.Add(pPisInfotainmentVersion);
-							lParamList.Add(pLmtVersion);
+                        lParamList.Add(pPisBaseVersion);
+                        lParamList.Add(pPisMissionVersion);
+                        lParamList.Add(pPisInfotainmentVersion);
+                        lParamList.Add(pLmtVersion);
 
-							using (StringWriter lstr = new StringWriter())
-							{
-								_stringListXmlSerializer.Serialize(lstr, lParamList);
-								sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
-							}
-						}
-					}
-					finally
-					{
-						if (lRemProx.State == CommunicationState.Faulted)
-						{
-							lRemProx.Abort();
-						}
-					}
-				}
+                        using (StringWriter lstr = new StringWriter())
+                        {
+                            _stringListXmlSerializer.Serialize(lstr, lParamList);
+                            sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
+                        }
+                    }
+                }
 			}
 			catch (TimeoutException ex)
 			{
@@ -3105,29 +3089,19 @@ namespace PIS.Ground.DataPackage
 				{
 					try
 					{
-						using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-						{
-							try
-							{
-								lRemProx.unassignFutureBaselineFromElement(pElementId);
-								lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        {
+                            lRemProx.unassignFutureBaselineFromElement(pElementId);
+                            lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
 
-								lock (_distributingElementDic)
-								{
-									if (_distributingElementDic.ContainsKey(pElementId))
-									{
-										_distributingElementDic.Remove(pElementId);
-									}
-								}
-							}
-							finally
-							{
-								if (lRemProx.State == CommunicationState.Faulted)
-								{
-									lRemProx.Abort();
-								}
-							}
-						}
+                            lock (_distributingElementDic)
+                            {
+                                if (_distributingElementDic.ContainsKey(pElementId))
+                                {
+                                    _distributingElementDic.Remove(pElementId);
+                                }
+                            }
+                        }
 					}
 					catch (TimeoutException ex)
 					{
@@ -3176,21 +3150,11 @@ namespace PIS.Ground.DataPackage
 				{
 					try
 					{
-						using (RemoteDataStoreProxy lRemProx = new RemoteDataStoreProxy())
-						{
-							try
-							{
-								lRemProx.unassignCurrentBaselineFromElement(pElementId);
-								lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
-							}
-							finally
-							{
-								if (lRemProx.State == CommunicationState.Faulted)
-								{
-									lRemProx.Abort();
-								}
-							}
-						}
+                        using (IRemoteDataStoreClient lRemProx = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                        {
+                            lRemProx.unassignCurrentBaselineFromElement(pElementId);
+                            lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                        }
 					}
 					catch (TimeoutException ex)
 					{
@@ -3242,34 +3206,24 @@ namespace PIS.Ground.DataPackage
 			{
 				try
 				{
-					using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-					{
-						try
-						{
-							DataContainer lDPList = lRemDSProxy.getDataPackagesList();
+                    using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                    {
+                        DataContainer lDPList = lRemDSProxy.getDataPackagesList();
 
-							List<DataPackagesCharacteristics> lDPCList = DataTypeConversion.fromDataContainerToDataPackagesCharacteristicsList(lDPList);
+                        List<DataPackagesCharacteristics> lDPCList = DataTypeConversion.fromDataContainerToDataPackagesCharacteristicsList(lDPList);
 
-							foreach (DataPackagesCharacteristics lDPChar in lDPCList)
-							{
-								if (lDPChar.DataPackageType == pPackageType)
-								{
-									pVersionsList.VersionsList.Add(lDPChar.DataPackageVersion);
-								}
-							}
+                        foreach (DataPackagesCharacteristics lDPChar in lDPCList)
+                        {
+                            if (lDPChar.DataPackageType == pPackageType)
+                            {
+                                pVersionsList.VersionsList.Add(lDPChar.DataPackageVersion);
+                            }
+                        }
 
-							pVersionsList.DataPackageType = pPackageType;
+                        pVersionsList.DataPackageType = pPackageType;
 
-							lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
-						}
-						finally
-						{
-							if (lRemDSProxy.State == CommunicationState.Faulted)
-							{
-								lRemDSProxy.Abort();
-							}
-						}
-					}
+                        lResult = DataPackageErrorEnum.REQUEST_ACCEPTED;
+                    }
 				}
 				catch (TimeoutException ex)
 				{
@@ -3339,125 +3293,115 @@ namespace PIS.Ground.DataPackage
 					{
 						try
 						{
-							using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
-							{
-								try
-								{
-									if (lRemDSProxy.checkIfDataPackageExists(pPackageType.ToString(), pPackageVersion) == false)
-									{
-										lResult.error_code = DataPackageErrorEnum.DATA_PACKAGE_NOT_FOUND;
-										mWriteLog(TraceType.ERROR, "deleteDataPackage", null, Logs.ERROR_DATAPACKAGE_ISNT_FOUND, pPackageType.ToString(), pPackageVersion);
-									}
-									else
-									{
-										//Check if data package is used by an assigned baseline
-										bool lAssigned = false;
-										DataContainer lEList = lRemDSProxy.getAssignedBaselinesVersions();
-										List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(lEList);
+                            using (IRemoteDataStoreClient lRemDSProxy = _remoteDataStoreFactory.GetRemoteDataStoreInstance())
+                            {
+                                if (lRemDSProxy.checkIfDataPackageExists(pPackageType.ToString(), pPackageVersion) == false)
+                                {
+                                    lResult.error_code = DataPackageErrorEnum.DATA_PACKAGE_NOT_FOUND;
+                                    mWriteLog(TraceType.ERROR, "deleteDataPackage", null, Logs.ERROR_DATAPACKAGE_ISNT_FOUND, pPackageType.ToString(), pPackageVersion);
+                                }
+                                else
+                                {
+                                    //Check if data package is used by an assigned baseline
+                                    bool lAssigned = false;
+                                    DataContainer lEList = lRemDSProxy.getAssignedBaselinesVersions();
+                                    List<ElementDescription> lElements = DataTypeConversion.fromDataContainerToElementDescriptionList(lEList);
 
-										foreach (ElementDescription lElem in lElements)
-										{
-											if (!string.IsNullOrEmpty(lElem.AssignedCurrentBaseline) &&
-												lRemDSProxy.checkIfBaselineExists(lElem.AssignedCurrentBaseline))
-											{
-												BaselineDefinition lBLDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemDSProxy.getBaselineDefinition(lElem.AssignedCurrentBaseline));
+                                    foreach (ElementDescription lElem in lElements)
+                                    {
+                                        if (!string.IsNullOrEmpty(lElem.AssignedCurrentBaseline) &&
+                                            lRemDSProxy.checkIfBaselineExists(lElem.AssignedCurrentBaseline))
+                                        {
+                                            BaselineDefinition lBLDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemDSProxy.getBaselineDefinition(lElem.AssignedCurrentBaseline));
 
-												switch (pPackageType)
-												{
-													case DataPackageType.PISBASE:
-														lAssigned = (lBLDef.PISBaseDataPackageVersion == pPackageVersion);
-														break;
+                                            switch (pPackageType)
+                                            {
+                                                case DataPackageType.PISBASE:
+                                                    lAssigned = (lBLDef.PISBaseDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.PISMISSION:
-														lAssigned = (lBLDef.PISMissionDataPackageVersion == pPackageVersion);
-														break;
+                                                case DataPackageType.PISMISSION:
+                                                    lAssigned = (lBLDef.PISMissionDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.PISINFOTAINMENT:
-														lAssigned = (lBLDef.PISInfotainmentDataPackageVersion == pPackageVersion);
-														break;
+                                                case DataPackageType.PISINFOTAINMENT:
+                                                    lAssigned = (lBLDef.PISInfotainmentDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.LMT:
-														lAssigned = (lBLDef.LMTDataPackageVersion == pPackageVersion);
-														break;
-												}
+                                                case DataPackageType.LMT:
+                                                    lAssigned = (lBLDef.LMTDataPackageVersion == pPackageVersion);
+                                                    break;
+                                            }
 
-												if (lAssigned)
-												{
-													break;
-												}
-											}
+                                            if (lAssigned)
+                                            {
+                                                break;
+                                            }
+                                        }
 
-											if (!string.IsNullOrEmpty(lElem.AssignedFutureBaseline) &&
-												lRemDSProxy.checkIfBaselineExists(lElem.AssignedFutureBaseline))
-											{
-												BaselineDefinition lBLDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemDSProxy.getBaselineDefinition(lElem.AssignedFutureBaseline));
+                                        if (!string.IsNullOrEmpty(lElem.AssignedFutureBaseline) &&
+                                            lRemDSProxy.checkIfBaselineExists(lElem.AssignedFutureBaseline))
+                                        {
+                                            BaselineDefinition lBLDef = DataTypeConversion.fromDataContainerToBaselineDefinition(lRemDSProxy.getBaselineDefinition(lElem.AssignedFutureBaseline));
 
-												switch (pPackageType)
-												{
-													case DataPackageType.PISBASE:
-														lAssigned = (lBLDef.PISBaseDataPackageVersion == pPackageVersion);
-														break;
+                                            switch (pPackageType)
+                                            {
+                                                case DataPackageType.PISBASE:
+                                                    lAssigned = (lBLDef.PISBaseDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.PISMISSION:
-														lAssigned = (lBLDef.PISMissionDataPackageVersion == pPackageVersion);
-														break;
+                                                case DataPackageType.PISMISSION:
+                                                    lAssigned = (lBLDef.PISMissionDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.PISINFOTAINMENT:
-														lAssigned = (lBLDef.PISInfotainmentDataPackageVersion == pPackageVersion);
-														break;
+                                                case DataPackageType.PISINFOTAINMENT:
+                                                    lAssigned = (lBLDef.PISInfotainmentDataPackageVersion == pPackageVersion);
+                                                    break;
 
-													case DataPackageType.LMT:
-														lAssigned = (lBLDef.LMTDataPackageVersion == pPackageVersion);
-														break;
-												}
+                                                case DataPackageType.LMT:
+                                                    lAssigned = (lBLDef.LMTDataPackageVersion == pPackageVersion);
+                                                    break;
+                                            }
 
-												if (lAssigned)
-												{
-													break;
-												}
-											}
-										}
+                                            if (lAssigned)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
 
-										//If data package isn't used by an assigned baseline or
-										//deleting is forced - delete data package from Remote Data Store
-										if (lAssigned && pForceDeleting ||
-											!lAssigned)
-										{
-											lRemDSProxy.deleteDataPackage(lrequestId, pPackageType.ToString(), pPackageVersion);
+                                    //If data package isn't used by an assigned baseline or
+                                    //deleting is forced - delete data package from Remote Data Store
+                                    if (lAssigned && pForceDeleting ||
+                                        !lAssigned)
+                                    {
+                                        lRemDSProxy.deleteDataPackage(lrequestId, pPackageType.ToString(), pPackageVersion);
 
-											//If data package is used by an assigned baseline -
-											//send a notification to the Ground App
-											if (lAssigned)
-											{
-												// Serialize the parameters to send in the notification.
-												List<string> lParamList = new List<string>();
+                                        //If data package is used by an assigned baseline -
+                                        //send a notification to the Ground App
+                                        if (lAssigned)
+                                        {
+                                            // Serialize the parameters to send in the notification.
+                                            List<string> lParamList = new List<string>();
 
-												lParamList.Add(pPackageType.ToString());
-												lParamList.Add(pPackageVersion);
+                                            lParamList.Add(pPackageType.ToString());
+                                            lParamList.Add(pPackageVersion);
 
-												using (StringWriter lstr = new StringWriter())
-												{
-													_stringListXmlSerializer.Serialize(lstr, lParamList);
-													sendNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
-												}
-											}
-										}
-										else
-										{
-											lResult.error_code = DataPackageErrorEnum.DATA_PACKAGE_IS_ASSIGNED;
+                                            using (StringWriter lstr = new StringWriter())
+                                            {
+                                                _stringListXmlSerializer.Serialize(lstr, lParamList);
+                                                sendNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lResult.error_code = DataPackageErrorEnum.DATA_PACKAGE_IS_ASSIGNED;
 
-											mWriteLog(TraceType.ERROR, "deleteDataPackage", null, Logs.ERROR_DATAPACKAGE_IS_ASSIGNED, pPackageType.ToString(), pPackageVersion);
-										}
-									}
-								}
-								finally
-								{
-									if (lRemDSProxy.State == CommunicationState.Faulted)
-									{
-										lRemDSProxy.Abort();
-									}
-								}
-							}
+                                        mWriteLog(TraceType.ERROR, "deleteDataPackage", null, Logs.ERROR_DATAPACKAGE_IS_ASSIGNED, pPackageType.ToString(), pPackageVersion);
+                                    }
+                                }
+                            }
 						}
 						catch (TimeoutException ex)
 						{

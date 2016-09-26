@@ -38,7 +38,7 @@ namespace PIS.Ground.DataPackage.DataPackageSync
 
             try
             {
-                using (RemoteDataStoreProxy lRemDSProxy = new RemoteDataStoreProxy())
+                using (IRemoteDataStoreClient lRemDSProxy = DataPackageService.RemoteDataStoreFactory.GetRemoteDataStoreInstance())
                 {
                     try
                     {
@@ -58,14 +58,6 @@ namespace PIS.Ground.DataPackage.DataPackageSync
                                                         , "PIS.Ground.DataPackage.DataPackageSyncGroundService.GetAssignedBaselineVersion"
                                                         , fe, PIS.Ground.Core.Data.EventIdEnum.DataPackage);
                             lResponse.Result = ResultEnumType.Failure;
-                        }
-                    }
-                                       
-                    finally
-                    {
-                        if (lRemDSProxy.State == CommunicationState.Faulted)
-                        {
-                            lRemDSProxy.Abort();
                         }
                     }
                 }

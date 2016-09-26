@@ -18,7 +18,7 @@ namespace PIS.Ground.Core.T2G
     /// <summary>T2G server connection manager.</summary>
 	internal class T2GConnectionManager : IT2GConnectionManager
     {
-        /// <summary>Exception for signalling T2G connection errors.</summary>
+        /// <summary>Exception for signaling T2G connection errors.</summary>
         private class T2GLoginFailureException : Exception { }
 
         /// <summary>Information describing the session.</summary>
@@ -78,9 +78,13 @@ namespace PIS.Ground.Core.T2G
             {
                 CheckSession(null, null);
             }
+            catch (System.Threading.ThreadAbortException ex)
+            {
+                LogManager.WriteLog(TraceType.DEBUG, "Check session aborded", "PIS.Ground.Core.T2G.T2GConnectionManager", ex, EventIdEnum.GroundCore);
+            }
             catch (Exception ex)
             {
-                LogManager.WriteLog(TraceType.EXCEPTION, "T2GConnectionManager", "PIS.Ground.Core.T2G.T2GConnectionManager", ex, EventIdEnum.GroundCore);
+                LogManager.WriteLog(TraceType.EXCEPTION, "Check session failed", "PIS.Ground.Core.T2G.T2GConnectionManager", ex, EventIdEnum.GroundCore);
             }
 
             // Second, schedule it to re-execute periodically            
@@ -98,7 +102,7 @@ namespace PIS.Ground.Core.T2G
         private void CheckSession(Object source, ElapsedEventArgs e)
         {
             LogManager.WriteLog(TraceType.INFO, "CheckSession", "PIS.Ground.Core.T2G.T2GConnectionManager", null, EventIdEnum.GroundCore);
-            
+
             try
             {
                 if (_sessionData.SessionId == 0)
@@ -109,14 +113,20 @@ namespace PIS.Ground.Core.T2G
                 {
                     SessionKeepAlive();
                 }
-                
+
                 UpdateConnectionStatus(true);
+            }
+            catch (System.Threading.ThreadAbortException ex)
+            {
+                LogManager.WriteLog(TraceType.DEBUG, "CheckSession aborted", "PIS.Ground.Core.T2G.T2GConnectionManager", ex, EventIdEnum.GroundCore);
+                _sessionData.SessionId = 0;
+                // Do not call UpdateConnectionStatus. Processing shall stop.
             }
             catch (System.ServiceModel.EndpointNotFoundException ex)
             {
                 LogManager.WriteLog(TraceType.ERROR, "CheckSession", "PIS.Ground.Core.T2G.T2GConnectionManager", ex, EventIdEnum.GroundCore);
-                _sessionData.SessionId =  0;
-                UpdateConnectionStatus(false);                                
+                _sessionData.SessionId = 0;
+                UpdateConnectionStatus(false);
             }
             catch (TimeoutException ex)
             {
@@ -201,7 +211,7 @@ namespace PIS.Ground.Core.T2G
                 LogManager.WriteLog(
                     TraceType.INFO,
                     "T2G online=" + _connectionStatus.ToString(),
-                    "PIS.Ground.Core.T2G.T2GConnectionManager",
+                    "PIS.Ground.Core.T2G.T2GConnectionManager.UpdateConnectionStatus",
                     null,
                     EventIdEnum.GroundCore);
                 
@@ -209,16 +219,54 @@ namespace PIS.Ground.Core.T2G
                 {
                     _connectionListener.OnConnectionStatusChanged((bool)_connectionStatus);
                 }
+                catch (System.Threading.ThreadAbortException ex)
+                {
+                    LogManager.WriteLog(
+                        TraceType.DEBUG,
+                        "Thread aborted",
+                        "PIS.Ground.Core.T2G.T2GConnectionManager.UpdateConnectionStatus",
+                        ex,
+                        EventIdEnum.GroundCore);
+                }
                 catch (Exception ex)
                 {
                     LogManager.WriteLog(
                         TraceType.EXCEPTION,
                         "T2G online=" + _connectionStatus.ToString(),
-                        "PIS.Ground.Core.T2G.T2GConnectionManager",
+                        "PIS.Ground.Core.T2G.T2GConnectionManager.UpdateConnectionStatus",
                         ex,
                         EventIdEnum.GroundCore);
                 }
             }
         }
+
+        #region IDisposable Members
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_timer != null)
+                {
+                    _timer.Enabled = false;
+                    _timer.Dispose();
+                }
+            }
+        }
+
+        #endregion
     }
 }

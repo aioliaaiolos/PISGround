@@ -1,4 +1,12 @@
-﻿using System;
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="IRemoteDataStore.cs" company="Alstom">
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//		  This computer program may not be used, copied, distributed, corrected, modified, translated,
+//		  transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -81,7 +89,7 @@ namespace PIS.Ground.RemoteDataStore
         void setNewDataPackage(DataContainer pNDPkg);
 
         /// <summary>
-        /// Add a new baseline deifnition to the data base.
+        /// Add a new baseline definition to the data base.
         /// </summary>
         /// <param name="pRequestID">The request ID.</param>
         /// <param name="pNBLDef">A table representing the baseline definition.</param>

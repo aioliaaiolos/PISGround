@@ -70,9 +70,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86" >
-		<HintPath>..\..\Common\GroundCore\SQL</HintPath>
-	</Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <HintPath>..\..\Common\GroundCore\SQL</HintPath>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
@@ -84,7 +84,6 @@
     <Reference Include="System.Web.Extensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -117,6 +116,7 @@
     </Compile>
     <Compile Include="IRemoteDataStore.cs" />
     <Compile Include="IRemoteDataStoreCallback.cs" />
+    <Compile Include="IRemoteDataStoreClient.cs" />
     <Compile Include="RemoteDataStoreProxy.cs" />
     <Compile Include="RemoteDataStoreService.cs">
       <SubType>Component</SubType>

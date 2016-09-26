@@ -54,6 +54,8 @@ namespace PIS.Ground.RealTimeTests
 					It.IsAny<string>(),
 					It.IsAny<EventHandler<ElementEventArgs>>()));
 
+            _train2groundClientMock.Setup(t => t.T2GServerConnectionStatus).Returns(true);
+
 			this._rp = new RequestProcessor(this._train2groundClientMock.Object, this._rtpisDataStore.Object);
 		}
 

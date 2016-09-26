@@ -27,7 +27,7 @@ namespace PIS.Ground.Core.T2G
 	}
 
 	/// <summary>Interface for T2G manager.</summary>
-	public interface IT2GManager
+	public interface IT2GManager: IDisposable
 	{
 		/// <summary>Gets the T2G notifier to signal notifications received from T2G.</summary>
 		/// <value>The T2G notifier.</value>

@@ -231,7 +231,11 @@ namespace PIS.Ground.RealTime
                         disposable.Dispose();
                     }
 
-                    _t2gManager = null;
+                    if (_t2gManager != null)
+                    {
+                        _t2gManager.Dispose();
+                        _t2gManager = null;
+                    }
                     _remoteDataStoreFactory = null;
                     _rtpisDataStore = null;
 					_sessionManager = null;

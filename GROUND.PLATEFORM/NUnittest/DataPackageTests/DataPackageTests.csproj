@@ -41,12 +41,34 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="BaselineDistributionIntegrationTests.cs" />
     <Compile Include="BaselineStatusTests.cs" />
     <Compile Include="DataPackageServiceTests.cs" />
+    <Compile Include="Data\BaselineDistributingTasksDataStoreData.cs" />
+    <Compile Include="Data\BaselinesDataStoreData.cs" />
+    <Compile Include="Data\DataPackagesDataStoreData.cs" />
+    <Compile Include="Data\ElementsDataStoreData.cs" />
+    <Compile Include="Data\RemoteDataStoreDataBase.cs" />
+    <Compile Include="Generated\T2GFileTransferInterface.cs" />
+    <Compile Include="Generated\T2GIdentificationInterface.cs" />
+    <Compile Include="Generated\T2GNotificationService.cs" />
+    <Compile Include="Generated\T2GVehicleInfoInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextProcessorTests.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextTests.cs" />
+    <Compile Include="RequestMgt\RequestManagerMonitor.cs" />
     <Compile Include="RequestMgt\RequestManagerTests.cs" />
+    <Compile Include="ServicesStubTests.cs" />
+    <Compile Include="ServicesStub\DataPackageServiceStub.cs" />
+    <Compile Include="ServicesStub\FaultExceptionFactory.cs" />
+    <Compile Include="ServicesStub\RemoteDataStoreServiceStub.cs" />
+    <Compile Include="ServicesStub\T2GFileTransferServiceStub.cs" />
+    <Compile Include="ServicesStub\T2GIdentificationServiceStub.cs" />
+    <Compile Include="ServicesStub\T2GNotificationServiceStub.cs" />
+    <Compile Include="ServicesStub\T2GVehicleInfoServiceStub.cs" />
+    <Compile Include="ServicesStub\TrainDataPackageServiceStub.cs" />
+    <Compile Include="Stubs\NotificationInfo.cs" />
+    <Compile Include="Stubs\NotificationSenderStub.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
@@ -87,4 +109,20 @@
       <Name>RemoteDataStore</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Services\Session\App_Data\SessionData.s3db">
+      <Link>SessionData.s3db</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="App.config" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>IF NOT EXIST "$(ProjectDir)Generated" mkdir "$(ProjectDir)Generated"
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Generated" DataPackageTests.T2GServiceInterface.Identification T2GIdentificationInterface.cs T2GIdentificationInterface.config   "$(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL\T2GIdentification.wsdl" 
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Generated" DataPackageTests.T2GServiceInterface.Notification T2GNotificationService.cs T2GNotificationService.config   "$(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL\T2GNotification.wsdl"
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Generated" DataPackageTests.T2GServiceInterface.FileTransfer T2GFileTransferInterface.cs T2GFileTransferInterface.config "$(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL\T2GFileTransfer.wsdl" 
+call "$(SolutionDir)WSDL\GenerateOneProxy.bat" "$(ProjectDir)Generated" DataPackageTests.T2GServiceInterface.VehicleInfo T2GVehicleInfoInterface.cs T2GVehicleInfoInterface.config "$(SolutionDir)..\T2G_DELIVERY\T2G.CLIENT.DELIVERY\WSDL\T2GVehicleInfo.wsdl" 
+
+</PreBuildEvent>
+  </PropertyGroup>
 </Project>

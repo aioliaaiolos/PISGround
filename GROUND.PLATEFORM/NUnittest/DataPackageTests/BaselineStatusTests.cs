@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="BaselineStatusTest.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -56,7 +56,8 @@ namespace DataPackageTests
 				Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
 				BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
 				BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
-				IT2GFileDistributionManager t2g)
+				IT2GFileDistributionManager t2g,
+                ElementList<AvailableElementData> availableElements)
 			{
                 Mock<ILogManager> logManagerMock = new Mock<ILogManager>();
                 
@@ -66,7 +67,7 @@ namespace DataPackageTests
 
 
 				object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
-					baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object });
+					baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object, availableElements });
 
 				return (bool)value;
 			}
@@ -74,7 +75,8 @@ namespace DataPackageTests
             public static bool Initialize(
                 Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
                 IT2GFileDistributionManager t2g,
-                ILogManager logManager)
+                ILogManager logManager,
+                ElementList<AvailableElementData> availableElements)
             {
                 MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
                     BindingFlags.NonPublic | BindingFlags.Static);
@@ -98,7 +100,7 @@ namespace DataPackageTests
                         lMethodInfo2);
 
                 object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
-					baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager });
+					baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager, availableElements });
 
                 return (bool)value;
             }
@@ -152,7 +154,7 @@ namespace DataPackageTests
 			_baselineProgressRemoveProc = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(RemoveProcedureDelegate);
 
 			BaselineStatusInstrumented.Initialize(_baselineProgresses,
-				_baselineProgressUpdateProc, _baselineProgressRemoveProc, _t2gMock.Object);
+				_baselineProgressUpdateProc, _baselineProgressRemoveProc, _t2gMock.Object, null);
 		}
 
 		public bool UpdateProcedureDelegate(string trainId, TrainBaselineStatusData progressInfo)
@@ -529,7 +531,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -563,7 +565,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -609,7 +611,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -643,7 +645,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -680,7 +682,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -718,7 +720,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -763,7 +765,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -796,7 +798,7 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
 			lT2GMock.Setup(x => x.GetTransferTask(
 				It.IsAny<int>(), out lRecipients, out lTask));
@@ -882,14 +884,14 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			//
 			// Resetting an empty dictionary
 			// 
 
 			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries();
+			BaselineStatusInstrumented.ResetStatusEntries(null);
 
 			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
 			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
@@ -920,7 +922,7 @@ namespace DataPackageTests
 			lExpectedStatus.OnlineStatus = false;
 
 			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries();
+			BaselineStatusInstrumented.ResetStatusEntries(null);
 
 			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
 			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
@@ -941,7 +943,7 @@ namespace DataPackageTests
 			lBaselineProgresses["TRAIN-4"] = lNewExtendedStatus3;
 
 			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries();
+			BaselineStatusInstrumented.ResetStatusEntries(null);
 
 			Assert.AreEqual(3, lCallbackMock.UpdateCallCount);
 			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
@@ -979,7 +981,7 @@ namespace DataPackageTests
 			lExpectedStatus.TrainNumber = "UNKNOWN";
 			string lAssignedFutureBaselineVersion = "4.8.0.2";
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			BaselineStatusInstrumented.ProcessDistributeBaselineRequest(
 				lExpectedStatus.TrainId,
@@ -1083,7 +1085,7 @@ namespace DataPackageTests
 			// Testing with an empty baseline deployment dictionary
 			// 
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			var lExpectedStatus = new TrainBaselineStatusData();
 			lExpectedStatus.TrainId = "TRAIN-5";
@@ -1171,7 +1173,7 @@ namespace DataPackageTests
 			// Testing with an empty baseline deployment dictionary
 			// 
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			var lNotification = new FileDistributionStatusArgs();
 			lNotification.TaskId = 71;
@@ -1386,7 +1388,7 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			//
 			// Testing with an empty baseline deployment dictionary
@@ -1545,7 +1547,7 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			//
 			// Testing with an empty baseline deployment dictionary
@@ -1605,7 +1607,7 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
 			//
 			// Testing with an empty baseline deployment dictionary
@@ -1834,7 +1836,7 @@ namespace DataPackageTests
 
             lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
 
-            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object);
+            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object, null);
 
             var lNotification = new SystemInfo(
                 "TRAIN-5",
@@ -1901,7 +1903,7 @@ namespace DataPackageTests
 
             lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
 
-            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object);
+            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
             var lNotification = new SystemInfo(
                 "TRAIN-5",
@@ -1981,7 +1983,7 @@ namespace DataPackageTests
 
             lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
             // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
             lT2GMock.Setup(x => x.GetTransferTask(
@@ -2030,7 +2032,7 @@ namespace DataPackageTests
 
             lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object);
+            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
             // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
             lT2GMock.Setup(x => x.GetTransferTask(
