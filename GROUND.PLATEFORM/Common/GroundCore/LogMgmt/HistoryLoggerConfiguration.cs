@@ -297,7 +297,7 @@ namespace PIS.Ground.Core.LogMgmt
             try
             {
 
-				bool isLoadingFromWebApplication = AppDomain.CurrentDomain.GetData("DataDirectory") != null;;
+				bool isLoadingFromWebApplication = AppDomain.CurrentDomain.GetData("DataDirectory") != null;
 
                 if (ConfigurationManager.AppSettings[DATABASECONFIGPATH] != null)
                 {
