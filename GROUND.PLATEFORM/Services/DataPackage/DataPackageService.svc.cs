@@ -57,8 +57,6 @@ namespace PIS.Ground.DataPackage
 
 		private static Object _lock = new Object();
 
-		private static List<RequestContext> _newRequests = new List<RequestContext>();
-
 		private static List<RequestCompletedEvent> _requestCompletedEvents = new List<RequestCompletedEvent>();
 
 		/// <summary>The object to serialize a string list in XML.</summary>
