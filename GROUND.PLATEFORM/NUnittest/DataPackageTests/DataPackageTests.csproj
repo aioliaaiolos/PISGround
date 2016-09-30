@@ -53,6 +53,7 @@
     <Compile Include="Generated\T2GIdentificationInterface.cs" />
     <Compile Include="Generated\T2GNotificationService.cs" />
     <Compile Include="Generated\T2GVehicleInfoInterface.cs" />
+    <Compile Include="IntegrationTestsBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextProcessorTests.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextTests.cs" />
