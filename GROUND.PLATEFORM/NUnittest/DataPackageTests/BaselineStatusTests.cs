@@ -23,7 +23,7 @@ using System.Reflection;
 namespace DataPackageTests
 {
 	/// <summary>BaselineStatus test class.</summary>
-	[TestFixture]
+	[TestFixture, Category("BaselineStatus")]
 	public class BaselineStatusTests
 	{
 		#region attributes
