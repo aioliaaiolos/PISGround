@@ -545,7 +545,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.FileTransfer.FileTransferPortType"/>
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.FileTransfer.FileTransferPortType")]
-    class T2GFileTransferServiceStub : FileTransferPortType
+    public class T2GFileTransferServiceStub : FileTransferPortType
     {
         #region Fields
 

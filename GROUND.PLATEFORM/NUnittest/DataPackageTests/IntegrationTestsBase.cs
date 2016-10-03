@@ -12,7 +12,6 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.ServiceModel;
 using System.Text;
 using DataPackageTests.Data;
@@ -20,6 +19,7 @@ using DataPackageTests.ServicesStub;
 using DataPackageTests.Stubs;
 using Moq;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using PIS.Ground.Core.Common;
 using PIS.Ground.Core.Data;
 using PIS.Ground.Core.LogMgmt;
@@ -30,10 +30,8 @@ using PIS.Ground.Core.Utility;
 using PIS.Ground.DataPackage;
 using PIS.Ground.DataPackage.RemoteDataStoreFactory;
 using PIS.Ground.DataPackage.RequestMgt;
+using PIS.Ground.GroundCore.AppGround;
 using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
-using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
-using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
-using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
 
 namespace DataPackageTests
 {
@@ -58,10 +56,18 @@ namespace DataPackageTests
         public const string VehicleInfoServiceUrl = "http://" + DEFAULT_IP + ":5000/T2G/VehicleInfo.asmx";
         public const string PisGroundNotificationServiceUrl = "http://" + DEFAULT_IP + ":5002/PIS_GROUND/notification.svc";
 
+        public const string TRAIN_NAME_0 = "TRAIN-0";
         public const string TRAIN_NAME_1 = "TRAIN-1";
+        public const string TRAIN_NAME_2 = "TRAIN-2";
+        public const int TRAIN_VEHICLE_ID_0 = 0;
         public const int TRAIN_VEHICLE_ID_1 = 1;
+        public const int TRAIN_VEHICLE_ID_2 = 2;
+        public const string TRAIN_IP_0 = "127.0.0.250";
         public const string TRAIN_IP_1 = DEFAULT_IP;
+        public const string TRAIN_IP_2 = "127.0.0.2";
+        public const ushort TRAIN_DATA_PACKAGE_PORT_0 = 3999;
         public const ushort TRAIN_DATA_PACKAGE_PORT_1 = 4000;
+        public const ushort TRAIN_DATA_PACKAGE_PORT_2 = 4001;
 
         public const string DEFAULT_BASELINE = "3.0.0.0";
         public const string DEFAULT_MISSION = "";
@@ -283,6 +289,12 @@ namespace DataPackageTests
 
                 service.Close();
             }
+
+            if (_vehicleInfoServiceStub != null)
+            {
+                _vehicleInfoServiceStub.Dispose();
+            }
+
             _hostIdentificationService = null;
             _hostFileTransferService = null;
             _hostVehicleInfoService = null;
@@ -294,6 +306,7 @@ namespace DataPackageTests
             _notificationServiceStub = null;
             _trainDataPackageServiceStub = null;
             DataPackageService.Uninitialize();
+            BaselineStatusUpdater.Uninitialize();
             T2GManagerContainer.T2GManager = null;
             _t2gManager = null;
             _sessionManager = null;
@@ -414,39 +427,6 @@ namespace DataPackageTests
             Assert.IsEmpty(_sessionManager.SetNotificationURL(_pisGroundSessionId, PisGroundNotificationServiceUrl), "Cannot associate the notification url to PIS-Ground session");
         }
 
-        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort)
-        {
-            InitializeTrain(trainId, vehicleId, isOnline, ipAddress, dataPackagePort, DEFAULT_COMMUNICATION_LINK);
-        }
-
-        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort, CommLinkEnum communicationLink)
-        {
-            _identificationServiceStub.UpdateSystem(trainId, vehicleId, isOnline, 0, DEFAULT_MISSION, communicationLink, ipAddress);
-            _vehicleInfoServiceStub.UpdateMessageData(new VersionMessage(trainId, DEFAULT_PIS_VERSION));
-            BaselineMessage baseline = new BaselineMessage(trainId);
-            baseline.CurrentVersion = DEFAULT_BASELINE;
-            _vehicleInfoServiceStub.UpdateMessageData(baseline);
-
-            MissionMessage mission = new MissionMessage(trainId, DEFAULT_MISSION, (string.IsNullOrEmpty(DEFAULT_MISSION)) ? "NI" : "MI", DEFAULT_OPERATOR_CODE);
-            _vehicleInfoServiceStub.UpdateMessageData(mission);
-
-            ServiceInfoData datapackageService = new ServiceInfoData((ushort)eServiceID.eSrvSIF_DataPackageServer, SERVICE_NAME_DATA_PACKAGE, isOnline, ipAddress, dataPackagePort, (ushort)vehicleId, DEFAULT_CAR_ID);
-            _vehicleInfoServiceStub.UpdateServiceData(trainId, datapackageService);
-
-            _dataStoreServiceStub.UpdateDataStore(new ElementsDataStoreData(trainId));
-
-            if (_trainDataPackageServiceStub != null)
-            {
-                throw new NotImplementedException("Support to multiple train need to be implemented if needed.");
-            }
-
-            _trainDataPackageServiceStub = new TrainDataPackageServiceStub(trainId);
-            Uri address = new Uri("http://" + ipAddress + ":" + dataPackagePort);
-            _hostTrainDataPackageService = new ServiceHost(_trainDataPackageServiceStub, address);
-            _hostTrainDataPackageService.Open();
-        }
-
-
         /// <summary>
         /// Drops the test database and delete the physical files.
         /// </summary>
@@ -470,6 +450,79 @@ namespace DataPackageTests
                 {
                     File.Delete(_databaseLogPath);
                 }
+            }
+        }
+
+        #endregion
+
+        #region Train Management
+
+        /// <summary>
+        /// Add a know train in T2G and initialize the data-package embedded service.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="vehicleId">The vehicle identifier.</param>
+        /// <param name="isOnline">if set to <c>true</c> [is online].</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="dataPackagePort">The data package port.</param>
+        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort)
+        {
+            InitializeTrain(trainId, vehicleId, isOnline, ipAddress, dataPackagePort, DEFAULT_COMMUNICATION_LINK);
+        }
+
+        /// <summary>
+        /// Add a know train in T2G and initialize the data-package embedded service.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="vehicleId">The vehicle identifier.</param>
+        /// <param name="isOnline">Indicates the initiale online status of the train.</param>
+        /// <param name="ipAddress">The ip address of the train.</param>
+        /// <param name="dataPackagePort">The data package port.</param>
+        /// <param name="communicationLink">The communication link.</param>
+        /// <exception cref="NotImplementedException">Support to multiple train need to be implemented if needed.</exception>
+        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort, CommLinkEnum communicationLink)
+        {
+            InitializeTrain(trainId, vehicleId, isOnline, ipAddress, dataPackagePort, communicationLink, true);
+        }
+
+        /// <summary>
+        /// Add a know train in T2G and might initialize the data-package embedded service.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="vehicleId">The vehicle identifier.</param>
+        /// <param name="isOnline">Indicates the initiale online status of the train.</param>
+        /// <param name="ipAddress">The ip address of the train.</param>
+        /// <param name="dataPackagePort">The data package port.</param>
+        /// <param name="communicationLink">The communication link.</param>
+        /// <param name="initializeEmbeddedService">Indicates if the embedded data-package service shall be initialized.</param>
+        /// <exception cref="NotImplementedException">Support to multiple train need to be implemented if needed.</exception>
+        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort, CommLinkEnum communicationLink, bool initializeEmbeddedService)
+        {
+            _identificationServiceStub.UpdateSystem(trainId, vehicleId, isOnline, 0, DEFAULT_MISSION, communicationLink, ipAddress);
+            _vehicleInfoServiceStub.UpdateMessageData(new VersionMessage(trainId, DEFAULT_PIS_VERSION));
+            BaselineMessage baseline = new BaselineMessage(trainId);
+            baseline.CurrentVersion = DEFAULT_BASELINE;
+            _vehicleInfoServiceStub.UpdateMessageData(baseline);
+
+            MissionMessage mission = new MissionMessage(trainId, DEFAULT_MISSION, (string.IsNullOrEmpty(DEFAULT_MISSION)) ? "NI" : "MI", DEFAULT_OPERATOR_CODE);
+            _vehicleInfoServiceStub.UpdateMessageData(mission);
+
+            ServiceInfoData datapackageService = new ServiceInfoData((ushort)eServiceID.eSrvSIF_DataPackageServer, SERVICE_NAME_DATA_PACKAGE, isOnline && initializeEmbeddedService, ipAddress, dataPackagePort, (ushort)vehicleId, DEFAULT_CAR_ID);
+            _vehicleInfoServiceStub.UpdateServiceData(trainId, datapackageService);
+
+            _dataStoreServiceStub.UpdateDataStore(new ElementsDataStoreData(trainId));
+
+            if (initializeEmbeddedService)
+            {
+                if (_trainDataPackageServiceStub != null)
+                {
+                    throw new NotImplementedException("Support to multiple train need to be implemented if needed.");
+                }
+
+                _trainDataPackageServiceStub = new TrainDataPackageServiceStub(trainId);
+                Uri address = new Uri("http://" + ipAddress + ":" + dataPackagePort);
+                _hostTrainDataPackageService = new ServiceHost(_trainDataPackageServiceStub, address);
+                _hostTrainDataPackageService.Open();
             }
         }
 
@@ -531,6 +584,16 @@ namespace DataPackageTests
             Assert.That(() => GetBaselineProgress(trainName), Is.EqualTo(expectedStatus).After(delay, ONE_SECOND / 3), "The baseline deployment status in history log database is no set to expected value for train '{0}'", trainName);
         }
 
+        /// <summary>
+        /// Updates the history log database with information provided by data..
+        /// </summary>
+        /// <param name="data">The train baseline status information to write into database.</param>
+        protected void UpdateHistoryLog(TrainBaselineStatusData data)
+        {
+            HistoryLogger.UpdateTrainBaselineStatus(data.TrainId, data.RequestId, data.TaskId, data.TrainNumber, data.OnlineStatus, data.ProgressStatus, data.CurrentBaselineVersion, data.FutureBaselineVersion, data.PisOnBoardVersion);
+        }
+
+
         #endregion
 
         #region T2G Helpers
@@ -559,6 +622,17 @@ namespace DataPackageTests
             }
 
         }
+
+        protected void WaitTrainBaselineStatusesEquals(Dictionary<string, TrainBaselineStatusData> expectedStatuses, string message)
+        {
+            Dictionary<string, TrainBaselineStatusData> statuses=null;
+
+            ActualValueDelegate comparer = () => { HistoryLogger.GetTrainBaselineStatus(out statuses); return AreDictionariesEquals(expectedStatuses, statuses); };
+
+            AssertAll(() => Assert.That(comparer, Is.True.After(5 * ONE_SECOND, ONE_SECOND/2), "Train baseline status wasn't updated as expected"),
+                    () => AssertDictionariesEqual(expectedStatuses, statuses, message));
+        }
+
 
         #endregion
 
@@ -610,6 +684,160 @@ namespace DataPackageTests
                 Assert.Fail(string.Format(CultureInfo.CurrentCulture, "The following condtions failed:{0}{1}",
                              Environment.NewLine, errorsMessageString.ToString()));
             }
+        }
+
+        /// <summary>
+        /// Verifies if two dictionary are equals.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="a">The first dictionary object to compare.</param>
+        /// <param name="b">The second dictionary object to compare.</param>
+        /// <returns>true if a is equals to b, otherwise false.</returns>
+        public static bool AreDictionariesEquals<TKey, TValue>(IDictionary<TKey, TValue> a, IDictionary<TKey, TValue> b)
+        {
+            bool areEquals = (a == null ? 0 : a.Count) == (b == null ? 0 : b.Count);
+            if (areEquals && a != null && b != null)
+            {
+                foreach (KeyValuePair<TKey, TValue> item in a)
+                {
+                    TValue actualValue;
+                    if (!b.TryGetValue(item.Key, out actualValue) || !item.Value.Equals(actualValue))
+                    {
+                        areEquals = false;
+                        break;
+                    }
+                }
+
+            }
+
+            return areEquals;
+        }
+
+        /// <summary>
+        /// Asserts the dictionaries equal and generate detailed message if not.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="expected">The expected value.</param>
+        /// <param name="actual">The actual value.</param>
+        /// <param name="message">The message to add if mismatch detected.</param>
+        public static void AssertDictionariesEqual<TKey, TValue>(IDictionary<TKey, TValue> expected, IDictionary<TKey, TValue> actual, string message)
+        {
+
+            if (!IntegrationTestsBase.AreDictionariesEquals(expected, actual))
+            {
+                StringBuilder formattedMessage = new StringBuilder(2048);
+                if (expected.Count != actual.Count)
+                {
+                    formattedMessage.AppendFormat(CultureInfo.CurrentCulture, "  - The expected item count<{0}> does not match the actual item count<{1}>.\r\n", expected.Count, actual.Count);
+                }
+
+                DumpDictionary(formattedMessage, "ACTUAL", actual);
+                DumpDictionary(formattedMessage, "EXPECTED", expected);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    Assert.Fail("{0}\r\nThe actual dictionary values does not match the expected dictionary values:\r\n{1}", message, formattedMessage.ToString());
+                }
+                else
+                {
+                    Assert.Fail("The actual dictionary values does not match the expected dictionary values:\r\n{1}", formattedMessage.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dumps the dictionary into an output string.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="output">The output string buffer.</param>
+        /// <param name="name">Name of the dictionary to dump</param>
+        /// <param name="dictionary">The dictionary to dump.</param>
+        public static void DumpDictionary<TKey, TValue>(StringBuilder output, string name, IDictionary<TKey, TValue> dictionary)
+        {
+            if (dictionary == null)
+            {
+                output.Append(name).AppendLine(" = (null)");
+            }
+            else
+            {
+                int beforeLenght = output.Length;
+                output.AppendFormat(CultureInfo.InvariantCulture, "  {0}[Count={1}] = {{", name, dictionary.Count);
+                int afterLength = output.Length;
+                if (dictionary.Count == 0)
+                {
+                    output.Append(" <empty> ");
+                }
+                else
+                {
+                    bool isFirst = true;
+
+                    foreach(KeyValuePair<TKey, TValue> item in dictionary)
+                    {
+                        if (!isFirst)
+                        {
+                            output.Append(",").AppendLine().Append(' ', afterLength-beforeLenght);
+                        }
+                        else
+                        {
+                            isFirst = false;
+                        }
+
+                        output.AppendFormat(CultureInfo.InvariantCulture, "[{0}] = {1}", item.Key, item.Value);
+                    }
+
+                }
+
+                output.AppendLine("}");
+
+            }
+        }
+
+
+        #endregion
+
+        #region NotificationSend
+
+        /// <summary>
+        /// Waits the notification send.
+        /// </summary>
+        /// <param name="notificationId">The notification identifier.</param>
+        protected void WaitNotificationSend(NotificationIdEnum notificationId)
+        {
+            WaitNotificationSend(notificationId, Guid.Empty);
+        }
+
+        /// <summary>
+        /// Waits the notification send.
+        /// </summary>
+        /// <param name="notificationId">The notification identifier.</param>
+        /// <param name="parameter">The notification parameter</param>
+        protected void WaitNotificationSend(NotificationIdEnum notificationId, string parameter)
+        {
+            WaitNotificationSend(notificationId, Guid.Empty, parameter);
+        }
+
+        /// <summary>
+        /// Waits the notification send.
+        /// </summary>
+        /// <param name="notificationId">The notification identifier.</param>
+        /// <param name="requestId">The request identifier associated to the request.</param>
+        protected void WaitNotificationSend(NotificationIdEnum notificationId, Guid requestId)
+        {
+            Assert.That(() => _notificationsSender.ContainsNotification(notificationId, requestId), Is.True.After(5 * ONE_SECOND, ONE_SECOND / 4), "Failed to received expected notification '{0}' for request '{1}'.", notificationId, requestId);
+        }
+
+
+        /// <summary>
+        /// Waits the notification send.
+        /// </summary>
+        /// <param name="notificationId">The notification identifier.</param>
+        /// <param name="requestId">The request identifier associated to the request.</param>
+        /// <param name="parameter">The request parameter of the notification</param>
+        protected void WaitNotificationSend(NotificationIdEnum notificationId, Guid requestId, string parameter)
+        {
+            Assert.That(() => _notificationsSender.ContainsNotification(notificationId, requestId, parameter), Is.True.After(5 * ONE_SECOND, ONE_SECOND / 4), "Failed to received expected notification '{0}' for request '{1}' with parameter '{2}'.", notificationId, requestId, parameter);
         }
 
         #endregion

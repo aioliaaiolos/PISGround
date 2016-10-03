@@ -70,6 +70,7 @@
     <Compile Include="ServicesStub\TrainDataPackageServiceStub.cs" />
     <Compile Include="Stubs\NotificationInfo.cs" />
     <Compile Include="Stubs\NotificationSenderStub.cs" />
+    <Compile Include="TrainBaselineStatusIntegrationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">

@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="PisVersion.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -26,11 +26,27 @@ namespace PIS.Ground.Core.Data
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PisVersion"/> class.
+        /// </summary>
         public PisVersion()
         {
             this.VersionPISSoftware = string.Empty;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PisVersion"/> class.
+        /// </summary>
+        /// <param name="version">The value for version.</param>
+        public PisVersion(string version)
+        {
+            this.VersionPISSoftware = version;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PisVersion"/> class with values provider by another instance..
+        /// </summary>
+        /// <param name="other">The initial values.</param>
         public PisVersion(PisVersion other) : this()
         {
             if (other != null)

@@ -21,7 +21,7 @@ namespace DataPackageTests.ServicesStub
     /// <summary>
     /// Simulate the implementation of RemoteDataStore service.
     /// </summary>
-    class RemoteDataStoreServiceStub : IDisposable
+    public class RemoteDataStoreServiceStub : IDisposable
     {
         #region Fields
 

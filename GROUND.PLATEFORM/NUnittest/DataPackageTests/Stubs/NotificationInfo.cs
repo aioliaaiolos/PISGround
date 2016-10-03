@@ -19,7 +19,7 @@ namespace DataPackageTests.Stubs
     /// Describe a notification.
     /// </summary>
     /// <remarks>This object is immutable</remarks>
-    class NotificationInfo
+    public class NotificationInfo
     {
         // String that allow cleaning parameter string.
         private const string BEGIN_INSTR = "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n  <string>";

@@ -23,7 +23,7 @@ namespace DataPackageTests.ServicesStub
     /// <summary>
     /// Stub for DataPackage service
     /// </summary>
-    class DataPackageServiceStub : DataPackageService, IDisposable
+    public class DataPackageServiceStub : DataPackageService, IDisposable
     {
         #region Constructor
 

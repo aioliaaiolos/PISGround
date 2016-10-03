@@ -50,7 +50,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.Identification.IdentificationPortType" />
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.Identification.IdentificationPortType")]
-    class T2GIdentificationServiceStub : IdentificationPortType
+    public class T2GIdentificationServiceStub : IdentificationPortType
     {
         /// <summary>
         /// Class specialized to hold data on session
@@ -110,9 +110,20 @@ namespace DataPackageTests.ServicesStub
         public delegate void OnlineStatusChangedHandler(string systemId, bool isOnline);
 
         /// <summary>
+        /// Delegate to notify that one system has been deleted.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        public delegate void SystemDeletedHandler(string systemId);
+
+        /// <summary>
         /// Occurs when online status changed with a train.
         /// </summary>
         public event OnlineStatusChangedHandler OnlineStatusChanged;
+
+        /// <summary>
+        /// Occurs when train has been deleted.
+        /// </summary>
+        public event SystemDeletedHandler SystemDeleted;
 
         #endregion
 
@@ -309,6 +320,57 @@ namespace DataPackageTests.ServicesStub
                     {
                         handlers(newSystemInfo.systemId, newSystemInfo.isOnline);
                     }
+                }
+            }
+        }
+
+        public void DeleteSystem(string systemId)
+        {
+            bool systemDeleted;
+
+            lock (_systemInfoLock)
+            {
+                systemDeleted = _systems.Remove(systemId);
+            }
+
+            // Notify about changes
+            if (systemDeleted)
+            {
+                List<string> urlsToNotify;
+
+                lock (_sessionLock)
+                {
+                    urlsToNotify = _sessions.Values.Where(s => s.NotificationEnabled && !string.IsNullOrEmpty(s.NotificationUrl)).Select(s => s.NotificationUrl).Distinct().ToList();
+                }
+
+                if (urlsToNotify.Count > 0)
+                {
+
+                    foreach (string url in urlsToNotify)
+                    {
+                        EndpointAddress address = new EndpointAddress(url);
+                        using (NotificationClient client = new NotificationClient("NotificationClient", address))
+                        {
+                            try
+                            {
+                                client.Open();
+                                client.onSystemDeletedNotification(systemId);
+                            }
+                            finally
+                            {
+                                if (client.State == CommunicationState.Faulted)
+                                {
+                                    client.Abort();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                SystemDeletedHandler handlers = SystemDeleted;
+                if (handlers != null)
+                {
+                    handlers(systemId);
                 }
             }
         }
