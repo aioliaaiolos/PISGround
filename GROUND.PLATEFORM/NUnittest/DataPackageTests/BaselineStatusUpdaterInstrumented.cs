@@ -38,18 +38,18 @@ namespace DataPackageTests
             BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
             BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
             IT2GFileDistributionManager t2g,
-            ElementList<AvailableElementData> availableElements)
+            IDictionary<string, SystemInfo> currentSystems)
         {
             Mock<ILogManager> logManagerMock = new Mock<ILogManager>();
 
-            return base.Initialize(baselineProgresses, baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object, availableElements);
+            return base.Initialize(baselineProgresses, baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object, currentSystems);
         }
 
         public bool Initialize(
             Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
             IT2GFileDistributionManager t2g,
             ILogManager logManager,
-            ElementList<AvailableElementData> availableElements)
+            IDictionary<string, SystemInfo> currentSystems)
         {
             BaselineStatusUpdater.BaselineProgressUpdateProcedure baselineProgressUpdateProcedureDelegate = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(UpdateProgressOnHistoryLogger);
 
@@ -57,7 +57,7 @@ namespace DataPackageTests
 
 
             return base.Initialize(baselineProgresses,
-                    baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager, availableElements);
+                    baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager, currentSystems);
         }
 
         public delegate void ProcessSystemChangedNotificationDelegate(SystemInfo notification,

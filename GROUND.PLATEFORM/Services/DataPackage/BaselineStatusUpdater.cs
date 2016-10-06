@@ -108,10 +108,10 @@ namespace PIS.Ground.DataPackage
 
 		/// <summary>Initializes BaselineStatusUpdater. Must be called before any other public methods.</summary>
 		/// <param name="t2g">The client providing access to the T2G server. Must not be null.</param>
-        /// <param name="availableElements">List of available elements.</param>
-		/// <returns>true if it succeeds, false otherwise.</returns>		
+        /// <param name="currentSystems">Optional list of available elements. Key is the train id and Value is the system information.</param>
+        /// <returns>true if it succeeds, false otherwise.</returns>		
 		public bool Initialize(IT2GFileDistributionManager t2g,
-            ElementList<AvailableElementData> availableElements)
+            IDictionary<string, SystemInfo> currentSystems)
 		{
 			_logManager.WriteLog(TraceType.INFO,
 				"Initialize()",
@@ -137,21 +137,20 @@ namespace PIS.Ground.DataPackage
 
 					// Get latest status from persistent storage
 					// 
-					BaselineStatusResponse lResult = new BaselineStatusResponse();
 					Dictionary<string, TrainBaselineStatusData> lDictionaryResponse = null;
 
-					lResult.ResultCode = _logManager.GetTrainBaselineStatus(out lDictionaryResponse);
+					ResultCodeEnum resultCode = _logManager.GetTrainBaselineStatus(out lDictionaryResponse);
 
-					if (lResult.ResultCode != ResultCodeEnum.RequestAccepted)
+					if (resultCode != ResultCodeEnum.RequestAccepted)
 					{
-						throw (new HistoryLoggerFailureException("_logManager returned: " +
-							Enum.GetName(typeof(ResultCodeEnum), lResult.ResultCode)));
+                        string message = string.Format(CultureInfo.CurrentCulture, "_logManager.GetTrainBaselineStatus returned {0}", resultCode);
+						throw new HistoryLoggerFailureException(message);
 					}
 
 					if (lDictionaryResponse == null)
 					{
 						_isHistoryLoggerAvailable = false;
-						throw (new HistoryLoggerNotInstalledException("_logManager returned null: Is the HistoryLogger installed?"));
+						throw (new HistoryLoggerNotInstalledException("_logManager.GetTrainBaselineStatus returned null: Is the HistoryLogger installed?"));
 					}
 
 					// Convert status to extended flavor 
@@ -193,7 +192,7 @@ namespace PIS.Ground.DataPackage
 						new BaselineProgressRemoveProcedure(RemoveProgressFromHistoryLogger),
 						t2g,
                         _logManager,
-                        availableElements);
+                        currentSystems);
 				}
 			}
 			catch (Exception lException)
@@ -213,7 +212,7 @@ namespace PIS.Ground.DataPackage
 		/// <param name="baselineProgressRemoveProcedure">The baseline progress remove procedure from persistent storage.</param>///
 		/// <param name="t2g">The client providing access to the T2G server.</param>
         /// <param name="logManager">The ILogManager interface reference. Added for unit test purposes.</param>
-        /// <param name="availableElementData">List of available elements.</param>
+        /// <param name="currentSystems">Optional list of available elements. Key is the train id and Value is the system information.</param>
 		/// <returns>true if it succeeds, false otherwise.</returns>	
 		protected bool Initialize(
 			Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
@@ -221,7 +220,7 @@ namespace PIS.Ground.DataPackage
 			BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
 			IT2GFileDistributionManager t2g,
             ILogManager logManager,
-            ElementList<AvailableElementData> availableElementData)
+            IDictionary<string, SystemInfo> currentSystems)
 		{
 			// Save the method arguments to class fields
 			// 
@@ -238,7 +237,7 @@ namespace PIS.Ground.DataPackage
 			// For now, assume all elements are off-line and that we do not know
 			// the different baselines and software versions and other information that could have changed
 			// 
-			ResetStatusEntries(availableElementData);
+            ResetStatusEntries(currentSystems);
 
 			return _isInitialized;
 		}
@@ -265,8 +264,8 @@ namespace PIS.Ground.DataPackage
 
 
 		/// <summary>Resets all status entries by clearing the fields that might have changed.</summary>
-        /// <param name="availableElements">List of available elements</param>
-		public void ResetStatusEntries(ElementList<AvailableElementData> availableElements)
+        /// <param name="currentSystems">Information on known system as stored in local data store. Key is the train name, value the system information</param>
+		public void ResetStatusEntries(IDictionary<string, SystemInfo> currentSystems)
 		{
 			try
 			{
@@ -294,25 +293,48 @@ namespace PIS.Ground.DataPackage
 									// Make sure that all trains will be fully investigated the next time we hear from them
 									lExtendedStatus.IsT2GPollingRequired = true;
 
-                                    AvailableElementData element = availableElements != null ? availableElements.FirstOrDefault(e => e.OnlineStatus && e.ElementNumber == lTrainId) : null;
-
-                                    if (element != null)
+                                    bool deleted = false;
+                                    SystemInfo currentSystem;
+                                    if (currentSystems != null)
                                     {
-                                        lStatus.OnlineStatus = element.OnlineStatus;
-
+                                        if (!currentSystems.TryGetValue(lTrainId, out currentSystem) || currentSystem == null)
+                                        {
+                                            // System deleted
+                                            DeleteSystem(lTrainId);
+                                            deleted = true;
+                                        }
+                                        else
+                                        {
+                                            lExtendedStatus.Update(currentSystem);
+                                        }
                                     }
-                                    else
+                                    else 
                                     {
                                         lStatus.OnlineStatus = false;
                                     }
 
-                                    if (!TrainBaselineStatusExtendedData.AreEqual(lExtendedStatus, lOriginalStatus))
+                                    if (!deleted && !TrainBaselineStatusExtendedData.AreEqual(lExtendedStatus, lOriginalStatus))
                                     {
                                         LogProgress(lTrainId, lExtendedStatus);
                                     }
 								}
 							}
 						}
+
+                        // Add newly detected system
+                        if (currentSystems != null && currentSystems.Count != _baselineProgresses.Count)
+                        {
+                            foreach (KeyValuePair<string, SystemInfo> item in currentSystems)
+                            {
+                                if (!_baselineProgresses.ContainsKey(item.Key))
+                                {
+                                    TrainBaselineStatusData newData = new TrainBaselineStatusData(item.Key, item.Value.VehiclePhysicalId, item.Value.IsOnline, NoBaselineVersion);
+                                    TrainBaselineStatusExtendedData newSystem = new TrainBaselineStatusExtendedData(newData);
+                                    newSystem.Update(item.Value);
+                                    LogProgress(item.Key, newSystem);
+                                }
+                            }
+                        }
 					}
 					else
 					{
@@ -729,65 +751,26 @@ namespace PIS.Ground.DataPackage
 		/// <param name="trainId">Identifier for the train.</param>
 		public void ProcessElementDeletedNotification(string trainId)
 		{
-			_logManager.WriteLog(TraceType.INFO,
-				"ProcessElementDeletedNotification" + Environment.NewLine +
-				"(" + Environment.NewLine +
-				"  trainId      : " + trainId + Environment.NewLine +
-				")",
-				"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
-				null,
-				EventIdEnum.DataPackage);
-
 			try
 			{
-				lock (_baselineStatusUpdaterLock)
-				{
+                if (_logManager.IsTraceActive(TraceType.INFO))
+                {
+                    _logManager.WriteLog(TraceType.INFO,
+                        "ProcessElementDeletedNotification" + Environment.NewLine +
+                        "(" + Environment.NewLine +
+                        "  trainId      : " + trainId + Environment.NewLine +
+                        ")",
+                        "PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
+                        null,
+                        EventIdEnum.DataPackage);
+                }
 
-					/// Checking initial conditions
-
-					if (_isInitialized)
-					{
-						if (string.IsNullOrEmpty(trainId))
-						{
-							throw (new ArgumentException("trainId is null or empty"));
-						}
-
-						if (_baselineProgresses.ContainsKey(trainId))
-						{
-							// Train deleted: remove corresponding entry
-							// 
-							_baselineProgresses.Remove(trainId);
-
-							if (_baselineProgressRemoveProcedure(trainId) == false)
-							{
-								throw (new HistoryLoggerFailureException("cannot remove HistoryLog entry for train: " + trainId));
-							}
-						}
-					}
-					else
-					{
-						if (_isHistoryLoggerAvailable)
-						{
-							throw (new InvalidOperationException("updater not initialized"));
-						}
-					}
-				}
+                DeleteSystem(trainId);
 			}
-			catch (ArgumentException lException)
+			catch (Exception lException)
 			{
-				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Argument Exception :",
-					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
-					lException, EventIdEnum.DataPackage);
-			}
-			catch (InvalidOperationException lException)
-			{
-				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - Invalid Operation Exception :",
-					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
-					lException, EventIdEnum.DataPackage);
-			}
-			catch (HistoryLoggerFailureException lException)
-			{
-				_logManager.WriteLog(TraceType.ERROR, "ProcessElementDeletedNotification() - History Logger Exception :",
+                string message = string.Format("Failed to process element deleted notification on element '{0}'", trainId);
+				_logManager.WriteLog(TraceType.ERROR, message,
 					"PIS.Ground.DataPackage.BaselineStatusUpdater.ProcessElementDeletedNotification",
 					lException, EventIdEnum.DataPackage);
 			}
@@ -1184,24 +1167,26 @@ namespace PIS.Ground.DataPackage
 
 			if (trainId != null)
 			{
+                if (_logManager.IsTraceActive(TraceType.INFO))
+                {
+				    _logManager.WriteLog(TraceType.INFO,
+					    "RemoveProgressFromHistoryLogger" + Environment.NewLine +
+					    "(" + Environment.NewLine +
+					    "  TrainId : " + trainId + Environment.NewLine +
+					    ")",
+					    "PIS.Ground.DataPackage.BaselineStatusUpdater.RemoveProgressFromHistoryLogger",
+					    null,
+					    EventIdEnum.DataPackage);
+                }
 
-				_logManager.WriteLog(TraceType.INFO,
-					"RemoveProgressFromHistoryLogger" + Environment.NewLine +
-					"(" + Environment.NewLine +
-					"  TrainId : " + trainId + Environment.NewLine +
-					")",
-					"PIS.Ground.DataPackage.BaselineStatusUpdater.RemoveProgressFromHistoryLogger",
-					null,
-					EventIdEnum.DataPackage);
+				ResultCodeEnum resultCode = _logManager.CleanTrainBaselineStatus(trainId);
 
-				BaselineStatusResponse lResult = new BaselineStatusResponse();
-				lResult.ResultCode = _logManager.CleanTrainBaselineStatus(trainId);
-
-				if (lResult.ResultCode == ResultCodeEnum.RequestAccepted)
+				if (resultCode == ResultCodeEnum.RequestAccepted || resultCode == ResultCodeEnum.Empty_Result)
 				{
 					lSuccess = true;
 				}
 			}
+
 			return lSuccess;
 		}
 
@@ -1238,14 +1223,13 @@ namespace PIS.Ground.DataPackage
                         EventIdEnum.DataPackage);
                 }
 
-				BaselineStatusResponse lResult = new BaselineStatusResponse();
-				lResult.ResultCode = _logManager.UpdateTrainBaselineStatus(
+				ResultCodeEnum resultCode = _logManager.UpdateTrainBaselineStatus(
 					trainId, progressInfo.RequestId, progressInfo.TaskId, progressInfo.TrainNumber,
 					progressInfo.OnlineStatus, progressInfo.ProgressStatus,
 					progressInfo.CurrentBaselineVersion, progressInfo.FutureBaselineVersion,
 					progressInfo.PisOnBoardVersion);
 
-				if (lResult.ResultCode == ResultCodeEnum.RequestAccepted)
+                if (resultCode == ResultCodeEnum.RequestAccepted)
 				{
 					lSuccess = true;
 				}
@@ -1538,20 +1522,20 @@ namespace PIS.Ground.DataPackage
             try
             {
                 if (_logManager.IsTraceActive(TraceType.INFO))
-            {
-                string message = "OnFileDistributionTaskCreated " + Environment.NewLine +
-                    "( " + Environment.NewLine +
-                    "  Request   : " + e.RequestId.ToString() + Environment.NewLine +
-                    "  Task id   : " + e.TaskId.ToString() + Environment.NewLine +
-                    "  Recipient : " + ((e.Recipients != null && e.Recipients.Count > 0) ? e.Recipients[0].SystemId??"" + e.Recipients[0].MissionId??"" : string.Empty) + Environment.NewLine +
-                    ")";
+                {
+                    string message = "OnFileDistributionTaskCreated " + Environment.NewLine +
+                        "( " + Environment.NewLine +
+                        "  Request   : " + e.RequestId.ToString() + Environment.NewLine +
+                        "  Task id   : " + e.TaskId.ToString() + Environment.NewLine +
+                        "  Recipient : " + ((e.Recipients != null && e.Recipients.Count > 0) ? e.Recipients[0].SystemId ?? "" + e.Recipients[0].MissionId ?? "" : string.Empty) + Environment.NewLine +
+                        ")";
 
-                _logManager.WriteLog(TraceType.INFO,
-                    message,
-                    "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
-                    null,
-                    EventIdEnum.DataPackage);
-            }
+                    _logManager.WriteLog(TraceType.INFO,
+                        message,
+                        "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                        null,
+                        EventIdEnum.DataPackage);
+                }
 
                 lock (_baselineStatusUpdaterLock)
                 {
@@ -1605,7 +1589,60 @@ namespace PIS.Ground.DataPackage
                     "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
                     exception, EventIdEnum.DataPackage);
             }
+        }
 
+        /// <summary>
+        /// Deletes the system.
+        /// </summary>
+        /// <param name="trainId">The name of the system to delete.</param>
+        protected void DeleteSystem(string trainId)
+        {
+            try
+            {
+                if (_logManager.IsTraceActive(TraceType.INFO))
+                {
+                    string message = string.Format(CultureInfo.CurrentCulture, "DeleteSystem({0})", trainId);
+                    _logManager.WriteLog(TraceType.INFO,
+                        message,
+                        "PIS.Ground.DataPackage.BaselineStatusUpdater.OnFileDistributionTaskCreated",
+                        null,
+                        EventIdEnum.DataPackage);
+                }
+
+                if (string.IsNullOrEmpty(trainId))
+                {
+                    throw new ArgumentNullException("trainId");
+                }
+
+
+                lock (_baselineStatusUpdaterLock)
+                {
+                    // Checking initial conditions
+
+                    if (_isInitialized)
+                    {
+                        _baselineProgresses.Remove(trainId);
+                        if (!_baselineProgressRemoveProcedure(trainId))
+                        {
+                            throw new HistoryLoggerFailureException("Failed to update history log database");
+                        }
+                    }
+                    else
+                    {
+                        if (_isHistoryLoggerAvailable)
+                        {
+                            throw new InvalidOperationException("BaselineStatusUpdater is not initialized");
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, "Failed to delete system '{0}' from baseline statuses", trainId);
+                _logManager.WriteLog(TraceType.ERROR, message,
+                    "PIS.Ground.DataPackage.BaselineStatusUpdater.DeleteSystem",
+                    exception, EventIdEnum.DataPackage);
+            }
         }
 
         #region IDisposable Members

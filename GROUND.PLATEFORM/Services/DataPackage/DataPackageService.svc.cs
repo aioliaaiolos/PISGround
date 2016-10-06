@@ -215,9 +215,8 @@ namespace PIS.Ground.DataPackage
             // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
             // and registering a T2G client object to be used for updating those statuses
             //
-            ElementList<AvailableElementData> availableElements;
-            _t2gManager.GetAvailableElementDataList(out availableElements);
-            _baselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
+            IDictionary<string, SystemInfo> currentSystems = _t2gManager.GetAvailableSystems();
+            _baselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, currentSystems);
 
             _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
 
@@ -460,12 +459,17 @@ namespace PIS.Ground.DataPackage
 		{
 			if (pNotification != null)
 			{
-                mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
+                try
+                {
+                    mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
 
-				if (pNotification.online == false)
-				{
-					_baselineStatusUpdater.ResetStatusEntries(null);
-				}
+                    IDictionary<string, SystemInfo> currentSystems = (pNotification.online) ? _t2gManager.GetAvailableSystems() : null;
+                    _baselineStatusUpdater.ResetStatusEntries(currentSystems);
+                }
+                catch (System.Exception ex)
+                {
+                    mWriteLog(TraceType.EXCEPTION, "PIs.Ground.DataPackage.DataPackageService.OnT2GOnlineOffline", ex, "Processing error while becoming {0} with T2G", (pNotification.online) ? "online" : "offline");
+                }
 			}
 		}
 

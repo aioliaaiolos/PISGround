@@ -121,7 +121,7 @@ namespace PIS.Ground.Core.T2G
             if (foundSystem != null)
             {
                 objElementEventArgs = new ElementEventArgs();
-                objElementEventArgs.SystemInformation = new SystemInfo(foundSystem); //Deep copy
+                objElementEventArgs.SystemInformation = foundSystem; //Deep copy not needed because systeminfo is a readonly object
             }
 
             return objElementEventArgs;
@@ -500,13 +500,13 @@ namespace PIS.Ground.Core.T2G
 						notifyFreq = 0
 					});
 
-				using (PIS.Ground.Core.T2G.WebServices.VehicleInfo.VehicleInfoPortTypeClient objVehicleInfo = new VehicleInfoPortTypeClient())
-				{
-					objVehicleInfo.subscribeToMessageNotifications(
-						_sessionData.SessionId,
-						new systemIdList(),
-						messageSubscriptions);
-				}
+                using (PIS.Ground.Core.T2G.WebServices.VehicleInfo.VehicleInfoPortTypeClient objVehicleInfo = new VehicleInfoPortTypeClient())
+                {
+                    objVehicleInfo.subscribeToMessageNotifications(
+                        _sessionData.SessionId,
+                        new systemIdList(),
+                        messageSubscriptions);
+                }
 			}
 			catch (Exception ex)
 			{
@@ -544,10 +544,10 @@ namespace PIS.Ground.Core.T2G
 
 			try
 			{
-				using (PIS.Ground.Core.T2G.WebServices.VehicleInfo.VehicleInfoPortTypeClient objVehicleInfo = new VehicleInfoPortTypeClient())
-				{
-					objVehicleInfo.subscribeToServiceNotifications(_sessionData.SessionId, new systemIdList(), (int)serviceId);
-				}
+                using (PIS.Ground.Core.T2G.WebServices.VehicleInfo.VehicleInfoPortTypeClient objVehicleInfo = new VehicleInfoPortTypeClient())
+                {
+                    objVehicleInfo.subscribeToServiceNotifications(_sessionData.SessionId, new systemIdList(), (int)serviceId);
+                }
 			}
 			catch (Exception ex)
 			{
@@ -850,12 +850,16 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="systemId">The removed system id.</param>
 		internal void OnSystemDeleted(string systemId)
 		{
-			LogManager.WriteLog(
-				TraceType.WARNING,
-				"OnSystemDeleted called:" + systemId,
-				"PIS.Ground.Core.T2G.LocalDataStorage.OnSystemDeleted",
-				null,
-				EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, "OnSystemDeleted called for system '{0}'", systemId);
+                LogManager.WriteLog(
+                    TraceType.INFO,
+                    message,
+                    "PIS.Ground.Core.T2G.LocalDataStorage.OnSystemDeleted",
+                    null,
+                    EventIdEnum.GroundCore);
+            }
 
 			RemoveSystem(systemId);
 

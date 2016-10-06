@@ -17,6 +17,7 @@ using PIS.Ground.Core.LogMgmt;
 using System.Globalization;
 using PIS.Ground.GroundCore.AppGround;
 using DataPackageTests.ServicesStub;
+using PIS.Ground.DataPackage;
 
 namespace DataPackageTests
 {
@@ -51,7 +52,7 @@ namespace DataPackageTests
         [Test, Category("Startup")]
         public void TrainBaselineStatusScenario_WhenConnectionIsEstablishedWithT2G_NewTrainsAreAddedToTrainBaselineStatus()
         {
-            TrainBaselineStatusData expectedValue = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
+            TrainBaselineStatusData expectedValue = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(TRAIN_NAME_1, expectedValue);
 
@@ -64,7 +65,6 @@ namespace DataPackageTests
 
             ReopenIdentificationService();
             WaitPisGroundIsConnectedWithT2G(true);
-            WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
 
             WaitTrainBaselineStatusesEquals(expectedStatuses, "Newly discovered train are not added as expected into the TrainBaselineStatus database when a connection with T2G is established");
         }
@@ -76,7 +76,7 @@ namespace DataPackageTests
         [Test, Category("Startup")]
         public void TrainBaselineStatusScenario_WhenConnectionIsEstablishedWithT2G_UnknownTrainsAreRemoved()
         {
-            TrainBaselineStatusData expectedValueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
+            TrainBaselineStatusData expectedValueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(expectedValueTrain1.TrainId, expectedValueTrain1);
 
@@ -99,8 +99,6 @@ namespace DataPackageTests
 
 
             WaitPisGroundIsConnectedWithT2G(true);
-            WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
-
 
             // Wait that history log was updated.
             WaitTrainBaselineStatusesEquals(expectedStatuses, "When PIS-Ground establish a connection with T2G, unknown train by T2G are not removed from the train baseline status database.");
@@ -143,9 +141,9 @@ namespace DataPackageTests
         [Test, Category("Startup")]
         public void TrainBaselineStatusScenario_OnlineStatusOfTrainBaselineUpdateWhenCommunicationIsEstablishedWithT2G()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -168,11 +166,19 @@ namespace DataPackageTests
             InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
             InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
 
+            BaselineMessage baseline = new BaselineMessage(TRAIN_NAME_2);
+            baseline.CurrentVersion = "5.4.3.3";
+            _vehicleInfoServiceStub.UpdateMessageData(baseline);
+
+            baseline = new BaselineMessage(TRAIN_NAME_0);
+            baseline.CurrentVersion = "1.0.0.0";
+            _vehicleInfoServiceStub.UpdateMessageData(baseline);
+
+
             InitializeDataPackageService(false);
             InitializePISGroundSession();
             ReopenIdentificationService();
             WaitPisGroundIsConnectedWithT2G(true);
-            WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
 
             // Wait that history log was updated.
             WaitTrainBaselineStatusesEquals(expectedStatuses, "Online statuses of train not updated in train baseline status when PIS-Ground connect with T2G");

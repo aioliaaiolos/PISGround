@@ -568,6 +568,7 @@ namespace PIS.Ground.Core.T2G
 
 			if (pSystemListIn != null)
 			{
+                pSystemList.Capacity = pSystemListIn.Count;
 				foreach (PIS.Ground.Core.T2G.WebServices.Identification.systemInfoStruct lSystemInfoStruct in pSystemListIn)
 				{
 					SystemInfo lSystem;
@@ -658,7 +659,7 @@ namespace PIS.Ground.Core.T2G
 		internal static bool BuildSystem(PIS.Ground.Core.T2G.WebServices.Identification.systemInfoStruct systemStruct, out SystemInfo system)
 		{
 			bool lResult = false;
-			system = new SystemInfo();
+			
 
 			if (systemStruct != null)
 			{
@@ -695,6 +696,10 @@ namespace PIS.Ground.Core.T2G
 
 				lResult = true;
 			}
+            else
+            {
+                system = new SystemInfo();
+            }
 
 			return lResult;
 		}

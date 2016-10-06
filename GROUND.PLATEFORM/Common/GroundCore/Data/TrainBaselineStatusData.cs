@@ -70,6 +70,24 @@ namespace PIS.Ground.Core.Data
             _currentBaselineVersion = currentBaselineVersion;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrainBaselineStatusData"/> class.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="trainNumber">The train number.</param>
+        /// <param name="isOnline">Indicates the online status of the train.</param>
+        /// <param name="currentBaselineVersion">The current baseline version.</param>
+        /// <param name="futureBaselineVersion">The future baseline version.</param>
+        /// <param name="pisOnboardVersion">The pis onboard version.</param>
+        /// <param name="progressStatus">The progress status.</param>
+        public TrainBaselineStatusData(string trainId, int trainNumber, bool isOnline, string currentBaselineVersion, string futureBaselineVersion, string pisOnboardVersion, BaselineProgressStatusEnum progressStatus)
+            : this(trainId, trainNumber, isOnline, currentBaselineVersion)
+        {
+            _futureBaselineVersion = futureBaselineVersion;
+            _pisOnBoardVersion = pisOnboardVersion;
+            _progressStatus = progressStatus;
+        }
+
         [DataMember]
         public string TrainId
         {

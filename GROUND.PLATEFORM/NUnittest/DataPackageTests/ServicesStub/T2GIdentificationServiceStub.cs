@@ -245,6 +245,7 @@ namespace DataPackageTests.ServicesStub
             newSystemInfo.status = status;
             newSystemInfo.systemId = systemId;
             newSystemInfo.IPAddress = IPAddress;
+            newSystemInfo.vehiclePhysicalId = Convert.ToUInt16(vehicleId);
 
             bool onlineStatusChanged = false;
 

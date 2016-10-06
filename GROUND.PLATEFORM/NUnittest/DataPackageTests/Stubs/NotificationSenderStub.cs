@@ -160,6 +160,15 @@ namespace DataPackageTests.Stubs
             {
                 Console.Out.WriteLine("  GROUND NOTIFICATION: T2GServerConnectionStatus({0})", status);
             }
+
+            if (status)
+            {
+                SendNotification(NotificationIdEnum.CommonT2GServerOnline);
+            }
+            else
+            {
+                SendNotification(NotificationIdEnum.CommonT2GServerOffline);
+            }
         }
 
         #endregion

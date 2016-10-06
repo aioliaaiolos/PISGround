@@ -9,6 +9,7 @@
 using System.Globalization;
 using System;
 using PIS.Ground.Core.Data;
+using System.Text;
 
 namespace PIS.Ground.DataPackage
 {
@@ -310,6 +311,26 @@ namespace PIS.Ground.DataPackage
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder result = new StringBuilder(350);
+
+            result.Append("<Status=");
+            result.Append((Status == null)? "(null)" : Status.ToString());
+            result.Append(", AssignedCurrentBaseline=").Append(AssignedCurrentBaseline);
+            result.Append(", AssignedFutureBaseline=").Append(AssignedFutureBaseline);
+            result.Append(", IsT2GPollingRequired=").Append(IsT2GPollingRequired);
+            result.Append(", OnBoardFutureBaseline=").Append(OnBoardFutureBaseline);
+            result.Append(">");
+            return result.ToString();
         }
     }
 }
