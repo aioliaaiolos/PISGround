@@ -358,6 +358,42 @@ namespace DataPackageTests
             _hostNotificationService.Open();
         }
 
+        protected void ReopenIdentificationService()
+        {
+            if (_identificationServiceStub == null)
+            {
+                throw new InvalidOperationException("Identification service shall be created first");
+            }
+
+            if (_hostIdentificationService != null)
+            {
+                bool closed = true;
+                try
+                {
+                    if (_hostIdentificationService.State != CommunicationState.Closed)
+                    {
+                        closed = false;
+                        if (_hostIdentificationService.State != CommunicationState.Faulted)
+                        {
+                            _hostIdentificationService.Close();
+                            closed = true;
+                        }
+                    }
+                }
+                finally
+                {
+                	if (!closed)
+                    {
+                        _hostIdentificationService.Abort();
+                    }
+                }
+            }
+
+            Uri identificationAddress = new Uri(IdentificationServiceUrl);
+            _hostIdentificationService = new ServiceHost(_identificationServiceStub, identificationAddress);
+            _hostIdentificationService.Open();
+        }
+
         /// <summary>
         /// Initializes the data package service.
         /// </summary>
@@ -600,7 +636,14 @@ namespace DataPackageTests
 
         protected void WaitPisGroundIsConnectedWithT2G()
         {
-            Assert.That(() => _t2gManager.T2GServerConnectionStatus, Is.True.After(5 * ONE_SECOND, ONE_SECOND / 4), "Pis-Ground cannot establish connection with T2G");
+            WaitPisGroundIsConnectedWithT2G(false);
+        }
+
+        protected void WaitPisGroundIsConnectedWithT2G(bool isRestart)
+        {
+            int delay = (isRestart) ? 35 * ONE_SECOND : 5 * ONE_SECOND;
+            int checkDelay = (isRestart) ? ONE_SECOND : ONE_SECOND / 4;
+            Assert.That(() => _t2gManager.T2GServerConnectionStatus, Is.True.After(delay, checkDelay), "Pis-Ground cannot establish connection with T2G");
         }
 
         protected  void WaitTrainOnlineWithPISGround(string trainName, bool waitForDataPackage)
