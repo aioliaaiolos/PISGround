@@ -29,9 +29,9 @@ namespace PIS.Ground.Core.T2G
 		private const int ServiceRequestTimeOut = 100;
 
 		/// <summary>
-		/// List of System which will be filled by calling enumSystems service of Identification.
+		/// List of System which will be filled by calling enumSystems service of Identification. Key is the system identifier, value is the system information.
 		/// </summary>
-		protected List<SystemInfo> _systemList = new List<SystemInfo>();
+		protected Dictionary<string, SystemInfo> _systemList = new Dictionary<string, SystemInfo>(10);
 
 		/// <summary>Current system list lock</summary>
 		protected object _systemListLock = new object();
@@ -140,15 +140,16 @@ namespace PIS.Ground.Core.T2G
 
 				lock (_systemListLock)
 				{
-					foreach (SystemInfo lSys in _systemList)
+					foreach (KeyValuePair<string, SystemInfo> item in _systemList)
 					{
+                        SystemInfo currentSystem = item.Value;
 						log.AppendLine("SYSTEM");
-						log.AppendLine("  SystemId		  (" + lSys.SystemId + ")");
-						log.AppendLine("  IsOnline		  (" + lSys.IsOnline + ")");
-						log.AppendLine("  Status			(" + lSys.Status + ")");
-						log.AppendLine("  VehiclePhysicalId (" + lSys.VehiclePhysicalId + ")");
+						log.AppendLine("  SystemId		  (" + currentSystem.SystemId + ")");
+						log.AppendLine("  IsOnline		  (" + currentSystem.IsOnline + ")");
+						log.AppendLine("  Status			(" + currentSystem.Status + ")");
+						log.AppendLine("  VehiclePhysicalId (" + currentSystem.VehiclePhysicalId + ")");
 
-						foreach (ServiceInfo lService in lSys.ServiceList)
+						foreach (ServiceInfo lService in currentSystem.ServiceList)
 						{
 							log.AppendLine("  SERVICE");
 							log.AppendLine("	ServiceId (" + lService.ServiceId + ")");
@@ -161,17 +162,17 @@ namespace PIS.Ground.Core.T2G
 						}
 
 						log.AppendLine("  BASELINE");
-						log.AppendLine("	CurrentVersionOut (" + lSys.PisBaseline.CurrentVersionOut + ")");
-						log.AppendLine("	FutureVersionOut  (" + lSys.PisBaseline.FutureVersionOut + ")");
+						log.AppendLine("	CurrentVersionOut (" + currentSystem.PisBaseline.CurrentVersionOut + ")");
+						log.AppendLine("	FutureVersionOut  (" + currentSystem.PisBaseline.FutureVersionOut + ")");
 						log.AppendLine("	... ");
 
 						log.AppendLine("  VERSION");
-						log.AppendLine("	VersionPISSoftware (" + lSys.PisVersion.VersionPISSoftware + ")");
+						log.AppendLine("	VersionPISSoftware (" + currentSystem.PisVersion.VersionPISSoftware + ")");
 
 						log.AppendLine("  MISSION");
-						log.AppendLine("	MissionState (" + lSys.PisMission.MissionState + ")");
-						log.AppendLine("	OperatorCode (" + lSys.PisMission.OperatorCode + ")");
-						log.AppendLine("	CommercialNumber (" + lSys.PisMission.CommercialNumber + ")");
+						log.AppendLine("	MissionState (" + currentSystem.PisMission.MissionState + ")");
+						log.AppendLine("	OperatorCode (" + currentSystem.PisMission.OperatorCode + ")");
+						log.AppendLine("	CommercialNumber (" + currentSystem.PisMission.CommercialNumber + ")");
 						log.AppendLine("");
 
 
@@ -193,10 +194,9 @@ namespace PIS.Ground.Core.T2G
 			{
 				lock (_systemListLock)
 				{
-					SystemInfo system = _systemList.Find(element => element.SystemId == systemId);
-
-					if (system != null)
-					{
+                    SystemInfo system;
+                    if (_systemList.TryGetValue(systemId, out system))
+                    {
 						// Copy immutable list ref is ok, keep same references
 						serviceList = system.ServiceList;
 					}
@@ -226,13 +226,13 @@ namespace PIS.Ground.Core.T2G
 			lock (_systemListLock)
 			{
 				// System info object is immutable. So, there is no need to create a copy.
-				systemInfo = _systemList.Find(item => item.SystemId == systemId);
+                _systemList.TryGetValue(systemId, out systemInfo);
 			}
 
 			return systemInfo;
 		}
 
-		/// <summary>Returns all system objects by creating a deep copy.</summary>        
+		/// <summary>Returns all system objects.</summary>        
 		/// <returns>List of all system objects.</returns>
 		internal List<SystemInfo> GetSystemList()
 		{
@@ -240,34 +240,44 @@ namespace PIS.Ground.Core.T2G
 
 			lock (_systemListLock)
 			{
-				systemInfoList = new List<SystemInfo>(_systemList);
+				systemInfoList = new List<SystemInfo>(_systemList.Values);
 			}
 
-            // No lock required here. Item in the list are immutable.
-            for (int i = 0; i < systemInfoList.Count; ++i)
-            {
-                systemInfoList[i] = new SystemInfo(systemInfoList[i]);
-            }
-            
 			return systemInfoList;
 		}
+
+        /// <summary>
+        /// Gets a dictionary of the known systems.
+        /// </summary>
+        /// <returns>Known system dictionary. Key is the system id and value is the system information.</returns>
+        internal Dictionary<string, SystemInfo> GetSystemDictionary()
+        {
+            Dictionary<string, SystemInfo> systems;
+            lock (_systemListLock)
+            {
+                systems = new Dictionary<string, SystemInfo>(_systemList);
+            }
+
+            return systems;
+        }
 
 		/// <summary>Returns whether an element is online or not.</summary>
 		/// <param name="systemId">System ID.</param>
 		/// <returns>True if the element is online, false otherwise.</returns>        
 		internal bool IsElementOnline(string systemId)
 		{
-			bool result = false;
+			bool isOnline = false;
 
 			if (!string.IsNullOrEmpty(systemId))
 			{
 				lock (_systemListLock)
 				{
-					result = _systemList.Exists(item => item.SystemId == systemId && item.IsOnline);
+                    SystemInfo system;
+					isOnline = _systemList.TryGetValue(systemId, out system) && system.IsOnline;
 				}
 			}
 
-			return result;
+			return isOnline;
 		}
 
 		/// <summary>Check if a given element exists in the list</summary>
@@ -281,7 +291,7 @@ namespace PIS.Ground.Core.T2G
 			{
 				lock (_systemListLock)
 				{
-					result = _systemList.Exists(item => item.SystemId == systemId);
+					result = _systemList.ContainsKey(systemId);
 				}
 			}
 
@@ -300,9 +310,11 @@ namespace PIS.Ground.Core.T2G
 			{
 				lock (_systemListLock)
 				{
-					SystemInfo system = _systemList.Find(element => element.SystemId == elementNumber);
-
-					elementData = T2GDataConverter.BuildAvailableElementData(system);
+					SystemInfo system;
+                    if (_systemList.TryGetValue(elementNumber, out system))
+                    {
+                        elementData = T2GDataConverter.BuildAvailableElementData(system);
+                    }
 				}
 			}
 
@@ -318,21 +330,23 @@ namespace PIS.Ground.Core.T2G
 
 			if (!string.IsNullOrEmpty(operatorCode))
 			{
+                IList<SystemInfo> systemList;
 				lock (_systemListLock)
 				{
-					List<SystemInfo> systemList = _systemList.FindAll(element => (element.PisMission != null && element.PisMission.OperatorCode == operatorCode));
-
-					foreach (SystemInfo system in systemList)
-					{
-						AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system);
-
-						if (elementData != null)
-						{
-							elementDataList.Add(elementData);
-						}
-					}
+					systemList= _systemList.Where(element => (element.Value.PisMission != null && element.Value.PisMission.OperatorCode == operatorCode)).Select(element => element.Value).ToList();
 				}
-			}
+
+                elementDataList.Capacity = systemList.Count;
+                foreach (SystemInfo system in systemList)
+                {
+                    AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system);
+
+                    if (elementData != null)
+                    {
+                        elementDataList.Add(elementData);
+                    }
+                }
+            }
 
 			return elementDataList;
 		}
@@ -346,20 +360,23 @@ namespace PIS.Ground.Core.T2G
 
 			if (!string.IsNullOrEmpty(commercialNumber))
 			{
+                IList<SystemInfo> systemList;
 				lock (_systemListLock)
 				{
-					List<SystemInfo> systemList = _systemList.FindAll(element => (element.PisMission != null && element.PisMission.CommercialNumber == commercialNumber));
-
-					foreach (SystemInfo system in systemList)
-					{
-						AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system);
-
-						if (elementData != null)
-						{
-							elementDataList.Add(elementData);
-						}
-					}
+					systemList = _systemList.Where(element => (element.Value.PisMission != null && element.Value.PisMission.CommercialNumber == commercialNumber)).Select(e => e.Value).ToList();
 				}
+
+                elementDataList.Capacity = systemList.Count;
+                foreach (SystemInfo system in systemList)
+                {
+                    AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system);
+
+                    if (elementData != null)
+                    {
+                        elementDataList.Add(elementData);
+                    }
+                }
+
 			}
 
 			return elementDataList;
@@ -373,9 +390,10 @@ namespace PIS.Ground.Core.T2G
 
 			lock (_systemListLock)
 			{
-				foreach (SystemInfo system in _systemList)
+                elementDataList.Capacity = _systemList.Count;
+				foreach (KeyValuePair<string, SystemInfo> system in _systemList)
 				{
-					AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system);
+					AvailableElementData elementData = T2GDataConverter.BuildAvailableElementData(system.Value);
 
 					if (elementData != null)
 					{
@@ -562,21 +580,18 @@ namespace PIS.Ground.Core.T2G
 				{
 					lock (_systemListLock)
 					{
-						//Check if an item with same SystemID exists
-
-						int indexFound = _systemList.FindIndex(item => item.SystemId == newSystemInfo.SystemId);
-
 						//Check if it simply needs to be added or updated
 
-						if (indexFound < 0)
+                        SystemInfo existingSystemInfo;
+
+						if (!_systemList.TryGetValue(newSystemInfo.SystemId, out existingSystemInfo))
 						{
 							// Add fresh info
 
-							_systemList.Add(newSystemInfo);
+							_systemList.Add(newSystemInfo.SystemId, newSystemInfo);
 						}
 						else
 						{
-                            SystemInfo existingSystemInfo = _systemList[indexFound];
 
 							// Add updated info
 							SystemInfo updatedSystemInfo = new SystemInfo(
@@ -592,7 +607,7 @@ namespace PIS.Ground.Core.T2G
 								existingSystemInfo.PisMission,
 								existingSystemInfo.IsPisBaselineUpToDate && newSystemInfo.IsOnline);
 
-							_systemList[indexFound] = updatedSystemInfo;
+                            _systemList[newSystemInfo.SystemId] = updatedSystemInfo;
 						}
 					}
 				}
@@ -624,14 +639,18 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="systemId">The system id to be removed from list.</param>
 		internal void RemoveSystem(string systemId)
 		{
-			LogManager.WriteLog(TraceType.INFO, "Removing cached system: SystemID=" + systemId, "PIS.Ground.Core.T2G.LocalDataStorage.RemoveSystem", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, "Removing cached system: SystemID={0}", systemId);
+                LogManager.WriteLog(TraceType.INFO, message, "PIS.Ground.Core.T2G.LocalDataStorage.RemoveSystem", null, EventIdEnum.GroundCore);
+            }
 
 			if (!string.IsNullOrEmpty(systemId))
 			{
 				lock (_systemListLock)
 				{
 					// Delete existing, if any
-					_systemList.RemoveAll(item => item.SystemId == systemId);
+                    _systemList.Remove(systemId);
 				}
 			}
 			else
@@ -669,13 +688,10 @@ namespace PIS.Ground.Core.T2G
 
 				lock (_systemListLock)
 				{
-                    int existingSystemInfoIndex = _systemList.FindIndex(s => s.SystemId == systemId);
-
+                    SystemInfo existingSystemInfo;
                     // System is know. Update possible.
-                    if (existingSystemInfoIndex >= 0)
+                    if (_systemList.TryGetValue(systemId, out existingSystemInfo))
 					{
-                        SystemInfo existingSystemInfo = _systemList[existingSystemInfoIndex];
-
 						List<ServiceInfo> updatedList = null;
 
                         // If the array is empty, this mean that we shall remove all services. Later, T2G will send an update.
@@ -743,7 +759,7 @@ namespace PIS.Ground.Core.T2G
                                 existingSystemInfo.PisMission,
                                 existingSystemInfo.IsPisBaselineUpToDate && existingSystemInfo.IsOnline);
 
-                            _systemList[existingSystemInfoIndex] = updatedSystemInfo;
+                            _systemList[existingSystemInfo.SystemId] = updatedSystemInfo;
                         }
 					}
 				}
@@ -866,12 +882,13 @@ namespace PIS.Ground.Core.T2G
                     LogManager.WriteLog(TraceType.INFO, message, "Ground.Core.T2G.T2GNotificationProcessor.OnServiceNotification", null, EventIdEnum.GroundCore);
                 }
 
+                bool systemExists;
 				lock (_systemListLock)
 				{
-					int foundIndex = _systemList.FindIndex(obj => obj.SystemId == systemId);
-                    if (foundIndex >= 0)
+                    SystemInfo foundSystem;
+                    systemExists = _systemList.TryGetValue(systemId, out foundSystem);
+                    if (systemExists)
 					{
-                        SystemInfo foundSystem = _systemList[foundIndex];
                         if (foundSystem.IsOnline != isSystemOnline)
                         {
                             // This info is mainly updated in GetSystemList (initially) or OnSystemChanged (after), but
@@ -889,13 +906,16 @@ namespace PIS.Ground.Core.T2G
                                 foundSystem.PisMission,
                                 foundSystem.IsPisBaselineUpToDate && isSystemOnline);
 
-                            _systemList[foundIndex] = updatedSystemInfo;
+                            _systemList[foundSystem.SystemId] = updatedSystemInfo;
                             updated = true;
                         }
 					}
 				}
 
-                updated |= UpdateServiceList(systemId, subscriptionId, services);
+                if (systemExists)
+                {
+                    updated |= UpdateServiceList(systemId, subscriptionId, services);
+                }
 			}
 
 			DumpCurrentSystemList(TraceType.DEBUG, "After OnServiceListChanged called:", "PIS.Ground.Core.T2G.LocalDataStorage.OnServiceListChanged");
@@ -912,15 +932,11 @@ namespace PIS.Ground.Core.T2G
 
 			lock (_systemListLock)
 			{
-				SystemInfo existingSystemInfo = _systemList.Find(obj => obj.SystemId == systemId);
+				SystemInfo existingSystemInfo;
 
-				if (existingSystemInfo != null)
+				if (_systemList.TryGetValue(systemId, out existingSystemInfo))
 				{
 					// Update existing system
-
-					// Remove obsolete info
-					_systemList.Remove(existingSystemInfo);
-
 					// Add updated info
 					SystemInfo updatedSystemInfo = new SystemInfo(
 						existingSystemInfo.SystemId,
@@ -935,7 +951,7 @@ namespace PIS.Ground.Core.T2G
 						existingSystemInfo.PisMission,
 						existingSystemInfo.IsOnline);
 
-					_systemList.Add(updatedSystemInfo);
+                    _systemList[systemId] = updatedSystemInfo;
 				}
 			}
 
@@ -952,14 +968,11 @@ namespace PIS.Ground.Core.T2G
 
 			lock (_systemListLock)
 			{
-				SystemInfo existingSystemInfo = _systemList.Find(obj => obj.SystemId == systemId);
+				SystemInfo existingSystemInfo;
 
-				if (existingSystemInfo != null)
-				{
-					// Update existing system
-
-					// Remove obsolete info
-					_systemList.Remove(existingSystemInfo);
+                if (_systemList.TryGetValue(systemId, out existingSystemInfo))
+                {
+                    // Update existing system
 
 					// Add updated info
 					SystemInfo updatedSystemInfo = new SystemInfo(
@@ -975,7 +988,7 @@ namespace PIS.Ground.Core.T2G
 						existingSystemInfo.PisMission,
 						existingSystemInfo.IsPisBaselineUpToDate && existingSystemInfo.IsOnline);
 
-					_systemList.Add(updatedSystemInfo);
+					_systemList[systemId] = updatedSystemInfo;
 				}
 			}
 
@@ -988,18 +1001,20 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="lVersion">The software version information.</param>
 		internal void OnMessageChanged(string systemId, string messageId, PisMission pisMission)
 		{
-			LogManager.WriteLog(TraceType.INFO, "OnMessageChanged called, systemId=" + systemId + ", messageId=" + messageId, "PIS.Ground.Core.T2G.LocalDataStorage.OnMessageChanged", null, EventIdEnum.GroundCore);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string logMessage = string.Format(CultureInfo.CurrentCulture, "OnMessageChanged called, systemId={0}, messageId={1}", systemId, messageId);
+                LogManager.WriteLog(TraceType.INFO, logMessage, "PIS.Ground.Core.T2G.LocalDataStorage.OnMessageChanged", null, EventIdEnum.GroundCore);
+            }
 
 			lock (_systemListLock)
 			{
-				SystemInfo existingSystemInfo = _systemList.Find(obj => obj.SystemId == systemId);
+                SystemInfo existingSystemInfo;
 
-				if (existingSystemInfo != null)
-				{
-					// Update existing system
+                if (_systemList.TryGetValue(systemId, out existingSystemInfo))
+                {
+                    // Update existing system
 
-					// Remove obsolete info
-					_systemList.Remove(existingSystemInfo);
 
 					// Add updated info
 					SystemInfo updatedSystemInfo = new SystemInfo(
@@ -1015,7 +1030,7 @@ namespace PIS.Ground.Core.T2G
 						pisMission,
 						existingSystemInfo.IsPisBaselineUpToDate && existingSystemInfo.IsOnline);
 
-					_systemList.Add(updatedSystemInfo);
+					_systemList[systemId] = updatedSystemInfo;
 				}
 			}
 
