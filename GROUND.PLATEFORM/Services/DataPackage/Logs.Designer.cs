@@ -493,6 +493,15 @@ namespace PIS.Ground.DataPackage {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot extract GUID from request id &apos;{0}&apos; received for notification &apos;{1}&apos; from element &apos;{2}&apos;. Default empty GUID used instead..
+        /// </summary>
+        internal static string WARNING_CANNOT_CONVERT_GUID_NOTIFICATION_REQUEST {
+            get {
+                return ResourceManager.GetString("WARNING_CANNOT_CONVERT_GUID_NOTIFICATION_REQUEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failure to retrieve information for tranfer task id {0} from T2G..
         /// </summary>
         internal static string WARNING_CANT_RETRIVE_TRANSFER_TASK_INFO {

@@ -66,11 +66,11 @@ namespace PIS.Ground.DataPackage.RequestMgt
 						{
 							if (requestContext.CommandType == BaselineCommandType.CLEAR_FORCING)
 							{
-								DataPackageService.sendNotificationToGroundApp(request.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingSent, request.ElementId);
+								DataPackageService.sendNotificationToGroundApp(request.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingSent, request.ElementId);
 							}
 							else
 							{
-								DataPackageService.sendNotificationToGroundApp(request.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingSent, request.ElementId);
+								DataPackageService.sendNotificationToGroundApp(request.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingSent, request.ElementId);
 							}
 							requestContext.TransmissionStatus = true;
 							requestContext.CompletionStatus = true;

@@ -560,7 +560,7 @@ namespace PIS.Ground.DataPackage
 					{
 						_stringListXmlSerializer.Serialize(lstr, lParamList);
 
-						sendNotificationToGroundApp(pFDistrStatusArg.RequestId.ToString(), lNotifEnum, lstr.ToString());
+						sendNotificationToGroundApp(pFDistrStatusArg.RequestId, lNotifEnum, lstr.ToString());
 					}
 				}
 			}
@@ -1443,7 +1443,7 @@ namespace PIS.Ground.DataPackage
 									lElDescr.ElementFutureBaselineExpirationDate = new DateTime();
 									lElDescr.ElementFutureBaseline = new ElementBaseline();
 									lElDescr.ElementFutureBaseline.BaselineVersion = "";
-									sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+									sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
 								}
 								break;
 							case T2GManagerErrorEnum.eElementNotFound:
@@ -1612,18 +1612,15 @@ namespace PIS.Ground.DataPackage
 		/// <param name="pStatus">Status : Completed/Failed/Processing.</param>
 		/// <param name="pElementId">The concerned ElementId.</param>
 		/// </summary>
-		public static void sendElementIdNotificationToGroundApp(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pElementId)
+		public static void sendElementIdNotificationToGroundApp(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pElementId)
 		{
-			string message = "sendElementIdNotificationToGroundApp : pElementId : {0}; ReqID = {1}; pStatus = {2}";
-			mWriteLog(TraceType.INFO, "sendElementIdNotificationToGroundApp", null, message, pElementId, pRequestId, pStatus);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = "sendElementIdNotificationToGroundApp : pElementId : {0}; ReqID = {1}; pStatus = {2}";
+                mWriteLog(TraceType.INFO, "sendElementIdNotificationToGroundApp", null, message, pElementId, pRequestId, pStatus);
+            }
 
 			// Request ID must be a GUID, but may be followed by the "|<CRC>" that should be removed
-
-			int endPos = pRequestId.IndexOf('|');
-			if (endPos != -1)
-			{
-				pRequestId = pRequestId.Substring(0, endPos);
-			}
 
 			try
 			{
@@ -1633,10 +1630,9 @@ namespace PIS.Ground.DataPackage
 					|| pStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingCompleted
 					|| pStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingCompleted)
 				{
-					Guid requestId = new Guid(pRequestId);
-					UpdateRequestStateToCompleted(requestId, pElementId);
+					UpdateRequestStateToCompleted(pRequestId, pElementId);
 					DistributingElementData distElementData = new DistributingElementData();
-					distElementData.requestId = requestId;
+					distElementData.requestId = pRequestId;
 					distElementData.distributionStatus = PIS.Ground.GroundCore.AppGround.NotificationIdEnum.Completed;
 					lock (_distributingElementDic)
 					{
@@ -1669,16 +1665,14 @@ namespace PIS.Ground.DataPackage
 		/// <param name="pStatus"> Status : Completed/Failed/Processing </param>
 		/// <param name="pParameter"> The serialized parameter under the form of a string</param>
 		/// </summary>
-		public static void sendNotificationToGroundApp(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pParameter)
+		public static void sendNotificationToGroundApp(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pParameter)
 		{
 			mWriteLog(TraceType.INFO, "sendNotificationToGroundApp", null, Logs.INFO_NOTIFICATIONTOAPPGROUND, pRequestId, pStatus);
 
 			try
 			{
-				Guid lRequestId = new Guid(pRequestId);
-
 				//Send Notification to AppGround
-				_notificationSender.SendNotification(pStatus, pParameter, lRequestId);
+				_notificationSender.SendNotification(pStatus, pParameter, pRequestId);
 			}
 			catch (Exception ex)
 			{
@@ -1957,11 +1951,11 @@ namespace PIS.Ground.DataPackage
 									{
 										if (pCommandType == BaselineCommandType.CLEAR_FORCING)
 										{
-											sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingProcessing, element.ElementNumber);
+											sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingProcessing, element.ElementNumber);
 										}
 										else
 										{
-											sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingProcessing, element.ElementNumber);
+											sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingProcessing, element.ElementNumber);
 										}
 
 										ServiceInfo serviceInfo;
@@ -1989,16 +1983,16 @@ namespace PIS.Ground.DataPackage
 
 														if (pCommandType == BaselineCommandType.CLEAR_FORCING)
 														{
-															sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingWaitingToSend, element.ElementNumber);
+															sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingWaitingToSend, element.ElementNumber);
 														}
 														else
 														{
-															sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingWaitingToSend, element.ElementNumber);
+															sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingWaitingToSend, element.ElementNumber);
 														}
 													}
 													else
 													{
-														sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingFailed, element.ElementNumber);
+														sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingFailed, element.ElementNumber);
 													}
 												}
 												break;
@@ -2076,7 +2070,7 @@ namespace PIS.Ground.DataPackage
 
 			if (lRqstResult == T2GManagerErrorEnum.eT2GServerOffline)
 			{
-				sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+				sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
 			}
 
 			if (lElData == null || string.Compare(pEID, lElData.ElementNumber, true) != 0)
@@ -3012,7 +3006,7 @@ namespace PIS.Ground.DataPackage
                         using (StringWriter lstr = new StringWriter())
                         {
                             _stringListXmlSerializer.Serialize(lstr, lParamList);
-                            sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
+                            sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
                         }
                     }
                 }
@@ -3388,7 +3382,7 @@ namespace PIS.Ground.DataPackage
                                             using (StringWriter lstr = new StringWriter())
                                             {
                                                 _stringListXmlSerializer.Serialize(lstr, lParamList);
-                                                sendNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
+                                                sendNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
                                             }
                                         }
                                     }
