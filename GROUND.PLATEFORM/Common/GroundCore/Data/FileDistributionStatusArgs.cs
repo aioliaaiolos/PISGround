@@ -1,10 +1,16 @@
-﻿/// 
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="FileDistributionStatusArgs.cs" company="Alstom">
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//		  This computer program may not be used, copied, distributed, corrected, modified, translated,
+//		  transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
+using System;
+using System.Globalization;
+
 namespace PIS.Ground.Core.Data
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// File distribution status argument used as Event argument
@@ -253,5 +259,30 @@ namespace PIS.Ground.Core.Data
         }
 
 #endregion
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                        "    RequestId                     : {0}\r\n" +
+                        "    TaskId                        : {1}\r\n" +
+                        "    TaskStatus                    : {2}\r\n" +
+                        "    CurrentTaskPhase              : {3}\r\n" +
+                        "    AcquisitionCompletionPercent  : {4}\r\n" +
+                        "    DistributionCompletionPercent : {5}\r\n" +
+                        "    TransferCompletionPercent     : {6}\r\n"
+                            , RequestId
+                            , TaskId
+                            , TaskStatus
+                            , CurrentTaskPhase
+                            , AcquisitionCompletionPercent
+                            , DistributionCompletionPercent
+                            , TransferCompletionPercent);
+        }
     }
 }
