@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Moq;
+using PIS.Ground.DataPackage;
 
 namespace DataPackageTests.RequestMgt
 {
@@ -20,16 +21,21 @@ namespace DataPackageTests.RequestMgt
 	class BaselineDistributingRequestContextProcessorTests
 	{
 		/// <summary>The train 2ground manager mock.</summary>
-		Mock<PIS.Ground.Core.T2G.IT2GManager> _train2groundManagerMock;
+		private Mock<PIS.Ground.Core.T2G.IT2GManager> _train2groundManagerMock;
 
 		/// <summary>The remote data store factory.</summary>
-		Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
+		private Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
 
 		/// <summary>The remote data store mock.</summary>
-		Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore> _remoteDataStoreMock;
+		private Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore> _remoteDataStoreMock;
 
 		/// <summary>The tested instance.</summary>
-		PIS.Ground.Core.Data.IRequestContextProcessor _testedInstance;
+		private PIS.Ground.Core.Data.IRequestContextProcessor _testedInstance;
+
+        /// <summary>
+        /// The baseline status updater
+        /// </summary>
+        private BaselineStatusUpdater _baselineStatusUpdater;
 
 		/// <summary>Initializes a new instance of the RequestManagerTests class.</summary>
 		public BaselineDistributingRequestContextProcessorTests()
@@ -43,14 +49,20 @@ namespace DataPackageTests.RequestMgt
 			_train2groundManagerMock = new Mock<PIS.Ground.Core.T2G.IT2GManager>();
 			_remoteDataStoreMock = new Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore>();
 			_remoteDataStoreFactoryMock = new Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory>();
+            _baselineStatusUpdater = new BaselineStatusUpdater();
 
-			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(_remoteDataStoreFactoryMock.Object, _train2groundManagerMock.Object);
+			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(_remoteDataStoreFactoryMock.Object, _train2groundManagerMock.Object, _baselineStatusUpdater);
 		}
 
 		/// <summary>Tear down.</summary>
 		[TearDown]
 		protected void TearDown()
 		{
+            if (_baselineStatusUpdater != null)
+            {
+                _baselineStatusUpdater.Dispose();
+                _baselineStatusUpdater = null;
+            }
 		}
 
 		#region contructor
@@ -60,16 +72,24 @@ namespace DataPackageTests.RequestMgt
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void ConstructorRemoteDataStoreFactoryNull()
 		{
-			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(null, _train2groundManagerMock.Object);
+			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(null, _train2groundManagerMock.Object, _baselineStatusUpdater);
 		}
 
-		/// <summary>Constructor with a T2GManager null.</summary>
-		[Test]
-		[ExpectedException(typeof(ArgumentNullException))]
-		public void ConstructorT2GManagerNull()
-		{
-			_testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(_remoteDataStoreFactoryMock.Object, null);
-		}
+        /// <summary>Constructor with a T2GManager null.</summary>
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ConstructorT2GManagerNull()
+        {
+            _testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(_remoteDataStoreFactoryMock.Object, null, _baselineStatusUpdater);
+        }
+
+        /// <summary>Constructor with a T2GManager null.</summary>
+        [Test]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ConstructorBaselineStatusUpdaterNull()
+        {
+            _testedInstance = new PIS.Ground.DataPackage.RequestMgt.BaselineDistributingRequestContextProcessor(_remoteDataStoreFactoryMock.Object, _train2groundManagerMock.Object, null);
+        }
 
 		#endregion
 

@@ -21,22 +21,25 @@ namespace DataPackageTests.RequestMgt
 	class RequestManagerTests
 	{
 		/// <summary>The train 2ground manager mock.</summary>
-		Mock<PIS.Ground.Core.T2G.IT2GManager> _train2groundManagerMock;
+		private Mock<PIS.Ground.Core.T2G.IT2GManager> _train2groundManagerMock;
 
 		/// <summary>The notification sender mock.</summary>
-		Mock<PIS.Ground.Core.Common.INotificationSender> _notificationSenderMock;
+		private Mock<PIS.Ground.Core.Common.INotificationSender> _notificationSenderMock;
 
 		/// <summary>The session manager mock.</summary>
-		Mock<PIS.Ground.Core.SessionMgmt.ISessionManager> _sessionMgrMock;
+		private Mock<PIS.Ground.Core.SessionMgmt.ISessionManager> _sessionMgrMock;
 
 		/// <summary>The request factory.</summary>
-		Mock<PIS.Ground.DataPackage.RequestMgt.IRequestContextFactory> _requestFactoryMock;
+		private Mock<PIS.Ground.DataPackage.RequestMgt.IRequestContextFactory> _requestFactoryMock;
 
 		/// <summary>The remote data store factory.</summary>
-		Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
+		private Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
 
 		/// <summary>The remote data store mock.</summary>
-		Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore> _remoteDataStoreMock;
+		private Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore> _remoteDataStoreMock;
+
+        /// <summary>The baseline status updater</summary>
+        private BaselineStatusUpdater _baselineStatusUpdater;
 
 		/// <summary>The tested instance.</summary>
 		RequestManagerMonitor _testedInstance;
@@ -59,6 +62,7 @@ namespace DataPackageTests.RequestMgt
 			_requestFactoryMock = new Mock<PIS.Ground.DataPackage.RequestMgt.IRequestContextFactory>();
 			_remoteDataStoreMock = new Mock<PIS.Ground.RemoteDataStore.IRemoteDataStore>();
 			_remoteDataStoreFactoryMock = new Mock<PIS.Ground.DataPackage.RemoteDataStoreFactory.IRemoteDataStoreFactory>();
+            _baselineStatusUpdater = new BaselineStatusUpdater();
 			PIS.Ground.DataPackage.DataPackageService.Initialize(
 				_sessionMgrMock.Object,
 				_notificationSenderMock.Object,
@@ -66,6 +70,7 @@ namespace DataPackageTests.RequestMgt
 				_requestFactoryMock.Object,
 				_remoteDataStoreFactoryMock.Object,
 				_testedInstance,
+                _baselineStatusUpdater,
                 false);
 		}
 
@@ -76,6 +81,11 @@ namespace DataPackageTests.RequestMgt
             if (_testedInstance != null)
             {
                 _testedInstance.Dispose();
+            }
+
+            if (_baselineStatusUpdater != null)
+            {
+                _baselineStatusUpdater.Dispose();
             }
 
             DataPackageService.Uninitialize();

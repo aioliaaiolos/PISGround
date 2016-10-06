@@ -1,5 +1,5 @@
 ﻿//---------------------------------------------------------------------------------------------------
-// <copyright file="BaselineForcingRequestContextProcessor.cs" company="Alstom">
+// <copyright file="BaselineDistributingRequestContextProcessor.cs" company="Alstom">
 //          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
@@ -31,27 +31,35 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <summary>Manager for train to ground.</summary>
 		private IT2GManager _trainToGroundManager;
 
+        /// <summary>
+        /// The baseline status updater to use.
+        /// </summary>
+        private BaselineStatusUpdater _baselineStatusUpdater;
+
 		/// <summary>
 		/// Initializes a new instance of the BaselineDistributingRequestContextProcessor class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
 		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
 		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		public BaselineDistributingRequestContextProcessor(IRemoteDataStoreFactory remoteDataStoreFactory, IT2GManager trainToGroundManager)
+		public BaselineDistributingRequestContextProcessor(IRemoteDataStoreFactory remoteDataStoreFactory, IT2GManager trainToGroundManager, BaselineStatusUpdater baselineStatusUpdater)
 		{
 			if (null == remoteDataStoreFactory)
 			{
 				throw new ArgumentNullException("remoteDataStoreFactory");
 			}
+            else if (null == trainToGroundManager)
+            {
+                throw new ArgumentNullException("trainToGroundManager");
+            }
+            else if (null == baselineStatusUpdater)
+            {
+                throw new ArgumentNullException("baselineStatusUpdater");
+            }
 
 			_remoteDataStoreFactory = remoteDataStoreFactory;
-
-			if (null == trainToGroundManager)
-			{
-				throw new ArgumentNullException("trainToGroundManager");
-			}
-
 			_trainToGroundManager = trainToGroundManager;
+            _baselineStatusUpdater = baselineStatusUpdater;
 		}
 
 		/// <summary>Process the distribute request described by request.</summary>
@@ -146,7 +154,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 													requestContext.DistributionAttributes.TransferMode,
 													requestContext.DistributionAttributes.priority,
 													new EventHandler<FileDistributionStatusArgs>(DataPackageService.OnFileDistributeNotification),
-                                                    new EventHandler<FileDistributionTaskCreatedArgs>(BaselineStatusUpdater.OnFileDistributionTaskCreated));
+                                                    new EventHandler<FileDistributionTaskCreatedArgs>(_baselineStatusUpdater.OnFileDistributionTaskCreated));
 
 												DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageFutureBaselineDefinition, stringWriter.ToString());
 
@@ -166,7 +174,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 												if (lRqstResult == T2GManagerErrorEnum.eSuccess &&
 													elementData != null && elementData.PisBaselineData != null)
 												{
-													BaselineStatusUpdater.ProcessDistributeBaselineRequest(
+													_baselineStatusUpdater.ProcessDistributeBaselineRequest(
 														elementData.ElementNumber,
 														requestContext.RequestId,
 														elementData.OnlineStatus,

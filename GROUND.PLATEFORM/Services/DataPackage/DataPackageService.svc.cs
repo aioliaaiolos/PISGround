@@ -79,6 +79,8 @@ namespace PIS.Ground.DataPackage
 
 		private static INotificationSender _notificationSender = null;
 
+        private static BaselineStatusUpdater _baselineStatusUpdater = null;
+
 		// Dictionary where the key is the pair(requestId, trainId) and the value is the Baseline Version.
 		private static Dictionary<KeyValuePair<Guid, string>, string> _baselineVersionDic = new Dictionary<KeyValuePair<Guid, string>, string>();
 
@@ -120,7 +122,7 @@ namespace PIS.Ground.DataPackage
 		}
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// Initializes a new instance of the <see cref="DataPackageService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="notificationSender">The notification sender.</param>
@@ -128,16 +130,20 @@ namespace PIS.Ground.DataPackage
         /// <param name="requestsFactory">The requests factory.</param>
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
-        /// <remarks>Available for automated testing.</remarks>
+        /// <param name="baselineStatusUpdater">The baseline status updater.</param>
+        /// <remarks>
+        /// Available for automated testing.
+        /// </remarks>
         protected DataPackageService(
             ISessionManager sessionManager,
             INotificationSender notificationSender,
             IT2GManager t2gManager,
             RequestMgt.IRequestContextFactory requestsFactory,
             RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-            RequestMgt.IRequestManager requestManager)
+            RequestMgt.IRequestManager requestManager,
+            BaselineStatusUpdater baselineStatusUpdater)
         {
-            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, true);
+            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, baselineStatusUpdater, true);
         }
 
 		#endregion
@@ -174,12 +180,13 @@ namespace PIS.Ground.DataPackage
 							_notificationSender = new NotificationSender(_sessionManager);
 
 							_t2gManager = T2GManagerContainer.T2GManager;
+                            _baselineStatusUpdater = new BaselineStatusUpdater();
+                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
 							_remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
                             _requestManager = new RequestMgt.RequestManager();
-                            _requestFactory = new RequestMgt.RequestContextFactory();
+                            _requestFactory = new RequestMgt.RequestContextFactory(_t2gManager, _remoteDataStoreFactory, _baselineStatusUpdater);
 
-                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
                             CommonInitialize();
 						}
@@ -210,7 +217,7 @@ namespace PIS.Ground.DataPackage
             //
             ElementList<AvailableElementData> availableElements;
             _t2gManager.GetAvailableElementDataList(out availableElements);
-            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
+            _baselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
 
             _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
 
@@ -238,13 +245,36 @@ namespace PIS.Ground.DataPackage
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
         /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
-		public static void Initialize(
-			ISessionManager sessionManager,
-			INotificationSender notificationSender,
-			IT2GManager t2gManager,
-			RequestMgt.IRequestContextFactory requestsFactory,
-			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-			RequestMgt.IRequestManager requestManager,
+        //public static void Initialize(
+        //    ISessionManager sessionManager,
+        //    INotificationSender notificationSender,
+        //    IT2GManager t2gManager,
+        //    RequestMgt.IRequestContextFactory requestsFactory,
+        //    RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
+        //    RequestMgt.IRequestManager requestManager,
+        //    bool executeCommonLogic)
+        //{
+        //    Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, null, executeCommonLogic);
+        //}
+
+        /// <summary>
+        /// Initializes this instance by providing objects to use.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="requestsFactory">The requests factory.</param>
+        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
+        /// <param name="requestManager">The request manager.</param>
+        /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
+        public static void Initialize(
+            ISessionManager sessionManager,
+            INotificationSender notificationSender,
+            IT2GManager t2gManager,
+            RequestMgt.IRequestContextFactory requestsFactory,
+            RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
+            RequestMgt.IRequestManager requestManager,
+            BaselineStatusUpdater baselineStatusUpdater,
             bool executeCommonLogic)
 		{
             lock (_initializationLock)
@@ -257,6 +287,7 @@ namespace PIS.Ground.DataPackage
                 _requestFactory = requestsFactory;
                 _remoteDataStoreFactory = remoteDataStoreFactory;
                 _requestManager = requestManager;
+                _baselineStatusUpdater = baselineStatusUpdater ?? new BaselineStatusUpdater();
 
                 if (executeCommonLogic)
                 {
@@ -305,6 +336,11 @@ namespace PIS.Ground.DataPackage
                     _baselineStatusThread = null;
                 }
 
+                if (_baselineStatusUpdater != null)
+                {
+                    _baselineStatusUpdater.Dispose();
+                }
+
                 if (_t2gManager != null)
                 {
                     if (_t2gManager.T2GFileDistributionManager != null)
@@ -319,8 +355,6 @@ namespace PIS.Ground.DataPackage
 
                     _t2gManager.Dispose();
                 }
-
-                BaselineStatusUpdater.Uninitialize();
 
                 if (_baselineStatusSystemInformationQueue != null)
                 {
@@ -346,7 +380,7 @@ namespace PIS.Ground.DataPackage
 					{
 						if (lTrainId.SystemId != null)
 						{
-							BaselineStatusUpdater.ProcessTaskId(lTrainId.SystemId, request.RequestId, request.TaskId);
+							_baselineStatusUpdater.ProcessTaskId(lTrainId.SystemId, request.RequestId, request.TaskId);
 						}
 					}
 				}
@@ -410,7 +444,7 @@ namespace PIS.Ground.DataPackage
 			{
 				if (string.IsNullOrEmpty(pNotification.SystemId) == false)
 				{
-					BaselineStatusUpdater.ProcessElementDeletedNotification(pNotification.SystemId);
+					_baselineStatusUpdater.ProcessElementDeletedNotification(pNotification.SystemId);
 
 					_notificationSender.SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DeletedElement, pNotification.SystemId);
 				}
@@ -430,7 +464,7 @@ namespace PIS.Ground.DataPackage
 
 				if (pNotification.online == false)
 				{
-					BaselineStatusUpdater.ResetStatusEntries(null);
+					_baselineStatusUpdater.ResetStatusEntries(null);
 				}
 			}
 		}
@@ -448,7 +482,7 @@ namespace PIS.Ground.DataPackage
 				// on that T2G notification
 				//
 
-				BaselineStatusUpdater.ProcessFileTransferNotification(pNotification);
+				_baselineStatusUpdater.ProcessFileTransferNotification(pNotification);
 			}
 		}
 
@@ -989,7 +1023,7 @@ namespace PIS.Ground.DataPackage
 
                                         DataPackageService.GetAssignedBaselines(lNextSystemInfo.SystemId, out lAssignedCurrentBaseline, out lAssignedFutureBaseline);
 
-                                        BaselineStatusUpdater.ProcessSystemChangedNotification(
+                                        _baselineStatusUpdater.ProcessSystemChangedNotification(
                                             lNextSystemInfo, lAssignedCurrentBaseline, lAssignedFutureBaseline);
                                     }
                                 }
@@ -1217,9 +1251,7 @@ namespace PIS.Ground.DataPackage
                     DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
                     requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
                         baselineDistributingSavedRequestsList,
-                        _requestFactory,
-                        _remoteDataStoreFactory,
-                        _t2gManager);
+                        _requestFactory);
                 }
 			}
 			catch (TimeoutException ex)
@@ -1644,7 +1676,7 @@ namespace PIS.Ground.DataPackage
 
 				// Updating on the HistoryLogger the baseline deployments statuses based
 				// on that SIF notification (from PIS Embedded - Media Controller)
-				BaselineStatusUpdater.ProcessSIFNotification(pElementId, pStatus);
+				_baselineStatusUpdater.ProcessSIFNotification(pElementId, pStatus);
 
 				//serialize ElementId.
 				using (StringWriter lstr = new StringWriter())
@@ -1739,9 +1771,7 @@ namespace PIS.Ground.DataPackage
 										pIncr,
 										baselineVersion,
 										baselineActivationDate,
-										baselineExpirationDate,
-										_remoteDataStoreFactory,
-										_t2gManager);
+										baselineExpirationDate);
 
 									if (request != null)
 									{
@@ -2890,9 +2920,7 @@ namespace PIS.Ground.DataPackage
 							false,
 							pBLVersion,
 							pActivationDate,
-							pExpirationDate,
-							_remoteDataStoreFactory,
-							_t2gManager);
+							pExpirationDate);
 
 							if (request != null)
 							{

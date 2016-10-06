@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="IRequestContextFactory.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2015.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -64,9 +64,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="baselineVersion">The baseline version.</param>
 		/// <param name="baselineActivationDate">Date of the baseline activation.</param>
 		/// <param name="baselineExpiratoinDate">Date of the baseline expiratoin.</param>
-		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		/// <returns>The new baseline distributing request context.</returns>
+        /// <returns>The new baseline distributing request context.</returns>
 		IRequestContext CreateBaselineDistributingRequestContext(
 			string endpoint,
 			string elementId,
@@ -76,9 +74,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 			bool incremental,
 			string baselineVersion,
 			DateTime baselineActivationDate,
-			DateTime baselineExpiratoinDate,
-			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-			Core.T2G.IT2GManager trainToGroundManager);
+			DateTime baselineExpiratoinDate);
 
 		/// <summary>Creates baseline distributing request context.</summary>
 		/// <param name="elementId">Identifier for the element.</param>
@@ -92,9 +88,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="baselineVersion">The baseline version.</param>
 		/// <param name="baselineActivationDate">Date of the baseline activation.</param>
 		/// <param name="baselineExpiratoinDate">Date of the baseline expiratoin.</param>
-		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		/// <returns>The new baseline distributing request context.</returns>
+        /// <returns>The new baseline distributing request context.</returns>
 		IRequestContext CreateBaselineDistributingRequestContext(
 				string elementId,
 				Guid requestId,
@@ -106,8 +100,6 @@ namespace PIS.Ground.DataPackage.RequestMgt
 				sbyte priority,
 				string baselineVersion,
 				DateTime baselineActivationDate,
-				DateTime baselineExpiratoinDate,
-				RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-				Core.T2G.IT2GManager trainToGroundManager);
+				DateTime baselineExpiratoinDate);
 	}
 }

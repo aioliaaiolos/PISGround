@@ -36,14 +36,17 @@ namespace DataPackageTests.ServicesStub
         /// <param name="requestsFactory">The requests factory.</param>
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
+        /// <param name="baselineStatusUpdater">The baseline status updater.</param>
         public DataPackageServiceStub(ISessionManager sessionManager,
             INotificationSender notificationSender,
             IT2GManager t2gManager,
             IRequestContextFactory requestsFactory,
             IRemoteDataStoreFactory remoteDataStoreFactory,
-            IRequestManager requestManager) :
-            base(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager)
+            IRequestManager requestManager,
+            BaselineStatusUpdater baselineStatusUpdater) :
+            base(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, baselineStatusUpdater)
         {
+            // No logic body.
         }
 
         #endregion

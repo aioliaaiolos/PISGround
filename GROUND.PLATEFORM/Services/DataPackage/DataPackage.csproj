@@ -112,6 +112,7 @@
     <Compile Include="RequestMgt\IRequestManager.cs" />
     <Compile Include="RequestMgt\RequestContextFactory.cs" />
     <Compile Include="RequestMgt\RequestManager.cs" />
+    <Compile Include="TrainBaselineStatusExtendedData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\GroundCore\GroundCore.csproj">

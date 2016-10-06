@@ -110,6 +110,7 @@ namespace DataPackageTests
         protected NotificationSenderStub _notificationsSender;
         protected Mock<IRemoteDataStoreFactory> _remoteDataStoreFactoryMock;
         protected SessionManager _sessionManager;
+        protected BaselineStatusUpdater _baselineStatusUpdater;
         protected RequestContextFactory _requestFactory;
         protected RequestManager _requestManager;
         protected Guid _pisGroundSessionId;
@@ -295,6 +296,11 @@ namespace DataPackageTests
                 _vehicleInfoServiceStub.Dispose();
             }
 
+            if (_baselineStatusUpdater != null)
+            {
+                _baselineStatusUpdater.Dispose();
+            }
+
             _hostIdentificationService = null;
             _hostFileTransferService = null;
             _hostVehicleInfoService = null;
@@ -305,8 +311,8 @@ namespace DataPackageTests
             _vehicleInfoServiceStub = null;
             _notificationServiceStub = null;
             _trainDataPackageServiceStub = null;
+            _baselineStatusUpdater = null;
             DataPackageService.Uninitialize();
-            BaselineStatusUpdater.Uninitialize();
             T2GManagerContainer.T2GManager = null;
             _t2gManager = null;
             _sessionManager = null;
@@ -406,13 +412,14 @@ namespace DataPackageTests
             // Create a complete T2G Manager
             _t2gManager = T2GManagerContainer.T2GManager;
             _sessionManager = new SessionManager();
+            _baselineStatusUpdater = new BaselineStatusUpdater();
 
             if (!isRestart)
             {
                 Assert.IsEmpty(_sessionManager.RemoveAllSessions(), "Cannot empty the session database");
             }
 
-            _requestFactory = new RequestContextFactory();
+            _requestFactory = new RequestContextFactory(_t2gManager, _remoteDataStoreFactoryMock.Object, _baselineStatusUpdater);
             _requestManager = new RequestManager();
 
             _datapackageServiceStub = new DataPackageServiceStub(_sessionManager,
@@ -420,7 +427,8 @@ namespace DataPackageTests
                 _t2gManager,
                 _requestFactory,
                 _remoteDataStoreFactoryMock.Object,
-                _requestManager
+                _requestManager,
+                _baselineStatusUpdater
                 );
         }
 
