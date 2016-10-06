@@ -995,5 +995,14 @@ namespace PIS.Ground.Core.Properties {
                 return ResourceManager.GetString("UploadFolderCreationFailed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The url &apos;{0}&apos; is either malformed or it is unreachable..
+        /// </summary>
+        internal static string UrlValidationFailed {
+            get {
+                return ResourceManager.GetString("UrlValidationFailed", resourceCulture);
+            }
+        }
     }
 }
