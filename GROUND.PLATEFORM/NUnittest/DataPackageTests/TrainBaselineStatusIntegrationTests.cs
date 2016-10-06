@@ -27,7 +27,7 @@ namespace DataPackageTests
     /// This class also validate the history log database and the notifications send by PIS-Ground.
     /// </summary>
     /// <seealso cref="DataPackageTests.IntegrationTestsBase" />
-    [TestFixture, Category("BaselineStatutScenario"), Timeout(1 * 60 * 1000)]
+    [TestFixture, Category("BaselineStatusScenario"), Timeout(1 * 60 * 1000)]
     class TrainBaselineStatusIntegrationTests : IntegrationTestsBase
     {
         #region Constructor
@@ -62,8 +62,8 @@ namespace DataPackageTests
             InitializeDataPackageService(false);
             InitializePISGroundSession();
 
-            _hostIdentificationService.Open();
-            WaitPisGroundIsConnectedWithT2G();
+            ReopenIdentificationService();
+            WaitPisGroundIsConnectedWithT2G(true);
             WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
 
             WaitTrainBaselineStatusesEquals(expectedStatuses, "Newly discovered train are not added as expected into the TrainBaselineStatus database when a connection with T2G is established");
@@ -95,9 +95,10 @@ namespace DataPackageTests
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, false);
             InitializeDataPackageService(false);
             InitializePISGroundSession();
-            _hostIdentificationService.Open();
+            ReopenIdentificationService();
 
-            WaitPisGroundIsConnectedWithT2G();
+
+            WaitPisGroundIsConnectedWithT2G(true);
             WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
 
 
@@ -169,8 +170,8 @@ namespace DataPackageTests
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
-            _hostIdentificationService.Open();
-            WaitPisGroundIsConnectedWithT2G();
+            ReopenIdentificationService();
+            WaitPisGroundIsConnectedWithT2G(true);
             WaitNotificationSend(NotificationIdEnum.CommonT2GServerOnline);
 
             // Wait that history log was updated.
