@@ -1050,43 +1050,45 @@ namespace DataPackageTests.ServicesStub
                 subscribed = (bool[])_serviceSubscriptions.Clone();
             }
 
-            using (NotificationClient client = new NotificationClient("NotificationClient", notificationUrl))
+            if (!string.IsNullOrEmpty(notificationUrl))
             {
-                try
+                using (NotificationClient client = new NotificationClient("NotificationClient", notificationUrl))
                 {
-                    DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
-                    serviceList.Capacity = 1;
-
-                    for (int i = 0; i < subscribed.Length; ++i)
+                    try
                     {
-                        if (subscribed[i] && data[i] != null)
+                        DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
+                        serviceList.Capacity = 1;
+
+                        for (int i = 0; i < subscribed.Length; ++i)
                         {
-                            if (client.State == CommunicationState.Closed)
+                            if (subscribed[i] && data[i] != null)
                             {
-                                client.Open();
+                                if (client.State == CommunicationState.Closed)
+                                {
+                                    client.Open();
+                                }
+
+                                serviceList.Add(data[i]);
+                                client.onServiceNotification(systemId, isOnline, i + 1, serviceList);
+                                serviceList.Clear();
+
                             }
+                        }
 
-                            serviceList.Add(data[i]);
-                            client.onServiceNotification(systemId, isOnline, i + 1, serviceList);
-                            serviceList.Clear();
-
+                        if (client.State == CommunicationState.Opened)
+                        {
+                            client.Close();
                         }
                     }
-
-                    if (client.State == CommunicationState.Opened)
+                    finally
                     {
-                        client.Close();
-                    }
-                }
-                finally
-                {
-                    if (client.State == CommunicationState.Faulted)
-                    {
-                        client.Abort();
+                        if (client.State == CommunicationState.Faulted)
+                        {
+                            client.Abort();
+                        }
                     }
                 }
             }
-
         }
 
         #endregion
