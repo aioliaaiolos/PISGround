@@ -68,18 +68,6 @@ namespace DataPackageTests
             TrainBaselineStatusData currentProgress,
             out TrainBaselineStatusData updatedProgress);
 
-/*        public new void ProcessSystemChangedNotification(
-            SystemInfo notification,
-            string assignedCurrentBaseline,
-            string assignedFutureBaseline,
-            ref string onBoardFutureBaseline,
-            ref bool isDeepUpdate,
-            TrainBaselineStatusData currentProgress,
-            out TrainBaselineStatusData updatedProgress)
-        {
-            base.ProcessSystemChangedNotification(notification, assignedCurrentBaseline, assignedFutureBaseline, ref onBoardFutureBaseline, ref isDeepUpdate, currentProgress, out updatedProgress);
-        }
-*/
         public new void UpdateBaselineProgressFromFileTransferNotification(
             FileDistributionStatusArgs notification,
             ref TrainBaselineStatusExtendedData TrainBaselineStatusData)
