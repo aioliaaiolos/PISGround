@@ -542,10 +542,27 @@ namespace DataPackageTests
         /// <exception cref="NotImplementedException">Support to multiple train need to be implemented if needed.</exception>
         protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort, CommLinkEnum communicationLink, bool initializeEmbeddedService)
         {
+            InitializeTrain(trainId, vehicleId, isOnline, ipAddress, dataPackagePort, communicationLink, initializeEmbeddedService, DEFAULT_BASELINE);
+        }
+
+        /// <summary>
+        /// Add a know train in T2G and might initialize the data-package embedded service.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="vehicleId">The vehicle identifier.</param>
+        /// <param name="isOnline">Indicates the initiale online status of the train.</param>
+        /// <param name="ipAddress">The ip address of the train.</param>
+        /// <param name="dataPackagePort">The data package port.</param>
+        /// <param name="communicationLink">The communication link.</param>
+        /// <param name="initializeEmbeddedService">Indicates if the embedded data-package service shall be initialized.</param>
+        /// <param name="currentBaseline">The current baseline version.</param>
+        /// <exception cref="NotImplementedException">Support to multiple train need to be implemented if needed.</exception>
+        protected void InitializeTrain(string trainId, int vehicleId, bool isOnline, string ipAddress, ushort dataPackagePort, CommLinkEnum communicationLink, bool initializeEmbeddedService, string currentBaseline)
+        {
             _identificationServiceStub.UpdateSystem(trainId, vehicleId, isOnline, 0, DEFAULT_MISSION, communicationLink, ipAddress);
             _vehicleInfoServiceStub.UpdateMessageData(new VersionMessage(trainId, DEFAULT_PIS_VERSION));
             BaselineMessage baseline = new BaselineMessage(trainId);
-            baseline.CurrentVersion = DEFAULT_BASELINE;
+            baseline.CurrentVersion = currentBaseline;
             _vehicleInfoServiceStub.UpdateMessageData(baseline);
 
             MissionMessage mission = new MissionMessage(trainId, DEFAULT_MISSION, (string.IsNullOrEmpty(DEFAULT_MISSION)) ? "NI" : "MI", DEFAULT_OPERATOR_CODE);

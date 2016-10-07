@@ -19,6 +19,7 @@ using PIS.Ground.DataPackage;
 using PIS.Ground.RemoteDataStore;
 
 using System.Reflection;
+using System.Globalization;
 
 namespace DataPackageTests
 {
@@ -30,6 +31,7 @@ namespace DataPackageTests
 
 		/// <summary>Identifier for the system.</summary>
 		private static readonly string _systemId = "MyTrain-69";
+        private static readonly ushort _vehicleId = 69;
 		private static readonly string _trainCurrentVersion = "2.9.0.2";
 		private static readonly string _trainFutureVersion = "3.1.0.2";
 		private static readonly string _trainPISVersion = "5.12.4.5";
@@ -121,8 +123,8 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
-				0,
+                _vehicleId,
+                0,
 				true,
 				CommunicationLink.WIFI,
 				new ServiceInfoList(),
@@ -150,8 +152,8 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
-				0,
+                _vehicleId,
+                0,
 				false,
 				CommunicationLink.WIFI,
 				new ServiceInfoList(),
@@ -179,7 +181,7 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
+				_vehicleId,
 				0,
 				false,
 				CommunicationLink.WIFI,
@@ -203,7 +205,8 @@ namespace DataPackageTests
 			TrainBaselineStatusData.PisOnBoardVersion = _latestKnownPISOnboardVersion;
 			TrainBaselineStatusData.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
 			TrainBaselineStatusData.TaskId = 746;
-			TrainBaselineStatusData.TrainNumber = _systemId;
+            TrainBaselineStatusData.TrainNumber = "";
+            TrainBaselineStatusData.TrainId = _systemId;
 
 			return TrainBaselineStatusData;
 		}
@@ -225,6 +228,7 @@ namespace DataPackageTests
 				lStatusDate,
 				_latestKnownAssignedFutureBaselineVersion,
 				_latestKnownOnBoardFutureBaselineVersion,
+                _latestKnownCurrentBaselineVersion,
 				true);
 
 			return lStatusExtendedData;
@@ -419,13 +423,10 @@ namespace DataPackageTests
         [Test]
         public void ProcessSystemChangedNotificationTest_Online()
         {
-            string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
-
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -443,10 +444,14 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
+
+                SystemInfo systemInfo = BuildSampleSystemInfo();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -454,13 +459,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
                 Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
-
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 
             /// SystemInfo = BuildSampleSystemInfo
@@ -479,12 +484,16 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
-                IsDeepUpdate = false;
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
 
+                SystemInfo systemInfo = BuildSampleSystemInfo();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -492,12 +501,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
                 Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
         }
 
@@ -509,7 +519,6 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
 
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -528,10 +537,13 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
+
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, null, out lUpdatedProgress);
+                    systemInfo, string.Empty, string.Empty);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -539,12 +551,13 @@ namespace DataPackageTests
 
                 Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(0, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual(String.Empty, lUpdatedProgress.CurrentBaselineVersion);
-                Assert.AreEqual(String.Empty, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 
 
@@ -564,12 +577,12 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
-                IsDeepUpdate = false;
-
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, null, out lUpdatedProgress);
+                    systemInfo, string.Empty, string.Empty);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -577,12 +590,13 @@ namespace DataPackageTests
 
                 Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(0, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual(String.Empty, lUpdatedProgress.CurrentBaselineVersion);
-                Assert.AreEqual(String.Empty, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
             
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -603,12 +617,14 @@ namespace DataPackageTests
 
                 lOnBoardFutureBaseline = "5.12.5.9";
 
-                IsDeepUpdate = true;
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -616,12 +632,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual("0.0.0.0", lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 
 
@@ -641,12 +658,17 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
-                IsDeepUpdate = false;
 
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
+
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -654,12 +676,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual("0.0.0.0", lUpdatedProgress.CurrentBaselineVersion);
-                Assert.AreEqual("0.0.0.0", lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 		}
 
@@ -671,7 +694,6 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithVersions
 			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -689,10 +711,14 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
+
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -700,12 +726,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
                 Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithVersions
@@ -724,12 +751,16 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask));
 
-                IsDeepUpdate = false;
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
 
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithVersions();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -737,12 +768,13 @@ namespace DataPackageTests
 
                 Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
                 Assert.AreEqual(746, lUpdatedProgress.TaskId);
-                Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual("69", lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
                 Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
 		}
 		#endregion
@@ -1777,7 +1809,9 @@ namespace DataPackageTests
             TransferTaskData lTask = BuildSampleTransferTask();
             var lBaselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
 
-            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+            TrainBaselineStatusExtendedData initialInfo = BuildTrainBaselineStatusExtendedData();
+            initialInfo.Status.TrainId = "TRAIN-5";
+            lBaselineProgresses["TRAIN-5"] = initialInfo;
 
             using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
             {
@@ -1847,7 +1881,9 @@ namespace DataPackageTests
             var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
             var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+            TrainBaselineStatusExtendedData initialInfo = BuildTrainBaselineStatusExtendedData();
+            initialInfo.Status.TrainId = "TRAIN-5";
+            lBaselineProgresses["TRAIN-5"] = initialInfo;
 
             using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
             {
@@ -1914,14 +1950,12 @@ namespace DataPackageTests
         [Test]
         public void ProcessSystemChangedNotificationTest_T2GUnknownError()
         {
-            string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
             bool isDeepUpdate = true;
             TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
-            SystemInfo systemInfo = BuildSampleSystemInfo();
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -1944,10 +1978,16 @@ namespace DataPackageTests
                 // the T2GFileDistributionManagerErrorEnum.eT2GFD_Other error
                 lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_Other);
 
+
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
+
+                SystemInfo systemInfo = BuildSampleSystemInfo();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
+
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -1960,20 +2000,18 @@ namespace DataPackageTests
                 Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
                 Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
                 Assert.AreEqual(true, isDeepUpdate);
+                Assert.IsTrue(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
         }
 
         [Test]
         public void ProcessSystemChangedNotificationTest_T2GNoError()
         {
-            string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
-            bool isDeepUpdate = true;
             TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
-            SystemInfo systemInfo = BuildSampleSystemInfo();
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -1992,10 +2030,16 @@ namespace DataPackageTests
                 lT2GMock.Setup(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask)).Returns("");
 
+
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
+
+                SystemInfo systemInfo = BuildSampleSystemInfo();
                 baselineStatusUpdater.ProcessSystemChangedNotification(
-                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                    ref lOnBoardFutureBaseline,
-                    ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
+
 
                 lT2GMock.Verify(x => x.GetTransferTask(
                     It.IsAny<int>(), out lRecipients, out lTask),
@@ -2009,7 +2053,7 @@ namespace DataPackageTests
                 // If GetTransferTask doesn't return any error - the request params shouldn't be changed          
                 Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
                 Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
-                Assert.AreEqual(false, isDeepUpdate);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
         }
 

@@ -17,21 +17,26 @@ namespace PIS.Ground.DataPackage
     /// <summary>Train baseline deployment status with extended data.</summary>
     public class TrainBaselineStatusExtendedData
     {
-        /// <summary>Initializes a new instance of the TrainBaselineStatusExtendedData class.</summary>
+        /// <summary>
+        /// Initializes a new instance of the TrainBaselineStatusExtendedData class.
+        /// </summary>
         /// <param name="status">The basic status information.</param>
         /// <param name="assignedFutureBaseline">The extended information: assigned future baseline version.</param>
-        /// <param name="onBoardFutureBaseline">The extended information: on board future baseline version.</param>		
+        /// <param name="onBoardFutureBaseline">The extended information: on board future baseline version.</param>
+        /// <param name="assignedCurrentBaseline">The assigned current baseline.</param>
         /// <param name="isT2GPollingRequired">true if T2G must be ask for possible on-going transfer.</param>
         public TrainBaselineStatusExtendedData(
             TrainBaselineStatusData status,
             string assignedFutureBaseline,
             string onBoardFutureBaseline,
+            string assignedCurrentBaseline,
             bool isT2GPollingRequired)
         {
             Status = status;
             AssignedFutureBaseline = assignedFutureBaseline;
             OnBoardFutureBaseline = onBoardFutureBaseline;
             IsT2GPollingRequired = isT2GPollingRequired;
+            AssignedCurrentBaseline = assignedCurrentBaseline;
         }
 
         /// <summary>
@@ -39,7 +44,7 @@ namespace PIS.Ground.DataPackage
         /// </summary>
         /// <param name="status">The basic status information.</param>
         public TrainBaselineStatusExtendedData(
-            TrainBaselineStatusData status) : this(status, null, null, true)
+            TrainBaselineStatusData status) : this(status, null, null, null, true)
         {
             // No logic body
         }
@@ -143,6 +148,10 @@ namespace PIS.Ground.DataPackage
             {
                 throw new ArgumentNullException("info");
             }
+            else if (Status == null)
+            {
+                Status = new TrainBaselineStatusData(info.SystemId, info.VehiclePhysicalId, info.IsOnline, BaselineStatusUpdater.NoBaselineVersion);
+            }
             else if (info.SystemId != Status.TrainId)
             {
                 throw new ArgumentOutOfRangeException("info");
@@ -155,13 +164,13 @@ namespace PIS.Ground.DataPackage
             }
 
             Status.OnlineStatus = info.IsOnline;
-            if (info.IsOnline && info.PisVersion != null && !string.IsNullOrEmpty(info.PisVersion.VersionPISSoftware))
+            if (info.PisVersion != null && !string.IsNullOrEmpty(info.PisVersion.VersionPISSoftware))
             {
                 Status.PisOnBoardVersion = info.PisVersion.VersionPISSoftware;
             }
 
 
-            if (info.IsPisBaselineUpToDate && info.PisBaseline != null)
+            if (info.PisBaseline != null)
             {
 
                 string lNotificationCurrentVersion = info.PisBaseline.CurrentVersionOut;
@@ -253,7 +262,7 @@ namespace PIS.Ground.DataPackage
                                     // Note: In the current state, the future baseline is set to the assigned baseline.
 
                                     Status.ProgressStatus = BaselineProgressStatusEnum.DEPLOYED;
-                                    OnBoardFutureBaseline = lNotificationCurrentVersion;
+                                    OnBoardFutureBaseline = lNotificationFutureVersion;
                                     IsT2GPollingRequired = false;
                                 }
                                 else

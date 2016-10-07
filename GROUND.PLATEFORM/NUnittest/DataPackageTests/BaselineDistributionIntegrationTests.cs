@@ -423,13 +423,13 @@ namespace DataPackageTests
             Assert.AreEqual(TaskPhaseEnum.acquisitionPhase, _fileTransferServiceStub.GetTask(transferTaskId).taskPhase, "The transfer task is supported to be in acquisition");
             Assert.IsFalse(_fileTransferServiceStub.IsTaskRunning(transferTaskId), "The transfer task is running while expecting not");
 
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, string.Empty, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");
 
             // Wait 5 seconds
             Thread.Sleep(5 * ONE_SECOND);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, string.Empty, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, Guid.Empty, 0, BaselineProgressStatusEnum.UNKNOWN);
 
             Assert.IsNull(_fileTransferServiceStub.LastCreatedFolder, "Folder created while expecting not");
             Assert.IsNull(_fileTransferServiceStub.LastCreatedTransfer, "Transfer task created while expecting not");

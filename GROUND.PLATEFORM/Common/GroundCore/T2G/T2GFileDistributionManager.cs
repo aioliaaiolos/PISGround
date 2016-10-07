@@ -303,7 +303,7 @@ namespace PIS.Ground.Core.T2G
 			{
 				if (_fileTransferPort == null)
 				{
-					throw new Exception("DataMember _fileTransferPort is null");
+					throw new InvalidOperationException("DataMember _fileTransferPort is null");
 				}
 
 				var lEnumRequest = new PIS.Ground.Core.T2G.WebServices.FileTransfer.enumTransferTaskInput();

@@ -125,6 +125,8 @@ namespace DataPackageTests
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = false;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
@@ -152,10 +154,12 @@ namespace DataPackageTests
 
             // Initialize the history log database
             valueTrain1.OnlineStatus = false;
-            valueTrain3.OnlineStatus = false;
+            valueTrain3.OnlineStatus = true;
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = true;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             CreateT2GServicesStub();
@@ -163,17 +167,8 @@ namespace DataPackageTests
 
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
-
-            BaselineMessage baseline = new BaselineMessage(TRAIN_NAME_2);
-            baseline.CurrentVersion = "5.4.3.3";
-            _vehicleInfoServiceStub.UpdateMessageData(baseline);
-
-            baseline = new BaselineMessage(TRAIN_NAME_0);
-            baseline.CurrentVersion = "1.0.0.0";
-            _vehicleInfoServiceStub.UpdateMessageData(baseline);
-
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -194,9 +189,9 @@ namespace DataPackageTests
         [Test, Category("SystemChangedNotifications")]
         public void TrainBaselineStatusScenario_OnSystemChangedNotificationUpdateOnlineStatus()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -204,19 +199,21 @@ namespace DataPackageTests
 
 
             // Initialize the history log database
-            valueTrain1.OnlineStatus = true;
+            valueTrain1.OnlineStatus = false;
             valueTrain3.OnlineStatus = true;
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = true;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             CreateT2GServicesStub();
 
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -255,9 +252,9 @@ namespace DataPackageTests
         [Test, Category("SystemChangedNotifications")]
         public void TrainBaselineStatusScenario_OnSystemChangedNotificationUpdateTrainNumber()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, false, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -265,19 +262,21 @@ namespace DataPackageTests
 
 
             // Initialize the history log database
-            valueTrain1.OnlineStatus = true;
+            valueTrain1.OnlineStatus = false;
             valueTrain3.OnlineStatus = true;
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = true;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             CreateT2GServicesStub();
 
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, false, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -316,9 +315,9 @@ namespace DataPackageTests
         [Test, Category("SystemChangedNotifications")]
         public void TrainBaselineStatusScenario_OnSystemChangedNotificationAddNewTrain()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
 
 
@@ -342,13 +341,13 @@ namespace DataPackageTests
 
             // TRAIN-0 added
             expectedStatuses.Add(valueTrain3.TrainId, valueTrain3.Clone());
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             WaitTrainBaselineStatusesEquals(expectedStatuses, "T2G - OnSystemChanged does not update the train number field in train baseline statuses database.");
 
             // TRAIN-2 added
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
 
             WaitTrainBaselineStatusesEquals(expectedStatuses, "T2G - OnSystemChanged does not update the train number field in train baseline statuses database.");
         }
@@ -364,9 +363,9 @@ namespace DataPackageTests
         [Test, Category("SystemDeletedNotifications")]
         public void TrainBaselineStatusScenario_OnSystemDeletedNotificationNominal()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -374,19 +373,21 @@ namespace DataPackageTests
 
 
             // Initialize the history log database
-            valueTrain1.OnlineStatus = true;
+            valueTrain1.OnlineStatus = false;
             valueTrain3.OnlineStatus = true;
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = true;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             CreateT2GServicesStub();
 
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -423,9 +424,9 @@ namespace DataPackageTests
         [Test, Category("SystemDeletedNotifications")]
         public void TrainBaselineStatusScenario_OnSystemAddedWorkAfterSystemWasPreviouslyDeleted()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -433,19 +434,21 @@ namespace DataPackageTests
 
 
             // Initialize the history log database
-            valueTrain1.OnlineStatus = true;
+            valueTrain1.OnlineStatus = false;
             valueTrain3.OnlineStatus = true;
             UpdateHistoryLog(valueTrain1);
             UpdateHistoryLog(valueTrain2);
             UpdateHistoryLog(valueTrain3);
+            valueTrain1.OnlineStatus = true;
+            valueTrain3.OnlineStatus = false;
 
             // Initialize services
             CreateT2GServicesStub();
 
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -465,7 +468,7 @@ namespace DataPackageTests
             WaitTrainBaselineStatusesEquals(expectedStatuses, "T2G - OnSystemDeleted does not remove the deleted train in train baseline statuses database.");
 
             // TRAIN-2 become online again
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2);
 
             WaitTrainBaselineStatusesEquals(expectedStatuses, "T2G - OnSystemChanged does not add train after it has been deleted.");
@@ -481,9 +484,9 @@ namespace DataPackageTests
         [Test, Category("MessageChangedNotifications")]
         public void TrainBaselineStatusScenario_OnMessageChangedUpdateThePisSoftwareVersion()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -495,8 +498,8 @@ namespace DataPackageTests
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
 
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
@@ -545,9 +548,9 @@ namespace DataPackageTests
         [Test, Category("MessageChangedNotifications")]
         public void TrainBaselineStatusScenario_OnMessageChangedUpdateTheBaselineInfo()
         {
-            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE);
-            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3");
-            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0");
+            TrainBaselineStatusData valueTrain1 = new TrainBaselineStatusData(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, DEFAULT_BASELINE, BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain2 = new TrainBaselineStatusData(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, "5.4.3.3", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
+            TrainBaselineStatusData valueTrain3 = new TrainBaselineStatusData(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, "1.0.0.0", BaselineStatusUpdater.NoBaselineVersion, DEFAULT_PIS_VERSION, BaselineProgressStatusEnum.UNKNOWN);
             Dictionary<string, TrainBaselineStatusData> expectedStatuses = new Dictionary<string, TrainBaselineStatusData>();
             expectedStatuses.Add(valueTrain1.TrainId, valueTrain1.Clone());
             expectedStatuses.Add(valueTrain2.TrainId, valueTrain2.Clone());
@@ -559,13 +562,14 @@ namespace DataPackageTests
             _dataStoreServiceStub.InitializeRemoteDataStoreMockWithDefaultBehavior();
 
             InitializeTrain(TRAIN_NAME_1, TRAIN_VEHICLE_ID_1, true, TRAIN_IP_1, TRAIN_DATA_PACKAGE_PORT_1, commLinkEnum._2G3G, true);
-            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false);
-            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false);
+            InitializeTrain(TRAIN_NAME_0, TRAIN_VEHICLE_ID_0, false, TRAIN_IP_0, TRAIN_DATA_PACKAGE_PORT_0, commLinkEnum.wifi, false, "1.0.0.0");
+            InitializeTrain(TRAIN_NAME_2, TRAIN_VEHICLE_ID_2, true, TRAIN_IP_2, TRAIN_DATA_PACKAGE_PORT_2, commLinkEnum._2G3G, false, "5.4.3.3");
 
             InitializeDataPackageService(false);
             InitializePISGroundSession();
 
             // Wait that history log was on expected status.
+            
             WaitTrainBaselineStatusesEquals(expectedStatuses, "Online statuses of train not updated in train baseline status when PIS-Ground connect with T2G");
 
 

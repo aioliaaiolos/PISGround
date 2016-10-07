@@ -605,7 +605,7 @@ namespace PIS.Ground.Core.T2G
 								existingSystemInfo.PisBaseline,
 								existingSystemInfo.PisVersion,
 								existingSystemInfo.PisMission,
-								existingSystemInfo.IsPisBaselineUpToDate && newSystemInfo.IsOnline);
+                                existingSystemInfo.PisBaseline != null && newSystemInfo.IsOnline);
 
                             _systemList[newSystemInfo.SystemId] = updatedSystemInfo;
 						}

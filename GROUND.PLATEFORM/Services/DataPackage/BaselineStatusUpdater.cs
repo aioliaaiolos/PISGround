@@ -357,7 +357,7 @@ namespace PIS.Ground.DataPackage
 		/// <param name="trainId">Identifier of the train.</param>
 		/// <param name="lStatus">[out] The status.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		private bool TryGetEntry(string trainId, out TrainBaselineStatusExtendedData lStatus)
+		public bool TryGetEntry(string trainId, out TrainBaselineStatusExtendedData lStatus)
 		{
 			bool lSuccess = false;
 			lStatus = null;
@@ -837,49 +837,21 @@ namespace PIS.Ground.DataPackage
 							lExtendedProgress = new TrainBaselineStatusExtendedData();
 						}
 
-						TrainBaselineStatusData lStatus = lExtendedProgress.Status;
-
-						if (lStatus == null)
-						{
-							lStatus = new TrainBaselineStatusData();
-							lStatus.TrainNumber = UnknownVersion;
-							lStatus.CurrentBaselineVersion = UnknownVersion;
-							lStatus.FutureBaselineVersion = UnknownVersion;
-							lStatus.PisOnBoardVersion = UnknownVersion;
-							lExtendedProgress.Status = lStatus;
-						}
-
-						// Save the assigned future baseline to be used later
-						// 
-						string lAssignedCurrentBaseline = UnknownVersion;
-
 						if (!string.IsNullOrEmpty(assignedCurrentBaseline))
 						{
-							lAssignedCurrentBaseline = assignedCurrentBaseline;
+                            lExtendedProgress.AssignedCurrentBaseline = assignedCurrentBaseline;
 						}
 						if (!string.IsNullOrEmpty(assignedFutureBaseline))
 						{
 							lExtendedProgress.AssignedFutureBaseline = assignedFutureBaseline;
 						}
 
-						// Update the status information from the method arguments
-						// 
-						TrainBaselineStatusData lUpdatedProgress = null;
-						string lOnBoardFutureBaseline = lExtendedProgress.OnBoardFutureBaseline;
-						bool lDeepUpdate = lExtendedProgress.IsT2GPollingRequired;
+                        lExtendedProgress.Update(notification);
 
-						ProcessSystemChangedNotification(
-							notification,
-							lAssignedCurrentBaseline,
-							lExtendedProgress.AssignedFutureBaseline,
-							ref lOnBoardFutureBaseline,
-							ref lDeepUpdate,
-							lExtendedProgress.Status,
-							out lUpdatedProgress);
-
-						lExtendedProgress.Status = lUpdatedProgress;
-						lExtendedProgress.OnBoardFutureBaseline = lOnBoardFutureBaseline;
-						lExtendedProgress.IsT2GPollingRequired = lDeepUpdate;
+                        if (lExtendedProgress.IsT2GPollingRequired)
+                        {
+                            PerformDeepUpdate(lExtendedProgress);
+                        }
 
 						// Save updated status if different than original
 						// 
@@ -913,6 +885,105 @@ namespace PIS.Ground.DataPackage
 					lException, EventIdEnum.DataPackage);
 			}
 		}
+
+        /// <summary>
+        /// Performs the deep update. This mean that T2G is interrogated about transfer task.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        protected void PerformDeepUpdate(TrainBaselineStatusExtendedData progress)
+        {
+            // Ask T2G if a transfer is targeting that train
+            // If the guid is empty and task id is zero, this means that transfer task wasn't created yet. Deep update is not possible.
+            if (progress.Status.RequestId != Guid.Empty && progress.Status.TaskId != 0)
+            {
+                if (_logManager.IsTraceActive(TraceType.INFO))
+                {
+                    string message = string.Format(CultureInfo.InvariantCulture, "Calling GetTransferTask() for request '{0}'", progress.Status.RequestId);
+                    _logManager.WriteLog(TraceType.INFO,
+                        message,
+                        "PIS.Ground.DataPackage.BaselineStatusUpdater.PerformDeepUpdate",
+                        null,
+                        EventIdEnum.DataPackage);
+                }
+
+                List<Recipient> lRecipients;
+                TransferTaskData lTask;
+                string lT2GError = _t2g.GetTransferTask(progress.Status.TaskId, out lRecipients, out lTask); ;
+
+                if (string.IsNullOrEmpty(lT2GError))
+                {
+                    if (lTask != null)
+                    {
+                        if (_logManager.IsTraceActive(TraceType.INFO))
+                        {
+                            _logManager.WriteLog(TraceType.INFO,
+                                "GetTransferTask" + Environment.NewLine +
+                                "(" + Environment.NewLine +
+                                "    TaskId                        : " + lTask.TaskId + Environment.NewLine +
+                                "    TaskStatus                    : " + Enum.GetName(typeof(TaskState), lTask.TaskState) + Environment.NewLine +
+                                "    CurrentTaskPhase              : " + Enum.GetName(typeof(TaskPhase), lTask.TaskPhase) + Environment.NewLine +
+                                "    AcquisitionCompletionPercent  : " + lTask.AcquisitionCompletionPercent.ToString() + Environment.NewLine +
+                                "    DistributionCompletionPercent : " + lTask.DistributionCompletionPercent.ToString() + Environment.NewLine +
+                                "    TransferCompletionPercent     : " + lTask.TransferCompletionPercent.ToString() + Environment.NewLine +
+                                ")",
+                                "PIS.Ground.DataPackage.BaselineStatusUpdater.PerformDeepUpdate",
+                                null,
+                                EventIdEnum.DataPackage);
+                        }
+
+                        FileDistributionStatusArgs lFileDistributionStatus = new FileDistributionStatusArgs();
+                        lFileDistributionStatus.AcquisitionCompletionPercent = lTask.AcquisitionCompletionPercent;
+                        lFileDistributionStatus.CurrentTaskPhase = lTask.TaskPhase;
+                        lFileDistributionStatus.DistributionCompletionPercent = lTask.DistributionCompletionPercent;
+                        lFileDistributionStatus.TransferCompletionPercent = lTask.TransferCompletionPercent;
+                        lFileDistributionStatus.TaskStatus = lTask.TaskState;
+                        lFileDistributionStatus.TaskId = lTask.TaskId;
+
+                        UpdateBaselineProgressFromFileTransferNotification(lFileDistributionStatus, ref progress);
+                        progress.IsT2GPollingRequired = false;
+                    }
+                    else
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, "GetTransfertTask on task '{0}' returned a null task", progress.Status.TaskId);
+                        _logManager.WriteLog(TraceType.ERROR, message,
+                            "PIS.Ground.DataPackage.BaselineStatusUpdater.PerformDeepUpdate",
+                            null, EventIdEnum.DataPackage);
+                    }
+                }
+                else
+                {
+
+                    TraceType traceType;
+                    if (_t2g.GetErrorCodeByDescription(lT2GError) == T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId)
+                    {
+                        traceType = TraceType.WARNING;
+                        progress.Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                        progress.Status.RequestId = Guid.Empty;
+                        progress.Status.TaskId = 0;
+                        progress.IsT2GPollingRequired = false;
+                    }
+                    else
+                    {
+                        traceType = TraceType.ERROR;
+                    }
+
+                    if (_logManager.IsTraceActive(traceType))
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, "GetTransfertTask on task '{0}' returned the T2G error '{1}'", progress.Status.TaskId, lT2GError);
+                        _logManager.WriteLog(traceType, message,
+                            "PIS.Ground.DataPackage.BaselineStatusUpdater.PerformDeepUpdate",
+                            null, EventIdEnum.DataPackage);
+
+                    }
+                }
+
+            }
+            else if (progress.Status.RequestId == Guid.Empty)
+            {
+                progress.Status.TaskId = 0;
+                progress.IsT2GPollingRequired = false;
+            }
+        }
 
 		/// <summary> Updates the baseline progress information based on T2G file transfer notification.</summary>
 		/// <param name="notification">The transfer task current notification.</param>
@@ -1248,7 +1319,7 @@ namespace PIS.Ground.DataPackage
 		/// <param name="isDeepUpdate">[in,out] true if T2G client must be used if deployment status cannot be known from the notification.</param>
 		/// <param name="currentProgress">Provides current deployment information for that train if available, null otherwise.</param>
 		/// <param name="updatedProgress">[out] The updated baseline deployment information.</param>		
-		protected void ProcessSystemChangedNotification(
+		/*protected void ProcessSystemChangedNotification(
 			SystemInfo notification,
 			string assignedCurrentBaseline,
 			string assignedFutureBaseline,
@@ -1510,7 +1581,7 @@ namespace PIS.Ground.DataPackage
 					}
 				}
 			}
-		}
+		} */
 
         /// <summary>
         /// Called when the distribution of an upload request create the transfer task.
@@ -1621,10 +1692,12 @@ namespace PIS.Ground.DataPackage
 
                     if (_isInitialized)
                     {
-                        _baselineProgresses.Remove(trainId);
-                        if (!_baselineProgressRemoveProcedure(trainId))
+                        if (_baselineProgresses.Remove(trainId))
                         {
-                            throw new HistoryLoggerFailureException("Failed to update history log database");
+                            if (!_baselineProgressRemoveProcedure(trainId))
+                            {
+                                throw new HistoryLoggerFailureException("Failed to update history log database");
+                            }
                         }
                     }
                     else
@@ -1642,6 +1715,19 @@ namespace PIS.Ground.DataPackage
                 _logManager.WriteLog(TraceType.ERROR, message,
                     "PIS.Ground.DataPackage.BaselineStatusUpdater.DeleteSystem",
                     exception, EventIdEnum.DataPackage);
+            }
+        }
+
+        /// <summary>
+        /// Forces the progress for a specific train.
+        /// </summary>
+        /// <param name="data">The progress data to force.</param>
+        /// <remarks>Designed to be used in automated test only.</remarks>
+        public void ForceProgress(TrainBaselineStatusExtendedData data)
+        {
+            lock (_baselineStatusUpdaterLock)
+            {
+                _baselineProgresses[data.Status.TrainId] = data;
             }
         }
 
