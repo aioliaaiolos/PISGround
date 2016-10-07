@@ -227,34 +227,12 @@ namespace PIS.Ground.DataPackage
 
             _baselineStatusThread.Start();
 
-            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
 
             _requestManager.Initialize(_t2gManager, _notificationSender);
             _requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
+            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
             _initialized = true;
         }
-
-        /// <summary>
-        /// Initializes this instance by providing objects to use.
-        /// </summary>
-        /// <param name="sessionManager">The session manager.</param>
-        /// <param name="notificationSender">The notification sender.</param>
-        /// <param name="t2gManager">The T2G manager.</param>
-        /// <param name="requestsFactory">The requests factory.</param>
-        /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-        /// <param name="requestManager">The request manager.</param>
-        /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
-        //public static void Initialize(
-        //    ISessionManager sessionManager,
-        //    INotificationSender notificationSender,
-        //    IT2GManager t2gManager,
-        //    RequestMgt.IRequestContextFactory requestsFactory,
-        //    RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-        //    RequestMgt.IRequestManager requestManager,
-        //    bool executeCommonLogic)
-        //{
-        //    Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, null, executeCommonLogic);
-        //}
 
         /// <summary>
         /// Initializes this instance by providing objects to use.
