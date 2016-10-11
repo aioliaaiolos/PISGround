@@ -71,6 +71,7 @@
     <Compile Include="ServicesStub\TrainDataPackageServiceStub.cs" />
     <Compile Include="Stubs\NotificationInfo.cs" />
     <Compile Include="Stubs\NotificationSenderStub.cs" />
+    <Compile Include="TrainBaselineStatusExtendedDataTests.cs" />
     <Compile Include="TrainBaselineStatusIntegrationTests.cs" />
   </ItemGroup>
   <ItemGroup>
