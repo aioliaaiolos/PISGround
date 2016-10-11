@@ -1358,7 +1358,7 @@ namespace PIS.Ground.DataPackage
 								if (lElData.PisBaselineData != null)
 								{
 									lElDescr.ElementArchivedBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.ArchivedVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.ArchivedVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.ArchivedVersionOut))
 									{
 										lElDescr.ElementArchivedBaseline.BaselineVersion = lElData.PisBaselineData.ArchivedVersionOut;
 										lElDescr.ElementArchivedBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.ArchivedValidOut);
@@ -1368,7 +1368,7 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementArchivedBaseline.LMTDataPackageVersion = lElData.PisBaselineData.ArchivedVersionLmtOut;
 									}
 									lElDescr.ElementCurrentBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.CurrentVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.CurrentVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.CurrentVersionOut))
 									{
 										lElDescr.isCurrentBaselineForced = Boolean.Parse(lElData.PisBaselineData.CurrentForcedOut);
 										DateTime ltmpDateTime = new DateTime();
@@ -1386,7 +1386,7 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementFutureBaselineExpirationDate = ltmpDateTime;
 									}
 									lElDescr.ElementFutureBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.FutureVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.FutureVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.FutureVersionOut))
 									{
 										lElDescr.ElementFutureBaseline.BaselineVersion = lElData.PisBaselineData.FutureVersionOut;
 										lElDescr.ElementFutureBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.FutureValidOut);
