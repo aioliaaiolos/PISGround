@@ -1462,7 +1462,6 @@ namespace PIS.Ground.DataPackage
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
         public void Dispose()
         {
             Dispose(true);

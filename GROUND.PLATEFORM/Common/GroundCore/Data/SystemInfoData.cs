@@ -189,6 +189,7 @@ namespace PIS.Ground.Core.Data
 		/// Gets a value indicating whether this object has valid information for pis baseline or not.
 		/// </summary>
 		/// <value>true if this object is pis baseline up to date, false if not.</value>
+        /// <remarks>This information is used meanly to detect when a baseline deployment can be performed.</remarks>
 		public bool IsPisBaselineUpToDate
 		{
 			get
