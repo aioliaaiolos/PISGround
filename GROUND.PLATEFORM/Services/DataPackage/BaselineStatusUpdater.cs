@@ -1271,11 +1271,11 @@ namespace PIS.Ground.DataPackage
 
 			if (trainId != null && progressInfo != null)
 			{
-				string lProgressStatusString =
-					Enum.GetName(typeof(BaselineProgressStatusEnum), progressInfo.ProgressStatus);
-
                 if (_logManager.IsTraceActive(TraceType.INFO))
                 {
+                    string lProgressStatusString =
+                        Enum.GetName(typeof(BaselineProgressStatusEnum), progressInfo.ProgressStatus);
+
                     _logManager.WriteLog(TraceType.INFO,
                         "UpdateProgressOnHistoryLogger" + Environment.NewLine +
                         "(" + Environment.NewLine +
