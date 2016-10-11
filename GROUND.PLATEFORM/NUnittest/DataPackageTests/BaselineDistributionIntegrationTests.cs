@@ -253,7 +253,6 @@ namespace DataPackageTests
             VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
         }
 
-
         /// <summary>
         /// Test a distribute baseline scenario that cause the transfer to wait for a communication link, then datapackage service is restarted and then transfer complete.
         /// </summary>
@@ -306,7 +305,7 @@ namespace DataPackageTests
             }
             VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
 
-            // Stop data package servie.
+            // Stop data package service.
             StopDataPackageService();
 
             // Wait 2 seconds
@@ -317,7 +316,7 @@ namespace DataPackageTests
 
             WaitPisGroundIsConnectedWithT2G();
             WaitTrainOnlineWithPISGround(TRAIN_NAME_1, true);
-
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, _fileTransferServiceStub.GetTask(transferTaskId).BaselineProgress);
 
             // Wait 2 seconds
             Thread.Sleep(2 * ONE_SECOND);
