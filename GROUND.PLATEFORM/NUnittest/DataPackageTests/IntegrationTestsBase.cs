@@ -450,7 +450,12 @@ namespace DataPackageTests
             }
 
             DataPackageService.Uninitialize();
-            T2GManagerContainer.T2GManager = null;
+
+            if (_baselineStatusUpdater != null)
+            {
+                _baselineStatusUpdater.Dispose();
+                _baselineStatusUpdater = null;
+            }
 
             if (_t2gManager != null)
             {
@@ -458,6 +463,7 @@ namespace DataPackageTests
                 _t2gManager = null;
             }
 
+            T2GManagerContainer.T2GManager = null;
             _sessionManager = null;
             _requestFactory = null;
         }
@@ -654,6 +660,15 @@ namespace DataPackageTests
             HistoryLogger.UpdateTrainBaselineStatus(data.TrainId, data.RequestId, data.TaskId, data.TrainNumber, data.OnlineStatus, data.ProgressStatus, data.CurrentBaselineVersion, data.FutureBaselineVersion, data.PisOnBoardVersion);
         }
 
+        protected void WaitTrainBaselineStatusesEquals(Dictionary<string, TrainBaselineStatusData> expectedStatuses, string message)
+        {
+            Dictionary<string, TrainBaselineStatusData> statuses = null;
+
+            ActualValueDelegate comparer = () => { HistoryLogger.GetTrainBaselineStatus(out statuses); return AreDictionariesEquals(expectedStatuses, statuses); };
+
+            AssertAll(() => Assert.That(comparer, Is.True.After(5 * ONE_SECOND, ONE_SECOND / 2), "Train baseline status wasn't updated as expected"),
+                    () => AssertDictionariesEqual(expectedStatuses, statuses, message));
+        }
 
         #endregion
 
@@ -690,17 +705,6 @@ namespace DataPackageTests
             }
 
         }
-
-        protected void WaitTrainBaselineStatusesEquals(Dictionary<string, TrainBaselineStatusData> expectedStatuses, string message)
-        {
-            Dictionary<string, TrainBaselineStatusData> statuses=null;
-
-            ActualValueDelegate comparer = () => { HistoryLogger.GetTrainBaselineStatus(out statuses); return AreDictionariesEquals(expectedStatuses, statuses); };
-
-            AssertAll(() => Assert.That(comparer, Is.True.After(5 * ONE_SECOND, ONE_SECOND/2), "Train baseline status wasn't updated as expected"),
-                    () => AssertDictionariesEqual(expectedStatuses, statuses, message));
-        }
-
 
         #endregion
 
