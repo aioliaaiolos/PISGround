@@ -6,10 +6,10 @@
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
 //---------------------------------------------------------------------------------------------------
-using System.Globalization;
 using System;
-using PIS.Ground.Core.Data;
+using System.Globalization;
 using System.Text;
+using PIS.Ground.Core.Data;
 
 namespace PIS.Ground.DataPackage
 {
@@ -340,6 +340,29 @@ namespace PIS.Ground.DataPackage
             result.Append(", OnBoardFutureBaseline=").Append(OnBoardFutureBaseline);
             result.Append(">");
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            return AreEqual(this, obj as TrainBaselineStatusExtendedData);
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return Status != null ? (Status.TrainId ?? string.Empty).GetHashCode() : string.Empty.GetHashCode();
         }
     }
 }
