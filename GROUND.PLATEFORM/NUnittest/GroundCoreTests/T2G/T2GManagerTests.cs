@@ -225,7 +225,7 @@ namespace GroundCoreTests.T2G
 			            true);
 			_localDataStorage.OnSystemChanged(newElement);
 			res = _t2gManager.IsElementOnlineAndPisBaselineUpToDate(train1Element);
-			Assert.IsFalse(res, "NOTE: I would expect receiving true here but baseline is still considered invalid. Not sure about this behaviour...");
+            Assert.IsTrue(res, "The element is online and it's baseline is up to date, should have returned true.");
 
 			// Update the element in the data storage (simulate that the pis baseline is now up to date).
 			_localDataStorage.OnMessageChanged(train1Element, "PIS.BASELINE", new PisBaseline());
