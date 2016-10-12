@@ -240,7 +240,7 @@ namespace PIS.Ground.Core.Utility
             {
                 try
                 {
-                    _logLevel = (TraceType)Enum.Parse(typeof(TraceType), ConfigurationSettings.AppSettings["LogLevel"]);
+                    _logLevel = (TraceType)Enum.Parse(typeof(TraceType), ConfigurationSettings.AppSettings["LogLevel"], true);
                     if (_logLevel >= TraceType.NONE && _logLevel <= TraceType.EXCEPTION)
                     {
                         LogManager.LogLevel = _logLevel;
