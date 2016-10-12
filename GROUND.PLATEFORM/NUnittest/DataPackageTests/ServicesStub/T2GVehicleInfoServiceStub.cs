@@ -21,7 +21,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInputBody" />
     [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
-    abstract class MessageBase : DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInputBody
+    public abstract class MessageBase : DataPackageTests.T2GServiceInterface.Notification.onMessageNotificationInputBody
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageBase"/> class.
@@ -89,7 +89,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
     [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
-    class MissionMessage : MessageBase
+    public class MissionMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "CommercialNumber", "OperatorCode", "State" };
         public const string MessageIdentifier = "PIS.MISSION";
@@ -178,7 +178,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
     [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
-    class VersionMessage : MessageBase
+    public class VersionMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "Version PIS Software" };
         public const string MessageIdentifier = "PIS.VERSION";
@@ -241,7 +241,7 @@ namespace DataPackageTests.ServicesStub
     /// </summary>
     /// <seealso cref="DataPackageTests.ServicesStub.MessageBase" />
     [System.Runtime.Serialization.DataContractAttribute(Name = "onMessageNotificationInputBody", Namespace = "http://alstom.com/T2G/Notification")]
-    class BaselineMessage : MessageBase
+    public class BaselineMessage : MessageBase
     {
         public static readonly string[] FieldsNameList = { "Archived Valid Out", 
                                                              "Archived Version Out", 
@@ -458,9 +458,9 @@ namespace DataPackageTests.ServicesStub
         }
 
         /// <summary>
-        /// Equalses the specified other.
+        /// Verify if this object is Equals to the specified other object instance.
         /// </summary>
-        /// <param name="other">The other.</param>
+        /// <param name="other">The other to compare with.</param>
         ///   <c>true</c> if the specified <see cref="ServiceInfoData" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public bool Equals(ServiceInfoData other)
@@ -504,7 +504,7 @@ namespace DataPackageTests.ServicesStub
     /// Support subscription to all systems only.
     /// Only one subscription per message or service is supported.</remarks>
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.VehicleInfo.VehicleInfoPortType")]
-    class T2GVehicleInfoServiceStub : VehicleInfoPortType
+    public class T2GVehicleInfoServiceStub : VehicleInfoPortType, IDisposable
     {
         #region Fields
 
@@ -581,8 +581,10 @@ namespace DataPackageTests.ServicesStub
             }
 
             _identificationService = identificationService;
-
+            _identificationService.OnlineStatusChanged += new T2GIdentificationServiceStub.OnlineStatusChangedHandler(OnlineStatusChangedLogic);
+            _identificationService.SystemDeleted += new T2GIdentificationServiceStub.SystemDeletedHandler(SystemDeletedLogic);
         }
+
         #endregion
 
         #region Update message and service data
@@ -690,17 +692,27 @@ namespace DataPackageTests.ServicesStub
 
                 if (subscribed)
                 {
-
+                    bool isOnline = _identificationService.IsSystemOnline(systemId);
                     DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
                     serviceList.Capacity = 1;
-                    serviceList.Add(clonedService);
+
+                    if (isOnline || clonedService.isAvailable == false)
+                    {
+                        serviceList.Add(clonedService);
+                    }
+                    else
+                    {
+                        serviceList.Add(clonedService.Clone());
+                        serviceList[0].isAvailable = false;
+                    }
+
                     EndpointAddress address = new EndpointAddress(notificationUrl);
                     using (NotificationClient client = new NotificationClient("NotificationClient", address))
                     {
                         try
                         {
                             client.Open();
-                            client.onServiceNotification(systemId, _identificationService.IsSystemOnline(systemId), serviceIndex + 1, serviceList);
+                            client.onServiceNotification(systemId, isOnline , serviceIndex + 1, serviceList);
                         }
                         finally
                         {
@@ -952,5 +964,133 @@ namespace DataPackageTests.ServicesStub
 
         #endregion
 
+
+        #region IDisposable Members
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_identificationService != null)
+                {
+                    _identificationService.OnlineStatusChanged -= new T2GIdentificationServiceStub.OnlineStatusChangedHandler(OnlineStatusChangedLogic);
+                    _identificationService.SystemDeleted -= new T2GIdentificationServiceStub.SystemDeletedHandler(SystemDeletedLogic);
+                    _identificationService = null;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Identification event handlers
+
+        /// <summary>
+        /// Manage the system deleted logic.
+        /// </summary>
+        /// <param name="systemId">The system identifier deleted.</param>
+        private void SystemDeletedLogic(string systemId)
+        {
+            lock (_messageDataLock)
+            {
+                foreach (var data in _messagesData)
+                {
+                    data.Remove(systemId);
+                }
+            }
+
+            lock (_serviceDataLock)
+            {
+                foreach (var data in _serviceData)
+                {
+                    data.Remove(systemId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when online status on a train changed.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <param name="isOnline">true if system became online, false if it became offline.</param>
+        private void OnlineStatusChangedLogic(string systemId, bool isOnline)
+        {
+            ServiceInfoData[] data = (ServiceInfoData[])Array.CreateInstance(typeof(ServiceInfoData), SupportedServices.Length);
+
+            lock (_serviceDataLock)
+            {
+                for (int i = 0; i < SupportedServices.Length;++i)
+                {
+                    ServiceInfoData serviceInfo;
+                    if (_serviceData[i].TryGetValue(systemId, out serviceInfo))
+                    {
+                        data[i] = serviceInfo.Clone();
+                        data[i].isAvailable = data[i].isAvailable && isOnline;
+                    }
+                }
+            }
+
+            bool[] subscribed;
+            string notificationUrl;
+            lock (_serviceSubscriptionLock)
+            {
+                notificationUrl = _serviceNotificationUrl;
+                subscribed = (bool[])_serviceSubscriptions.Clone();
+            }
+
+            if (!string.IsNullOrEmpty(notificationUrl))
+            {
+                using (NotificationClient client = new NotificationClient("NotificationClient", notificationUrl))
+                {
+                    try
+                    {
+                        DataPackageTests.T2GServiceInterface.Notification.serviceList serviceList = new DataPackageTests.T2GServiceInterface.Notification.serviceList();
+                        serviceList.Capacity = 1;
+
+                        for (int i = 0; i < subscribed.Length; ++i)
+                        {
+                            if (subscribed[i] && data[i] != null)
+                            {
+                                if (client.State == CommunicationState.Closed)
+                                {
+                                    client.Open();
+                                }
+
+                                serviceList.Add(data[i]);
+                                client.onServiceNotification(systemId, isOnline, i + 1, serviceList);
+                                serviceList.Clear();
+
+                            }
+                        }
+
+                        if (client.State == CommunicationState.Opened)
+                        {
+                            client.Close();
+                        }
+                    }
+                    finally
+                    {
+                        if (client.State == CommunicationState.Faulted)
+                        {
+                            client.Abort();
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 }

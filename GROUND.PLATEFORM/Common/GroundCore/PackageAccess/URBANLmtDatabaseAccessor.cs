@@ -58,7 +58,6 @@ namespace PIS.Ground.Core.PackageAccess
 		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged
 		/// resources.
 		/// </summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
 		/// <param name="disposing">True to release both managed and unmanaged resources; false to
 		/// release only unmanaged resources.</param>
 		protected override void Dispose(bool disposing)

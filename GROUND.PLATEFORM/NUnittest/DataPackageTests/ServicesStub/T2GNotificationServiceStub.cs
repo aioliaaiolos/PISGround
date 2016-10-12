@@ -99,7 +99,7 @@ namespace DataPackageTests.ServicesStub
     /// Implementation of the T2GNotification service interface
     /// </summary>
     [ServiceBehaviorAttribute(InstanceContextMode = InstanceContextMode.Single, ConfigurationName = "DataPackageTests.T2GServiceInterface.Notification.NotificationPortType")]
-    class T2GNotificationServiceStub : DataPackageTests.T2GServiceInterface.Notification.NotificationPortType
+    public class T2GNotificationServiceStub : DataPackageTests.T2GServiceInterface.Notification.NotificationPortType
     {
         #region Fields
         private PIS.Ground.Core.T2G.WebServices.Notification.NotificationService _serviceImpl;

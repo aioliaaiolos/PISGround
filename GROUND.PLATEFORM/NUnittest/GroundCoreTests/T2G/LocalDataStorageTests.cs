@@ -373,22 +373,22 @@ namespace GroundCoreTests
             lTmpList = ds.GetSystemList();
 
             watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine("Time elapsed : " + elapsedMs.ToString() + "ms");
+            var getListElapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine("GetSystemList elapsed time : " + getListElapsedMs.ToString() + "ms");
 
             //Check time used to check if an element exists in the system list
             Console.WriteLine("Check if an element exists in the system list");
 
-            bool lElementExists = false;
-
             watch = Stopwatch.StartNew();
 
-            lElementExists = ds.ElementExists("TRAIN-400");
+            bool lElementExists = ds.ElementExists("TRAIN-400");
 
             watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine("Time elapsed : " + elapsedMs.ToString() + "ms");
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine("ElementExists elapsed time : " + elapsedMs.ToString() + "ms");
             Console.WriteLine("Element exists ? " + lElementExists.ToString());
+            Assert.IsTrue(lElementExists, "Method ElementExists didn't returned the expected value");
+            Assert.That(elapsedMs, Is.LessThanOrEqualTo(getListElapsedMs), "ElementExists is slower than GetSystemList");
         }
 
         #endregion

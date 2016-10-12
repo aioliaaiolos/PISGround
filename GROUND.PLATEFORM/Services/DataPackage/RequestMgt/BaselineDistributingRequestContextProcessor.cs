@@ -1,5 +1,5 @@
 ﻿//---------------------------------------------------------------------------------------------------
-// <copyright file="BaselineForcingRequestContextProcessor.cs" company="Alstom">
+// <copyright file="BaselineDistributingRequestContextProcessor.cs" company="Alstom">
 //          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
@@ -31,27 +31,35 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <summary>Manager for train to ground.</summary>
 		private IT2GManager _trainToGroundManager;
 
+        /// <summary>
+        /// The baseline status updater to use.
+        /// </summary>
+        private BaselineStatusUpdater _baselineStatusUpdater;
+
 		/// <summary>
 		/// Initializes a new instance of the BaselineDistributingRequestContextProcessor class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
 		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
 		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		public BaselineDistributingRequestContextProcessor(IRemoteDataStoreFactory remoteDataStoreFactory, IT2GManager trainToGroundManager)
+		public BaselineDistributingRequestContextProcessor(IRemoteDataStoreFactory remoteDataStoreFactory, IT2GManager trainToGroundManager, BaselineStatusUpdater baselineStatusUpdater)
 		{
 			if (null == remoteDataStoreFactory)
 			{
 				throw new ArgumentNullException("remoteDataStoreFactory");
 			}
+            else if (null == trainToGroundManager)
+            {
+                throw new ArgumentNullException("trainToGroundManager");
+            }
+            else if (null == baselineStatusUpdater)
+            {
+                throw new ArgumentNullException("baselineStatusUpdater");
+            }
 
 			_remoteDataStoreFactory = remoteDataStoreFactory;
-
-			if (null == trainToGroundManager)
-			{
-				throw new ArgumentNullException("trainToGroundManager");
-			}
-
 			_trainToGroundManager = trainToGroundManager;
+            _baselineStatusUpdater = baselineStatusUpdater;
 		}
 
 		/// <summary>Process the distribute request described by request.</summary>
@@ -78,7 +86,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 				if (requestContext.TransferAttemptsDone == 1)
 				{
 					DataPackageService.sendNotificationToGroundApp(
-						request.RequestId.ToString(),
+						request.RequestId,
 						PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionPending,
 						stringWriter.ToString());
 				}
@@ -146,9 +154,9 @@ namespace PIS.Ground.DataPackage.RequestMgt
 													requestContext.DistributionAttributes.TransferMode,
 													requestContext.DistributionAttributes.priority,
 													new EventHandler<FileDistributionStatusArgs>(DataPackageService.OnFileDistributeNotification),
-                                                    new EventHandler<FileDistributionTaskCreatedArgs>(BaselineStatusUpdater.OnFileDistributionTaskCreated));
+                                                    new EventHandler<FileDistributionTaskCreatedArgs>(_baselineStatusUpdater.OnFileDistributionTaskCreated));
 
-												DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageFutureBaselineDefinition, stringWriter.ToString());
+												DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageFutureBaselineDefinition, stringWriter.ToString());
 
 												string logMessage = "Distribute baseline for element " + requestContext.ElementId;
 												logMessage += ". Files to upload : ";
@@ -166,7 +174,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 												if (lRqstResult == T2GManagerErrorEnum.eSuccess &&
 													elementData != null && elementData.PisBaselineData != null)
 												{
-													BaselineStatusUpdater.ProcessDistributeBaselineRequest(
+													_baselineStatusUpdater.ProcessDistributeBaselineRequest(
 														elementData.ElementNumber,
 														requestContext.RequestId,
 														elementData.OnlineStatus,
@@ -189,14 +197,14 @@ namespace PIS.Ground.DataPackage.RequestMgt
 										else
 										{
 											requestContext.CompletionStatus = true;
-											DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
+											DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
 											DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, Logs.ERROR_GETTING_URL_LIST);
 										}
 									}
 									else
 									{
 										requestContext.CompletionStatus = true;
-										DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
+										DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
 										DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED_UNKNOW_BASELINE_VERSION, requestContext.ElementId);
 									}
 								}
@@ -205,7 +213,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 									if (false == requestContext.OnCommunicationError(ex))
 									{
 										requestContext.CompletionStatus = true;
-										DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement, stringWriter.ToString());
+										DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement, stringWriter.ToString());
 										DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, ex, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, ex.Message);
 									}
 									else
@@ -227,18 +235,18 @@ namespace PIS.Ground.DataPackage.RequestMgt
 							if (false == requestContext.OnCommunicationError(ex))
 							{
 								requestContext.CompletionStatus = true;
-								DataPackage.DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, ex, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, ex.Message);
-								DataPackageService.sendNotificationToGroundApp(requestContext.RequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
+								DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, ex, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, ex.Message);
+								DataPackageService.sendNotificationToGroundApp(requestContext.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailed, stringWriter.ToString());
 							}
 							else
 							{
-								DataPackage.DataPackageService.mWriteLog(TraceType.DEBUG, System.Reflection.MethodBase.GetCurrentMethod().Name, ex, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, ex.Message);
+								DataPackageService.mWriteLog(TraceType.DEBUG, System.Reflection.MethodBase.GetCurrentMethod().Name, ex, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, ex.Message);
 							}
 						}
 					}
 					else
 					{
-						DataPackage.DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, "Cannot get embedded DataPackage service data.");
+						DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_DISTRIBUTE_BASELINE_FAILED, requestContext.BaselineVersion, requestContext.ElementId, "Cannot get embedded DataPackage service data.");
 						requestContext.TransmissionStatus = false;
 					}
 				}
@@ -293,7 +301,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 
                             if (baselineDefinition == null)
                             {
-                                DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
+                                DataPackageService.sendNotificationToGroundApp(requestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
                                 DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
                                 result = false;
                             }
@@ -304,7 +312,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
                             {
                                 if (notifyGroundApp)
                                 {
-                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
+                                    DataPackageService.sendNotificationToGroundApp(requestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedMissingDataPackage, stringWriter.ToString());
                                 }
 
                                 DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_INVALID_BASELINE_VERSION, baselineVersion);
@@ -317,12 +325,12 @@ namespace PIS.Ground.DataPackage.RequestMgt
 
                                 if (requestResult == T2GManagerErrorEnum.eT2GServerOffline)
                                 {
-                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+                                    DataPackageService.sendNotificationToGroundApp(requestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
                                     DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_T2G_SERVER_OFFLINE);
                                 }
                                 else if (requestResult == T2GManagerErrorEnum.eElementNotFound)
                                 {
-                                    DataPackageService.sendNotificationToGroundApp(requestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionUnknowElementId, stringWriter.ToString());
+                                    DataPackageService.sendNotificationToGroundApp(requestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionUnknowElementId, stringWriter.ToString());
                                     DataPackageService.mWriteLog(TraceType.ERROR, System.Reflection.MethodBase.GetCurrentMethod().Name, null, Logs.ERROR_ELEMENT_NOT_FOUND, elementId);
                                 }
 

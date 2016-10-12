@@ -1,24 +1,44 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RequestContextFactory.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2015.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
 //---------------------------------------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using PIS.Ground.Core.Data;
+using PIS.Ground.Core.T2G;
+using PIS.Ground.DataPackage.RemoteDataStoreFactory;
 
 namespace PIS.Ground.DataPackage.RequestMgt
 {
 	/// <summary>Request context factory.</summary>
 	public class RequestContextFactory : IRequestContextFactory
 	{
+        private readonly IT2GManager _t2gManager;
+        private readonly IRemoteDataStoreFactory _remoteDataStoreFactory;
+        private readonly BaselineStatusUpdater _baselineStatusUpdater;
+
 		/// <summary>Initializes a new instance of the RequestContextFactory class.</summary>
-		public RequestContextFactory()
+		public RequestContextFactory(IT2GManager t2gManager, IRemoteDataStoreFactory remoteDataStoreFactory, BaselineStatusUpdater baselineStatusUpdater)
 		{
+            if (t2gManager == null)
+            {
+                throw new ArgumentNullException("t2gManager");
+            }
+            else if (remoteDataStoreFactory == null)
+            {
+                throw new ArgumentNullException("remoteDataStoreFactory");
+            }
+            else if (baselineStatusUpdater == null)
+            {
+                throw new ArgumentNullException("baselineStatusUpdater");
+            }
+
+            _t2gManager = t2gManager;
+            _remoteDataStoreFactory = remoteDataStoreFactory;
+            _baselineStatusUpdater = baselineStatusUpdater;
 		}
 
 		#region IRequestContextFactory Members
@@ -34,7 +54,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		public PIS.Ground.Core.Data.IRequestContext CreateBaselineForcingRequestContext(string endpoint, string elementId, Guid requestId, Guid sessionId, uint timeout, PIS.Ground.DataPackage.BaselineCommandType commandType)
 		{
 			BaselineForcingRequestContext requestContext = new BaselineForcingRequestContext(endpoint, elementId, requestId, sessionId, timeout, commandType);
-			PIS.Ground.Core.Data.IRequestContextProcessor requestProcessor = new BaselineForcingRequestContextProcessor();
+			IRequestContextProcessor requestProcessor = new BaselineForcingRequestContextProcessor();
 			requestContext.RequestProcessor = requestProcessor;
 			return requestContext;
 		}
@@ -51,10 +71,10 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="PISInfotainmentVersion">The pis infotainment version.</param>
 		/// <param name="LMTVersion">The lmt version.</param>
 		/// <returns>The new baseline setting request context.</returns>
-		public PIS.Ground.Core.Data.IRequestContext CreateBaselineSettingRequestContext(string endpoint, string elementId, Guid requestId, Guid sessionId, uint timeout, string baselineVersion, string PISBaseVersion, string PISMissionVersion, string PISInfotainmentVersion, string LMTVersion)
+		public IRequestContext CreateBaselineSettingRequestContext(string endpoint, string elementId, Guid requestId, Guid sessionId, uint timeout, string baselineVersion, string PISBaseVersion, string PISMissionVersion, string PISInfotainmentVersion, string LMTVersion)
 		{
 			BaselineSettingRequestContext requestContext = new BaselineSettingRequestContext(endpoint, elementId, requestId, sessionId, timeout, baselineVersion, PISBaseVersion, PISMissionVersion, PISInfotainmentVersion, LMTVersion);
-			PIS.Ground.Core.Data.IRequestContextProcessor requestProcessor = new BaselineSettingRequestContextProcessor();
+			IRequestContextProcessor requestProcessor = new BaselineSettingRequestContextProcessor();
 			requestContext.RequestProcessor = requestProcessor;
 			return requestContext;
 		}
@@ -69,13 +89,11 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="baselineVersion">The baseline version.</param>
 		/// <param name="baselineActivationDate">Date of the baseline activation.</param>
 		/// <param name="baselineExpirationDate">Date of the baseline expiration.</param>
-		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		/// <returns>The new baseline distributing request context.</returns>
-		public PIS.Ground.Core.Data.IRequestContext CreateBaselineDistributingRequestContext(string endpoint, string elementId, Guid requestId, Guid sessionId, BaselineDistributionAttributes distributionAttributes, bool incremental, string baselineVersion, DateTime baselineActivationDate, DateTime baselineExpirationDate, RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory, Core.T2G.IT2GManager trainToGroundManager)
+        /// <returns>The new baseline distributing request context.</returns>
+		public IRequestContext CreateBaselineDistributingRequestContext(string endpoint, string elementId, Guid requestId, Guid sessionId, BaselineDistributionAttributes distributionAttributes, bool incremental, string baselineVersion, DateTime baselineActivationDate, DateTime baselineExpirationDate)
 		{
 			BaselineDistributingRequestContext requestContext = new BaselineDistributingRequestContext(endpoint, elementId, requestId, sessionId, distributionAttributes, incremental, baselineVersion, baselineActivationDate, baselineExpirationDate);
-			PIS.Ground.Core.Data.IRequestContextProcessor requestProcessor = new BaselineDistributingRequestContextProcessor(remoteDataStoreFactory, trainToGroundManager);
+			IRequestContextProcessor requestProcessor = new BaselineDistributingRequestContextProcessor(_remoteDataStoreFactory, _t2gManager, _baselineStatusUpdater);
 			requestContext.RequestProcessor = requestProcessor;
 			return requestContext;
 		}
@@ -92,10 +110,8 @@ namespace PIS.Ground.DataPackage.RequestMgt
 		/// <param name="baselineVersion">The baseline version.</param>
 		/// <param name="baselineActivationDate">Date of the baseline activation.</param>
 		/// <param name="baselineExpirationDate">Date of the baseline expiration.</param>
-		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-		/// <param name="trainToGroundManager">Manager for train to ground.</param>
-		/// <returns>The new baseline distributing request context.</returns>
-		public PIS.Ground.Core.Data.IRequestContext CreateBaselineDistributingRequestContext(string elementId, Guid requestId, Core.Data.FileTransferMode transferMode, bool fileCompression, bool isIncremental, DateTime transferDate, DateTime transferExpirationDate, sbyte priority, string baselineVersion, DateTime baselineActivationDate, DateTime baselineExpirationDate, RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory, Core.T2G.IT2GManager trainToGroundManager)
+        /// <returns>The new baseline distributing request context.</returns>
+		public IRequestContext CreateBaselineDistributingRequestContext(string elementId, Guid requestId, Core.Data.FileTransferMode transferMode, bool fileCompression, bool isIncremental, DateTime transferDate, DateTime transferExpirationDate, sbyte priority, string baselineVersion, DateTime baselineActivationDate, DateTime baselineExpirationDate)
 		{
 			BaselineDistributionAttributes distributionAttributes = new BaselineDistributionAttributes();
 			distributionAttributes.fileCompression = fileCompression;
@@ -105,7 +121,7 @@ namespace PIS.Ground.DataPackage.RequestMgt
 			distributionAttributes.TransferMode = transferMode;
 
 			BaselineDistributingRequestContext requestContext = new BaselineDistributingRequestContext(null, elementId, requestId, Guid.Empty, distributionAttributes, isIncremental, baselineVersion, baselineActivationDate, baselineExpirationDate);
-			PIS.Ground.Core.Data.IRequestContextProcessor requestProcessor = new BaselineDistributingRequestContextProcessor(remoteDataStoreFactory, trainToGroundManager);
+			IRequestContextProcessor requestProcessor = new BaselineDistributingRequestContextProcessor(_remoteDataStoreFactory, _t2gManager, _baselineStatusUpdater);
 			requestContext.RequestProcessor = requestProcessor;
 			return requestContext;
 		}

@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="BaselineDistributionIntegrationTests.cs" />
     <Compile Include="BaselineStatusTests.cs" />
+    <Compile Include="BaselineStatusUpdaterInstrumented.cs" />
     <Compile Include="DataPackageServiceTests.cs" />
     <Compile Include="Data\BaselineDistributingTasksDataStoreData.cs" />
     <Compile Include="Data\BaselinesDataStoreData.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Generated\T2GIdentificationInterface.cs" />
     <Compile Include="Generated\T2GNotificationService.cs" />
     <Compile Include="Generated\T2GVehicleInfoInterface.cs" />
+    <Compile Include="IntegrationTestsBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextProcessorTests.cs" />
     <Compile Include="RequestMgt\BaselineDistributingRequestContextTests.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="ServicesStub\TrainDataPackageServiceStub.cs" />
     <Compile Include="Stubs\NotificationInfo.cs" />
     <Compile Include="Stubs\NotificationSenderStub.cs" />
+    <Compile Include="TrainBaselineStatusExtendedDataTests.cs" />
+    <Compile Include="TrainBaselineStatusIntegrationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">

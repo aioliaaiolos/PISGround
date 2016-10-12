@@ -7,9 +7,8 @@
 // </copyright>
 //---------------------------------------------------------------------------------------------------
 using System;
-using System.Linq;
-using System.Text;
 using System.Globalization;
+using System.Text;
 
 namespace PIS.Ground.Core.Data
 {
@@ -190,6 +189,7 @@ namespace PIS.Ground.Core.Data
 		/// Gets a value indicating whether this object has valid information for pis baseline or not.
 		/// </summary>
 		/// <value>true if this object is pis baseline up to date, false if not.</value>
+        /// <remarks>This information is used meanly to detect when a baseline deployment can be performed.</remarks>
 		public bool IsPisBaselineUpToDate
 		{
 			get
@@ -336,7 +336,7 @@ namespace PIS.Ground.Core.Data
         /// </returns>
         public override string ToString()
         {
-            StringBuilder output = new StringBuilder(200);
+            StringBuilder output = new StringBuilder(250);
             Dump(string.Empty, output);
             return output.ToString();
         }
@@ -358,6 +358,39 @@ namespace PIS.Ground.Core.Data
             output.AppendFormat(CultureInfo.InvariantCulture, "{0}CommunicationLink = '{1}',", memberPrefix, CommunicationLink).AppendLine();
             output.AppendFormat(CultureInfo.InvariantCulture, "{0}Status = '{1}',", memberPrefix, Status).AppendLine();
             output.AppendFormat(CultureInfo.InvariantCulture, "{0}IsPisBaselineUpToDate = '{1}',", memberPrefix, IsPisBaselineUpToDate).AppendLine();
+            if (PisBaseline != null)
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisBaseline.CurrentVersionOut = '{1}'", memberPrefix, PisBaseline.CurrentVersionOut).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisBaseline.FutureVersionOut = '{1}'", memberPrefix, PisBaseline.FutureVersionOut).AppendLine();
+            }
+            else
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisBaseline.CurrentVersionOut = '{1}'", memberPrefix, null).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisBaseline.FutureVersionOut = '{1}'", memberPrefix, null).AppendLine();
+            }
+
+            if (PisVersion != null)
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisVersion.VersionPISSoftware = '{1}'", memberPrefix, PisVersion.VersionPISSoftware).AppendLine();
+            }
+            else
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisVersion.VersionPISSoftware = '{1}'", memberPrefix, null).AppendLine();
+            }
+
+            if (PisMission != null)
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.CommercialNumber = '{1}'", memberPrefix, PisMission.CommercialNumber).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.MissionState = '{1}'", memberPrefix, PisMission.MissionState).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.OperatorCode = '{1}'", memberPrefix, PisMission.OperatorCode).AppendLine();
+            }
+            else
+            {
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.CommercialNumber = '{1}'", memberPrefix, null).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.MissionState = '{1}'", memberPrefix, null).AppendLine();
+                output.AppendFormat(CultureInfo.InvariantCulture, "{0}PisMission.OperatorCode = '{1}'", memberPrefix, null).AppendLine();
+            }
+
             output.AppendFormat(CultureInfo.InvariantCulture, "{0}ServiceList[Count={1}] = ", memberPrefix, ServiceList.Count);
             ServiceList.Dump(memberPrefix + "\t", output);
 

@@ -19,17 +19,19 @@ using PIS.Ground.DataPackage;
 using PIS.Ground.RemoteDataStore;
 
 using System.Reflection;
+using System.Globalization;
 
 namespace DataPackageTests
 {
 	/// <summary>BaselineStatus test class.</summary>
-	[TestFixture]
+	[TestFixture, Category("BaselineStatus")]
 	public class BaselineStatusTests
 	{
 		#region attributes
 
 		/// <summary>Identifier for the system.</summary>
 		private static readonly string _systemId = "MyTrain-69";
+        private static readonly ushort _vehicleId = 69;
 		private static readonly string _trainCurrentVersion = "2.9.0.2";
 		private static readonly string _trainFutureVersion = "3.1.0.2";
 		private static readonly string _trainPISVersion = "5.12.4.5";
@@ -50,97 +52,6 @@ namespace DataPackageTests
 
 		#endregion
 
-		private class BaselineStatusInstrumented : BaselineStatusUpdater
-		{
-			public static bool Initialize(
-				Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
-				BaselineProgressUpdateProcedure baselineProgressUpdateProcedure,
-				BaselineProgressRemoveProcedure baselineProgressRemoveProcedure,
-				IT2GFileDistributionManager t2g,
-                ElementList<AvailableElementData> availableElements)
-			{
-                Mock<ILogManager> logManagerMock = new Mock<ILogManager>();
-                
-                MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
-					BindingFlags.NonPublic | BindingFlags.Static);
-
-
-
-				object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
-					baselineProgressUpdateProcedure, baselineProgressRemoveProcedure, t2g, logManagerMock.Object, availableElements });
-
-				return (bool)value;
-			}
-
-            public static bool Initialize(
-                Dictionary<string, TrainBaselineStatusExtendedData> baselineProgresses,
-                IT2GFileDistributionManager t2g,
-                ILogManager logManager,
-                ElementList<AvailableElementData> availableElements)
-            {
-                MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("Initialize",
-                    BindingFlags.NonPublic | BindingFlags.Static);
-
-                MethodInfo lMethodInfo1 = typeof(BaselineStatusUpdater).GetMethod("UpdateProgressOnHistoryLogger",
-                    BindingFlags.NonPublic | BindingFlags.Static);
-
-                BaselineStatusUpdater.BaselineProgressUpdateProcedure baselineProgressUpdateProcedureDelegate =
-                    (BaselineStatusUpdater.BaselineProgressUpdateProcedure)Delegate.CreateDelegate(
-                        typeof(BaselineStatusUpdater.BaselineProgressUpdateProcedure),
-                        null,
-                        lMethodInfo1);
-
-                MethodInfo lMethodInfo2 = typeof(BaselineStatusUpdater).GetMethod("RemoveProgressFromHistoryLogger",
-                   BindingFlags.NonPublic | BindingFlags.Static);
-
-                BaselineStatusUpdater.BaselineProgressRemoveProcedure baselineProgressRemoveProcedureDelegate =
-                    (BaselineStatusUpdater.BaselineProgressRemoveProcedure)Delegate.CreateDelegate(
-                        typeof(BaselineStatusUpdater.BaselineProgressRemoveProcedure),
-                        null,
-                        lMethodInfo2);
-
-                object value = lMethodInfo.Invoke(null, new object[] { baselineProgresses, 
-					baselineProgressUpdateProcedureDelegate, baselineProgressRemoveProcedureDelegate, t2g, logManager, availableElements });
-
-                return (bool)value;
-            }
-
-			delegate void ProcessSystemChangedNotificationDelegate(SystemInfo notification,
-				string assignedCurrentBaseline,
-				string assignedFutureBaseline,
-				ref string onBoardFutureBaseline,
-				ref bool isDeepUpdate,
-				TrainBaselineStatusData currentProgress,
-				out TrainBaselineStatusData updatedProgress);
-
-			public static void ProcessSystemChangedNotification(
-				SystemInfo notification,
-				string assignedCurrentBaseline,
-				string assignedFutureBaseline,
-				ref string onBoardFutureBaseline,
-				ref bool isDeepUpdate,
-				TrainBaselineStatusData currentProgress,
-				out TrainBaselineStatusData updatedProgress)
-			{
-				MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("ProcessSystemChangedNotification",
-					BindingFlags.NonPublic | BindingFlags.Static);
-
-				ProcessSystemChangedNotificationDelegate processSystemChangedNotificationDelegate =
-					(ProcessSystemChangedNotificationDelegate)Delegate.CreateDelegate(
-						typeof(ProcessSystemChangedNotificationDelegate),
-						null,
-						lMethodInfo);
-
-				processSystemChangedNotificationDelegate(
-					notification,
-					assignedCurrentBaseline,
-					assignedFutureBaseline,
-					ref onBoardFutureBaseline,
-					ref isDeepUpdate,
-					currentProgress,
-					out updatedProgress);
-			}
-		}
 
 		#region Tests managment
 
@@ -152,10 +63,24 @@ namespace DataPackageTests
 			_baselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
 			_baselineProgressUpdateProc = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(UpdateProcedureDelegate);
 			_baselineProgressRemoveProc = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(RemoveProcedureDelegate);
-
-			BaselineStatusInstrumented.Initialize(_baselineProgresses,
-				_baselineProgressUpdateProc, _baselineProgressRemoveProc, _t2gMock.Object, null);
 		}
+
+        /// <summary>
+        /// Creates and initialize the baseline status updater object with default parameter.
+        /// </summary>
+        /// <returns>Baseline status updater object initialized.</returns>
+        private BaselineStatusUpdaterInstrumented CreateBaselineStatusUpdater()
+        {
+            BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented();
+            if (!baselineStatusUpdater.Initialize(_baselineProgresses,
+                _baselineProgressUpdateProc, _baselineProgressRemoveProc, _t2gMock.Object, null))
+            {
+                baselineStatusUpdater.Dispose();
+                Assert.Fail("Failed to initialize baseline status updated object");
+            }
+
+            return baselineStatusUpdater;
+        }
 
 		public bool UpdateProcedureDelegate(string trainId, TrainBaselineStatusData progressInfo)
 		{
@@ -198,8 +123,8 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
-				0,
+                _vehicleId,
+                0,
 				true,
 				CommunicationLink.WIFI,
 				new ServiceInfoList(),
@@ -227,8 +152,8 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
-				0,
+                _vehicleId,
+                0,
 				false,
 				CommunicationLink.WIFI,
 				new ServiceInfoList(),
@@ -256,7 +181,7 @@ namespace DataPackageTests
 			var sampleSystemInfo = new SystemInfo(
 				_systemId,
 				"MISSION-ABC",
-				0,
+				_vehicleId,
 				0,
 				false,
 				CommunicationLink.WIFI,
@@ -280,7 +205,8 @@ namespace DataPackageTests
 			TrainBaselineStatusData.PisOnBoardVersion = _latestKnownPISOnboardVersion;
 			TrainBaselineStatusData.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
 			TrainBaselineStatusData.TaskId = 746;
-			TrainBaselineStatusData.TrainNumber = _systemId;
+            TrainBaselineStatusData.TrainNumber = "";
+            TrainBaselineStatusData.TrainId = _systemId;
 
 			return TrainBaselineStatusData;
 		}
@@ -302,49 +228,26 @@ namespace DataPackageTests
 				lStatusDate,
 				_latestKnownAssignedFutureBaselineVersion,
 				_latestKnownOnBoardFutureBaselineVersion,
+                _latestKnownCurrentBaselineVersion,
 				true);
 
 			return lStatusExtendedData;
 		}
 
 
-		public static void UpdateBaselineProgressFromSystemInfo(
+		public void UpdateBaselineProgressFromSystemInfo(
 			SystemInfo notification,
 			string assignedCurrentBaseline,
 			string assignedFutureBaseline,
 			ref TrainBaselineStatusData TrainBaselineStatusData)
 		{
 			MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("UpdateBaselineProgressFromSystemInfo",
-				BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+				BindingFlags.NonPublic | BindingFlags.Public);
 
 			object value = lMethodInfo.Invoke(null, new object[] { notification, assignedCurrentBaseline,
 				assignedFutureBaseline, TrainBaselineStatusData });
 
 			return;
-		}
-
-		public static void UpdateBaselineProgressFromFileTransferNotification(
-			FileDistributionStatusArgs notification,
-			ref TrainBaselineStatusExtendedData TrainBaselineStatusData)
-		{
-			MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("UpdateBaselineProgressFromFileTransferNotification",
-				BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-
-			object value = lMethodInfo.Invoke(null, new object[] { notification, TrainBaselineStatusData });
-
-			return;
-		}
-
-		public static BaselineProgressStatusEnum ValidateBaselineProgressStatus(
-			BaselineProgressStatusEnum currentState,
-			BaselineProgressStatusEnum newState)
-		{
-			MethodInfo lMethodInfo = typeof(BaselineStatusUpdater).GetMethod("ValidateBaselineProgressStatus",
-				BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-
-			object value = lMethodInfo.Invoke(null, new object[] { currentState, newState });
-
-			return (BaselineProgressStatusEnum)value;
 		}
 
 		/// <summary>Setups called before each test to initialize variables.</summary>
@@ -372,77 +275,79 @@ namespace DataPackageTests
 			TrainBaselineStatusExtendedData workingProgress = null;
 			var notification = new FileDistributionStatusArgs();
 
-			// TaskState.Error
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			expectedProgress.Status.RequestId = Guid.Empty;
-			expectedProgress.Status.TaskId = 0;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.OnBoardFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Error;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = CreateBaselineStatusUpdater())
+            {
+                // TaskState.Error
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                expectedProgress.Status.RequestId = Guid.Empty;
+                expectedProgress.Status.TaskId = 0;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.OnBoardFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Error;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
 
-			// TaskState.Cancelled
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			expectedProgress.Status.RequestId = Guid.Empty;
-			expectedProgress.Status.TaskId = 0;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.OnBoardFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Cancelled;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+                // TaskState.Cancelled
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                expectedProgress.Status.RequestId = Guid.Empty;
+                expectedProgress.Status.TaskId = 0;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.OnBoardFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Cancelled;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
 
-			// TaskState.Started + TaskPhase.Acquisition
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Started;
-			notification.CurrentTaskPhase = TaskPhase.Acquisition;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
-
-
-			// TaskState.Started + TaskPhase.Distribution
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Started;
-			notification.CurrentTaskPhase = TaskPhase.Distribution;
-			notification.DistributionCompletionPercent = 33;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+                // TaskState.Started + TaskPhase.Acquisition
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Started;
+                notification.CurrentTaskPhase = TaskPhase.Acquisition;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
 
 
-			// TaskState.Stopped
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PAUSED;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Stopped;
-			workingProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+                // TaskState.Started + TaskPhase.Distribution
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Started;
+                notification.CurrentTaskPhase = TaskPhase.Distribution;
+                notification.DistributionCompletionPercent = 33;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
 
 
-			// TaskState.Completed
-			// 
-			expectedProgress = BuildTrainBaselineStatusExtendedData();
-			expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
-			expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
-			workingProgress = BuildTrainBaselineStatusExtendedData();
-			notification.TaskStatus = TaskState.Completed;
-			BaselineStatusTests.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+                // TaskState.Stopped
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PAUSED;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Stopped;
+                workingProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
 
+
+                // TaskState.Completed
+                // 
+                expectedProgress = BuildTrainBaselineStatusExtendedData();
+                expectedProgress.Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                expectedProgress.Status.FutureBaselineVersion = expectedProgress.AssignedFutureBaseline;
+                workingProgress = BuildTrainBaselineStatusExtendedData();
+                notification.TaskStatus = TaskState.Completed;
+                baselineStatusUpdater.UpdateBaselineProgressFromFileTransferNotification(notification, ref workingProgress);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(expectedProgress.Status, workingProgress.Status));
+            }
 		}
 
 		#endregion
@@ -458,50 +363,54 @@ namespace DataPackageTests
 			// Accepted updates
 			// Monotonic progression from UNKNOWN to UPDATED
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.UNKNOWN, BaselineProgressStatusEnum.TRANSFER_PLANNED);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PLANNED, result);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = CreateBaselineStatusUpdater())
+            {
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_PLANNED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.UNKNOWN, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PLANNED, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, BaselineProgressStatusEnum.TRANSFER_PAUSED);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PAUSED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_PLANNED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_PAUSED, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, BaselineProgressStatusEnum.TRANSFER_PAUSED);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PAUSED, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_COMPLETED, BaselineProgressStatusEnum.DEPLOYED);
-			Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_PAUSED, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.DEPLOYED, BaselineProgressStatusEnum.UPDATED);
-			Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_COMPLETED, BaselineProgressStatusEnum.DEPLOYED);
+                Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, result);
 
-			// Accepted updates
-			// Going back from TRANSFER_PAUSED to TRANSFER_IN_PROGRESS
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.DEPLOYED, BaselineProgressStatusEnum.UPDATED);
+                Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_PAUSED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, result);
+                // Accepted updates
+                // Going back from TRANSFER_PAUSED to TRANSFER_IN_PROGRESS
 
-			// Rejected update
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_PAUSED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.UPDATED, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
-			Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, result);
+                // Rejected update
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.DEPLOYED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
-			Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.UPDATED, BaselineProgressStatusEnum.TRANSFER_COMPLETED);
+                Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, result);
 
-			result = BaselineStatusTests.ValidateBaselineProgressStatus(
-				BaselineProgressStatusEnum.TRANSFER_PLANNED, BaselineProgressStatusEnum.UNKNOWN);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PLANNED, result);
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.DEPLOYED, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS);
+                Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, result);
+
+                result = baselineStatusUpdater.ValidateBaselineProgressStatus(
+                    BaselineProgressStatusEnum.TRANSFER_PLANNED, BaselineProgressStatusEnum.UNKNOWN);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_PLANNED, result);
+            }
 		}
 
 		#endregion
@@ -511,85 +420,96 @@ namespace DataPackageTests
 
 		#region ProcessSystemChangedNotificationTests
 
-		[Test]
-		public void ProcessSystemChangedNotificationTest_Online()
-		{
-			string lOnBoardFutureBaseline = null;
-			TrainBaselineStatusData lUpdatedProgress;
-			List<Recipient> lRecipients = new List<Recipient>();
-			TransferTaskData lTask = BuildSampleTransferTask();
-			Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
+        [Test]
+        public void ProcessSystemChangedNotificationTest_Online()
+        {
+            TrainBaselineStatusData lUpdatedProgress;
+            List<Recipient> lRecipients = new List<Recipient>();
+            TransferTaskData lTask = BuildSampleTransferTask();
+            Mock<IT2GFileDistributionManager> lT2GMock;
 
+            /// SystemInfo = BuildSampleSystemInfo
+            /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
+            /// FutureBaseline = _latestKnownFutureBaselineVersion;
+            /// OnBoardFutureBaseline = null;
+            /// IsDeepUpdate = true;
+            /// CurrentProgress = BuildSampleTrainBaselineStatusData();
 
-			/// SystemInfo = BuildSampleSystemInfo
-			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
-			/// FutureBaseline = _latestKnownFutureBaselineVersion;
-			/// OnBoardFutureBaseline = null;
-			/// IsDeepUpdate = true;
-			/// CurrentProgress = BuildSampleTrainBaselineStatusData();
+            lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			lT2GMock = new Mock<IT2GFileDistributionManager>();
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                Assert.IsTrue(baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null), "Failed to initialize baseline status updater");
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                SystemInfo systemInfo = BuildSampleSystemInfo();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Once());
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
 
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 
+            /// SystemInfo = BuildSampleSystemInfo
+            /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
+            /// FutureBaseline = _latestKnownFutureBaselineVersion;
+            /// OnBoardFutureBaseline = null;
+            /// IsDeepUpdate = false;
+            /// CurrentProgress = BuildSampleTrainBaselineStatusData();
 
+            lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			/// SystemInfo = BuildSampleSystemInfo
-			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
-			/// FutureBaseline = _latestKnownFutureBaselineVersion;
-			/// OnBoardFutureBaseline = null;
-			/// IsDeepUpdate = false;
-			/// CurrentProgress = BuildSampleTrainBaselineStatusData();
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock = new Mock<IT2GFileDistributionManager>();
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                SystemInfo systemInfo = BuildSampleSystemInfo();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-            IsDeepUpdate = false;
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Never());
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
-
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Never());
-
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
-		}
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(true, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
+        }
 
 		[Test]
 		public void ProcessSystemChangedNotificationTest_OfflineWithoutVersions()
@@ -599,7 +519,6 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
 
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -611,29 +530,35 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, null, out lUpdatedProgress);
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Never());
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, string.Empty, string.Empty);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(0, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Never());
 
+                Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(0, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -645,34 +570,35 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-            IsDeepUpdate = false;
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, string.Empty, string.Empty);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithoutVersions(), string.Empty, string.Empty,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, null, out lUpdatedProgress);
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Never());
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Never());
-
-			Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(0, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
-
-
-
-
+                Assert.AreEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(0, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(String.Empty, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
+            
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
 			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
 			/// FutureBaseline = _latestKnownFutureBaselineVersion;
@@ -682,33 +608,38 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			lOnBoardFutureBaseline = "5.12.5.9";
+                lOnBoardFutureBaseline = "5.12.5.9";
 
-            IsDeepUpdate = true;
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Once());
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
 
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual("0.0.0.0", lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
-
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithoutVersions
@@ -720,30 +651,39 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-            IsDeepUpdate = false;
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithoutVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Never());
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithoutVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual("0.0.0.0", lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual("0.0.0.0", lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Never());
+
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 		}
 
 		[Test]
@@ -754,7 +694,6 @@ namespace DataPackageTests
 			List<Recipient> lRecipients = new List<Recipient>();
 			TransferTaskData lTask = BuildSampleTransferTask();
 			Mock<IT2GFileDistributionManager> lT2GMock;
-            bool IsDeepUpdate = true;
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithVersions
 			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -765,29 +704,36 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Once());
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
 
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 
 			/// SystemInfo = BuildSampleSystemInfo_OfflineWithVersions
 			/// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -798,30 +744,38 @@ namespace DataPackageTests
 
 			lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-			BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-            IsDeepUpdate = false;
+                TrainBaselineStatusExtendedData initialProgress = new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData());
+                initialProgress.IsT2GPollingRequired = false;
+                baselineStatusUpdater.ForceProgress(initialProgress);
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(
-				BuildSampleSystemInfo_OfflineWithVersions(), _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-				ref lOnBoardFutureBaseline,
-                ref IsDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
+                SystemInfo systemInfo = BuildSampleSystemInfo_OfflineWithVersions();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Never());
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Never());
 
-			Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
-			Assert.AreEqual(746, lUpdatedProgress.TaskId);
-			Assert.AreEqual("0", lUpdatedProgress.TrainNumber);
-			Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
-			Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-			Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
-			Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
-			Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.AreNotEqual(Guid.Empty, lUpdatedProgress.RequestId);
+                Assert.AreEqual(746, lUpdatedProgress.TaskId);
+                Assert.AreEqual("69", lUpdatedProgress.TrainNumber);
+                Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
+                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
+                Assert.AreEqual(_trainCurrentVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_trainFutureVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_trainPISVersion, lUpdatedProgress.PisOnBoardVersion);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
 		}
 		#endregion
 
@@ -884,73 +838,75 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
-			//
-			// Resetting an empty dictionary
-			// 
+                //
+                // Resetting an empty dictionary
+                // 
 
-			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries(null);
+                lCallbackMock.Reset();
+                baselineStatusUpdater.ResetStatusEntries(null);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Resetting a dictionary with 1 entry
-			// 
+                //
+                // Resetting a dictionary with 1 entry
+                // 
 
-			var lNewStatus = new TrainBaselineStatusData();
-			var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
-			lNewStatus.TrainId = "TRAIN-5";
-			lNewStatus.TaskId = 94;
-			lNewStatus.OnlineStatus = true;
-			lNewStatus.CurrentBaselineVersion = "1.2.3.4";
-			lNewStatus.FutureBaselineVersion = "2.3.4.5";
-			lNewStatus.PisOnBoardVersion = "5.13.2.3";
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                var lNewStatus = new TrainBaselineStatusData();
+                var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
+                lNewStatus.TrainId = "TRAIN-5";
+                lNewStatus.TaskId = 94;
+                lNewStatus.OnlineStatus = true;
+                lNewStatus.CurrentBaselineVersion = "1.2.3.4";
+                lNewStatus.FutureBaselineVersion = "2.3.4.5";
+                lNewStatus.PisOnBoardVersion = "5.13.2.3";
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
 
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			TrainBaselineStatusData lExpectedStatus = lNewStatus.Clone();
+                TrainBaselineStatusData lExpectedStatus = lNewStatus.Clone();
 
-			TrainBaselineStatusData lNewStatus2 = lNewStatus.Clone();
-			TrainBaselineStatusData lNewStatus3 = lNewStatus.Clone();
-			TrainBaselineStatusData lNewStatus4 = lNewStatus.Clone();
+                TrainBaselineStatusData lNewStatus2 = lNewStatus.Clone();
+                TrainBaselineStatusData lNewStatus3 = lNewStatus.Clone();
+                TrainBaselineStatusData lNewStatus4 = lNewStatus.Clone();
 
-			lExpectedStatus.OnlineStatus = false;
+                lExpectedStatus.OnlineStatus = false;
 
-			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries(null);
+                lCallbackMock.Reset();
+                baselineStatusUpdater.ResetStatusEntries(null);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
 
 
-			//
-			// Resetting a dictionary with 3 entries
-			// 
+                //
+                // Resetting a dictionary with 3 entries
+                // 
 
-			var lNewExtendedStatus2 = new TrainBaselineStatusExtendedData(lNewStatus2);
-			var lNewExtendedStatus3 = new TrainBaselineStatusExtendedData(lNewStatus3);
-			var lNewExtendedStatus4 = new TrainBaselineStatusExtendedData(lNewStatus4);
+                var lNewExtendedStatus2 = new TrainBaselineStatusExtendedData(lNewStatus2);
+                var lNewExtendedStatus3 = new TrainBaselineStatusExtendedData(lNewStatus3);
+                var lNewExtendedStatus4 = new TrainBaselineStatusExtendedData(lNewStatus4);
 
-			lBaselineProgresses["TRAIN-2"] = lNewExtendedStatus2;
-			lBaselineProgresses["TRAIN-3"] = lNewExtendedStatus3;
-			lBaselineProgresses["TRAIN-4"] = lNewExtendedStatus3;
+                lBaselineProgresses["TRAIN-2"] = lNewExtendedStatus2;
+                lBaselineProgresses["TRAIN-3"] = lNewExtendedStatus3;
+                lBaselineProgresses["TRAIN-4"] = lNewExtendedStatus3;
 
-			lCallbackMock.Reset();
-			BaselineStatusInstrumented.ResetStatusEntries(null);
+                lCallbackMock.Reset();
+                baselineStatusUpdater.ResetStatusEntries(null);
 
-			Assert.AreEqual(3, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(3, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			// Our callback mock can only record the parameters from the last invokation.
-			// Because of that, we will not validate further when multiple calls are expected
-
+                // Our callback mock can only record the parameters from the last invocation.
+                // Because of that, we will not validate further when multiple calls are expected
+            }
 		}
 
 		[Test]
@@ -981,92 +937,95 @@ namespace DataPackageTests
 			lExpectedStatus.TrainNumber = "UNKNOWN";
 			string lAssignedFutureBaselineVersion = "4.8.0.2";
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
-			BaselineStatusInstrumented.ProcessDistributeBaselineRequest(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.OnlineStatus,
-				lExpectedStatus.CurrentBaselineVersion,
-				lExpectedStatus.FutureBaselineVersion,
-				lAssignedFutureBaselineVersion);
+                baselineStatusUpdater.ProcessDistributeBaselineRequest(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.OnlineStatus,
+                    lExpectedStatus.CurrentBaselineVersion,
+                    lExpectedStatus.FutureBaselineVersion,
+                    lAssignedFutureBaselineVersion);
 
-			// Checking if the proper callback has been invoked and that the passed arguments are as expected
+                // Checking if the proper callback has been invoked and that the passed arguments are as expected
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
 
-			//
-			// Testing with an entry already existing for the train to be processed
-			// 
+                //
+                // Testing with an entry already existing for the train to be processed
+                // 
 
-			lCallbackMock.Reset();
-			lBaselineProgresses["TRAIN-5"].Status.PisOnBoardVersion = "5.13.0.1";
-			lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UPDATED;
-			lBaselineProgresses["TRAIN-5"].Status.TaskId = 84;
-			lBaselineProgresses["TRAIN-5"].Status.TrainNumber = "634";
+                lCallbackMock.Reset();
+                lBaselineProgresses["TRAIN-5"].Status.PisOnBoardVersion = "5.13.0.1";
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UPDATED;
+                lBaselineProgresses["TRAIN-5"].Status.TaskId = 84;
+                lBaselineProgresses["TRAIN-5"].Status.TrainNumber = "634";
 
-			lExpectedStatus = new TrainBaselineStatusData();
-			lExpectedStatus.CurrentBaselineVersion = "4.3.2.9";
-			lExpectedStatus.FutureBaselineVersion = "5.7.8.9";
-			lExpectedStatus.OnlineStatus = false;
-			lExpectedStatus.PisOnBoardVersion = "5.13.0.1";
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			lExpectedStatus.RequestId = new Guid("5b20eac4-92c7-0b30-bdbb-22a887015e59");
-			lExpectedStatus.TaskId = 0;
-			lExpectedStatus.TrainId = "TRAIN-5";
-			lExpectedStatus.TrainNumber = "634";
-			lAssignedFutureBaselineVersion = "5.9.1.3";
+                lExpectedStatus = new TrainBaselineStatusData();
+                lExpectedStatus.CurrentBaselineVersion = "4.3.2.9";
+                lExpectedStatus.FutureBaselineVersion = "5.7.8.9";
+                lExpectedStatus.OnlineStatus = false;
+                lExpectedStatus.PisOnBoardVersion = "5.13.0.1";
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lExpectedStatus.RequestId = new Guid("5b20eac4-92c7-0b30-bdbb-22a887015e59");
+                lExpectedStatus.TaskId = 0;
+                lExpectedStatus.TrainId = "TRAIN-5";
+                lExpectedStatus.TrainNumber = "634";
+                lAssignedFutureBaselineVersion = "5.9.1.3";
 
-			BaselineStatusInstrumented.ProcessDistributeBaselineRequest(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.OnlineStatus,
-				lExpectedStatus.CurrentBaselineVersion,
-				lExpectedStatus.FutureBaselineVersion,
-				lAssignedFutureBaselineVersion);
+                baselineStatusUpdater.ProcessDistributeBaselineRequest(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.OnlineStatus,
+                    lExpectedStatus.CurrentBaselineVersion,
+                    lExpectedStatus.FutureBaselineVersion,
+                    lAssignedFutureBaselineVersion);
 
-			// Checking if the proper callback has been invoked and that the passed arguments are as expected
+                // Checking if the proper callback has been invoked and that the passed arguments are as expected
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
 
-			//
-			// Testing with a train that has no entry in the baseline deployment dictionary
-			// 
+                //
+                // Testing with a train that has no entry in the baseline deployment dictionary
+                // 
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			lExpectedStatus = new TrainBaselineStatusData();
-			lExpectedStatus.CurrentBaselineVersion = "4.1.0.5";
-			lExpectedStatus.FutureBaselineVersion = "6.8.9.10";
-			lExpectedStatus.OnlineStatus = true;
-			lExpectedStatus.PisOnBoardVersion = BaselineStatusUpdater.UnknownVersion;
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			lExpectedStatus.RequestId = new Guid("8c20eac7-02c4-1b32-fdba-32a887015e50");
-			lExpectedStatus.TaskId = 0;
-			lExpectedStatus.TrainId = "TRAIN-XXX";
-			lExpectedStatus.TrainNumber = "UNKNOWN";
-			lAssignedFutureBaselineVersion = "6.0.2.5";
+                lExpectedStatus = new TrainBaselineStatusData();
+                lExpectedStatus.CurrentBaselineVersion = "4.1.0.5";
+                lExpectedStatus.FutureBaselineVersion = "6.8.9.10";
+                lExpectedStatus.OnlineStatus = true;
+                lExpectedStatus.PisOnBoardVersion = BaselineStatusUpdater.UnknownVersion;
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lExpectedStatus.RequestId = new Guid("8c20eac7-02c4-1b32-fdba-32a887015e50");
+                lExpectedStatus.TaskId = 0;
+                lExpectedStatus.TrainId = "TRAIN-XXX";
+                lExpectedStatus.TrainNumber = "UNKNOWN";
+                lAssignedFutureBaselineVersion = "6.0.2.5";
 
-			BaselineStatusInstrumented.ProcessDistributeBaselineRequest(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.OnlineStatus,
-				lExpectedStatus.CurrentBaselineVersion,
-				lExpectedStatus.FutureBaselineVersion,
-				lAssignedFutureBaselineVersion);
+                baselineStatusUpdater.ProcessDistributeBaselineRequest(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.OnlineStatus,
+                    lExpectedStatus.CurrentBaselineVersion,
+                    lExpectedStatus.FutureBaselineVersion,
+                    lAssignedFutureBaselineVersion);
 
-			// Checking if the proper callback has been invoked and that the passed arguments are as expected
+                // Checking if the proper callback has been invoked and that the passed arguments are as expected
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-XXX", lCallbackMock.UpdatedTrain);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-XXX", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+            }
 		}
 
 		[Test]
@@ -1085,76 +1044,79 @@ namespace DataPackageTests
 			// Testing with an empty baseline deployment dictionary
 			// 
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                Assert.IsTrue(baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null), "Failed to initialize baseline status updater object");
 
-			var lExpectedStatus = new TrainBaselineStatusData();
-			lExpectedStatus.TrainId = "TRAIN-5";
-			lExpectedStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lExpectedStatus.TaskId = 93;
+                var lExpectedStatus = new TrainBaselineStatusData();
+                lExpectedStatus.TrainId = "TRAIN-5";
+                lExpectedStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lExpectedStatus.TaskId = 93;
 
-			BaselineStatusInstrumented.ProcessTaskId(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.TaskId);
+                baselineStatusUpdater.ProcessTaskId(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.TaskId);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			var lNewStatus = new TrainBaselineStatusData();
-			var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
-			lNewStatus.TrainId = "TRAIN-XXX";
-			lNewStatus.TaskId = 0;
+                var lNewStatus = new TrainBaselineStatusData();
+                var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
+                lNewStatus.TrainId = "TRAIN-XXX";
+                lNewStatus.TaskId = 0;
 
-			lBaselineProgresses["TRAIN-XXX"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-XXX"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessTaskId(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.TaskId);
+                baselineStatusUpdater.ProcessTaskId(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.TaskId);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
-			lNewStatus.TrainId = "TRAIN-5";
-			lNewStatus.TaskId = 0;
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
+                lNewStatus.TrainId = "TRAIN-5";
+                lNewStatus.TaskId = 0;
 
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessTaskId(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.TaskId);
+                baselineStatusUpdater.ProcessTaskId(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.TaskId);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = lExpectedStatus.RequestId;
-			lNewStatus.TrainId = lExpectedStatus.TrainId;
-			lNewStatus.TaskId = 0;
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = lExpectedStatus.RequestId;
+                lNewStatus.TrainId = lExpectedStatus.TrainId;
+                lNewStatus.TaskId = 0;
 
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessTaskId(
-				lExpectedStatus.TrainId,
-				lExpectedStatus.RequestId,
-				lExpectedStatus.TaskId);
+                baselineStatusUpdater.ProcessTaskId(
+                    lExpectedStatus.TrainId,
+                    lExpectedStatus.RequestId,
+                    lExpectedStatus.TaskId);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+            }
 		}
 
 		[Test]
@@ -1173,207 +1135,210 @@ namespace DataPackageTests
 			// Testing with an empty baseline deployment dictionary
 			// 
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                Assert.IsTrue(baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null), "Failed to initialize baseline status updater");
 
-			var lNotification = new FileDistributionStatusArgs();
-			lNotification.TaskId = 71;
-			lNotification.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNotification.TaskStatus = TaskState.Started;
-			lNotification.CurrentTaskPhase = TaskPhase.Acquisition;
+                var lNotification = new FileDistributionStatusArgs();
+                lNotification.TaskId = 71;
+                lNotification.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNotification.TaskStatus = TaskState.Started;
+                lNotification.CurrentTaskPhase = TaskPhase.Acquisition;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing with one entry this does not match the notification task id and request id
-			// 
+                //
+                // Testing with one entry this does not match the notification task id and request id
+                // 
 
-			var lNewStatus = new TrainBaselineStatusData();
-			var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
-			lNewStatus.TrainId = "TRAIN-5";
-			lNewStatus.TaskId = 94;
+                var lNewStatus = new TrainBaselineStatusData();
+                var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
+                lNewStatus.TrainId = "TRAIN-5";
+                lNewStatus.TaskId = 94;
 
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing with one entry that matches only the request id
-			// 
+                //
+                // Testing with one entry that matches only the request id
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.TrainId = "TRAIN-6";
-			lNewStatus.TaskId = 94;
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.TrainId = "TRAIN-6";
+                lNewStatus.TaskId = 94;
 
-			lBaselineProgresses["TRAIN-6"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-6"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing with one entry that matches only the task id
-			// 
+                //
+                // Testing with one entry that matches only the task id
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
-			lNewStatus.TrainId = "TRAIN-7";
-			lNewStatus.TaskId = 71;
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.RequestId = new Guid("6b20eac2-12c7-4b30-bdbb-22ab87015e56");
+                lNewStatus.TrainId = "TRAIN-7";
+                lNewStatus.TaskId = 71;
 
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing with one entry that matches both task id and request id
-			// 
+                //
+                // Testing with one entry that matches both task id and request id
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewExtendedStatus.AssignedFutureBaseline = "2.3.4.5";
-			lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.TrainId = "TRAIN-7";
-			lNewStatus.TaskId = 71;
-
-
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
-
-			lCallbackMock.Reset();
-			var lExpectedStatus = lNewStatus.Clone();
-
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
-
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
-			lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
-
-			//
-			// Updating the entry from TRANSFER_PLANNED to TRANSFER_IN_PROGRESS
-			//
-
-			lNotification.TaskStatus = TaskState.Started;
-			lNotification.CurrentTaskPhase = TaskPhase.Distribution;
-			lNotification.DistributionCompletionPercent = 13;
-
-			lCallbackMock.Reset();
-
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
-
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
-
-			//
-			// Updating the entry from  TRANSFER_IN_PROGRESS to TRANSFER_COMPLETED
-			//
-
-			lNotification.TaskStatus = TaskState.Completed;
-			lCallbackMock.Reset();
-
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
-
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
-			lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
-
-			//
-			// Trying to update the entry from TRANSFER_COMPLETED to TRANSFER_PAUSED
-			//
-
-			lNotification.TaskStatus = TaskState.Stopped;
-			lCallbackMock.Reset();
-
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
-
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewExtendedStatus.AssignedFutureBaseline = "2.3.4.5";
+                lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.TrainId = "TRAIN-7";
+                lNewStatus.TaskId = 71;
 
 
-			//
-			// Transfer error while TRANSFER_IN_PROGRESS
-			//
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			lNotification.TaskStatus = TaskState.Error;
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
+                var lExpectedStatus = lNewStatus.Clone();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			lExpectedStatus.RequestId = Guid.Empty;
-			lExpectedStatus.TaskId = 0;
-			lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.OnBoardFutureBaseline;
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+
+                //
+                // Updating the entry from TRANSFER_PLANNED to TRANSFER_IN_PROGRESS
+                //
+
+                lNotification.TaskStatus = TaskState.Started;
+                lNotification.CurrentTaskPhase = TaskPhase.Distribution;
+                lNotification.DistributionCompletionPercent = 13;
+
+                lCallbackMock.Reset();
+
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
+
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+
+                //
+                // Updating the entry from  TRANSFER_IN_PROGRESS to TRANSFER_COMPLETED
+                //
+
+                lNotification.TaskStatus = TaskState.Completed;
+                lCallbackMock.Reset();
+
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
+
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.AssignedFutureBaseline;
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+
+                //
+                // Trying to update the entry from TRANSFER_COMPLETED to TRANSFER_PAUSED
+                //
+
+                lNotification.TaskStatus = TaskState.Stopped;
+                lCallbackMock.Reset();
+
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
+
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
 
-			//
-			// Transfer cancelled while TRANSFER_IN_PROGRESS
-			//
+                //
+                // Transfer error while TRANSFER_IN_PROGRESS
+                //
 
-			lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			lBaselineProgresses["TRAIN-7"].Status.RequestId = lNotification.RequestId;
-			lBaselineProgresses["TRAIN-7"].Status.TaskId = lNotification.TaskId;
-			lNotification.TaskStatus = TaskState.Cancelled;
-			lCallbackMock.Reset();
+                lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                lNotification.TaskStatus = TaskState.Error;
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
-			lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			lExpectedStatus.RequestId = Guid.Empty;
-			lExpectedStatus.TaskId = 0;
-			lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.OnBoardFutureBaseline;
-			Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lExpectedStatus.RequestId = Guid.Empty;
+                lExpectedStatus.TaskId = 0;
+                lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.OnBoardFutureBaseline;
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
 
-			//
-			// Transfer progress while in error (or no request)
-			//
 
-			lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-			lBaselineProgresses["TRAIN-7"].Status.RequestId = Guid.Empty;
-			lNotification.TaskStatus = TaskState.Started;
-			lCallbackMock.Reset();
+                //
+                // Transfer cancelled while TRANSFER_IN_PROGRESS
+                //
 
-			BaselineStatusInstrumented.ProcessFileTransferNotification(lNotification);
+                lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                lBaselineProgresses["TRAIN-7"].Status.RequestId = lNotification.RequestId;
+                lBaselineProgresses["TRAIN-7"].Status.TaskId = lNotification.TaskId;
+                lNotification.TaskStatus = TaskState.Cancelled;
+                lCallbackMock.Reset();
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
+
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                lExpectedStatus.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lExpectedStatus.RequestId = Guid.Empty;
+                lExpectedStatus.TaskId = 0;
+                lExpectedStatus.FutureBaselineVersion = lNewExtendedStatus.OnBoardFutureBaseline;
+                Assert.AreEqual(true, TrainBaselineStatusData.AreEqual(lExpectedStatus, lCallbackMock.UpdatedProgressInfo));
+
+                //
+                // Transfer progress while in error (or no request)
+                //
+
+                lBaselineProgresses["TRAIN-7"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-7"].Status.RequestId = Guid.Empty;
+                lNotification.TaskStatus = TaskState.Started;
+                lCallbackMock.Reset();
+
+                baselineStatusUpdater.ProcessFileTransferNotification(lNotification);
+
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+            }
 		}
 
 		[Test]
@@ -1388,149 +1353,152 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                Assert.IsTrue(baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null), "Failed to initialize baseline status updater");
 
-			//
-			// Testing with an empty baseline deployment dictionary
-			// 
+                //
+                // Testing with an empty baseline deployment dictionary
+                // 
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-5",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-5",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing with one entry of the wrong train
-			// 
+                //
+                // Testing with one entry of the wrong train
+                // 
 
-			var lNewStatus = new TrainBaselineStatusData();
-			var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                var lNewStatus = new TrainBaselineStatusData();
+                var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-7",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-7",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing a failure notification with a matching entry while transfer in progress
-			// 
+                //
+                // Testing a failure notification with a matching entry while transfer in progress
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.FutureBaselineVersion = "2.3.4.5";
-			lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
-			lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.FutureBaselineVersion = "2.3.4.5";
+                lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
+                lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
 
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-7",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-7",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("1.2.3.4", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("1.2.3.4", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing a failure notification with a matching entry while transfer paused
-			// 
+                //
+                // Testing a failure notification with a matching entry while transfer paused
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PAUSED;
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.FutureBaselineVersion = "2.3.4.5";
-			lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
-			lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PAUSED;
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.FutureBaselineVersion = "2.3.4.5";
+                lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
+                lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
 
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-7",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-7",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("1.2.3.4", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("1.2.3.4", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing a failure notification with a matching entry that is already completed
-			// 
+                //
+                // Testing a failure notification with a matching entry that is already completed
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.FutureBaselineVersion = "2.3.4.5";
-			lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
-			lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.FutureBaselineVersion = "2.3.4.5";
+                lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
+                lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
 
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-7",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-7",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			//
-			// Testing a failure notification with a matching entry that is already deployed
-			// 
+                //
+                // Testing a failure notification with a matching entry that is already deployed
+                // 
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lNewStatus.ProgressStatus = BaselineProgressStatusEnum.DEPLOYED;
-			lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lNewStatus.FutureBaselineVersion = "3.5.4.2";
-			lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
-			lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lNewStatus.ProgressStatus = BaselineProgressStatusEnum.DEPLOYED;
+                lNewStatus.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lNewStatus.FutureBaselineVersion = "3.5.4.2";
+                lNewExtendedStatus.OnBoardFutureBaseline = "1.2.3.4";
+                lNewExtendedStatus.AssignedFutureBaseline = "3.5.4.2";
 
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSIFNotification("TRAIN-7",
-				PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
+                baselineStatusUpdater.ProcessSIFNotification("TRAIN-7",
+                    PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageDistributionFailedRejectedByElement);
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+            }
 		}
 
 		[Test]
@@ -1547,49 +1515,53 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
 
-			//
-			// Testing with an empty baseline deployment dictionary
-			// 
+                Assert.IsTrue(baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null), "Failed to initialize baseline status updater.");
 
-			lCallbackMock.Reset();
+                //
+                // Testing with an empty baseline deployment dictionary
+                // 
 
-			BaselineStatusInstrumented.ProcessElementDeletedNotification("TRAIN-7");
+                lCallbackMock.Reset();
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                baselineStatusUpdater.ProcessElementDeletedNotification("TRAIN-7");
 
-			//
-			// Testing with one entry of the wrong train
-			// 
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			var lNewStatus = new TrainBaselineStatusData();
-			var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
+                //
+                // Testing with one entry of the wrong train
+                // 
 
-			lCallbackMock.Reset();
+                var lNewStatus = new TrainBaselineStatusData();
+                var lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lBaselineProgresses["TRAIN-5"] = lNewExtendedStatus;
 
-			BaselineStatusInstrumented.ProcessElementDeletedNotification("TRAIN-7");
+                lCallbackMock.Reset();
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                baselineStatusUpdater.ProcessElementDeletedNotification("TRAIN-7");
 
-			//
-			// Testing a completion notification with a matching entry
-			// 
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
 
-			lNewStatus = new TrainBaselineStatusData();
-			lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
-			lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
+                //
+                // Testing a completion notification with a matching entry
+                // 
 
-			lCallbackMock.Reset();
+                lNewStatus = new TrainBaselineStatusData();
+                lNewExtendedStatus = new TrainBaselineStatusExtendedData(lNewStatus);
+                lBaselineProgresses["TRAIN-7"] = lNewExtendedStatus;
 
-			BaselineStatusInstrumented.ProcessElementDeletedNotification("TRAIN-7");
+                lCallbackMock.Reset();
 
-			Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(1, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-7", lCallbackMock.RemoveTrain);
+                baselineStatusUpdater.ProcessElementDeletedNotification("TRAIN-7");
+
+                Assert.AreEqual(0, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(1, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-7", lCallbackMock.RemoveTrain);
+            }
 
 		}
 
@@ -1607,220 +1579,223 @@ namespace DataPackageTests
 			var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
 			var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-			BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
 
-			//
-			// Testing with an empty baseline deployment dictionary
-			// 
+                //
+                // Testing with an empty baseline deployment dictionary
+                // 
 
-			var lNotification = new SystemInfo(
-				"TRAIN-5",
-				"",
-				968,
-				0,
-				true,
-				CommunicationLink.WIFI,
-				new ServiceInfoList(),
-				new PisBaseline { CurrentVersionOut = "3.4.5.6", FutureVersionOut = "5.6.7.8" },
-				new PisVersion { VersionPISSoftware = "5.13.0.6" },
-				new PisMission(),
-				true);
+                var lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "3.4.5.6", FutureVersionOut = "5.6.7.8" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "3.4.5.6", "7.4.6.2");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "3.4.5.6", "7.4.6.2");
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("3.4.5.6", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
-			Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("3.4.5.6", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
+                Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing with current baseline == assigned future baseline
-			// 
+                //
+                // Testing with current baseline == assigned future baseline
+                // 
 
-			lNotification = new SystemInfo(
-				"TRAIN-5",
-				"",
-				968,
-				0,
-				true,
-				CommunicationLink.WIFI,
-				new ServiceInfoList(),
-				new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "0.0.0.0" },
-				new PisVersion { VersionPISSoftware = "5.13.0.6" },
-				new PisMission(),
-				true);
+                lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "0.0.0.0" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-			lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "5.6.7.8");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "5.6.7.8");
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UPDATED, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
-			Assert.AreEqual("0.0.0.0", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
+                Assert.AreEqual("0.0.0.0", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing with future baseline == assigned future baseline
-			// 
+                //
+                // Testing with future baseline == assigned future baseline
+                // 
 
-			lNotification = new SystemInfo(
-				"TRAIN-5",
-				"",
-				968,
-				0,
-				true,
-				CommunicationLink.WIFI,
-				new ServiceInfoList(),
-				new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
-				new PisVersion { VersionPISSoftware = "5.13.0.6" },
-				new PisMission(),
-				true);
+                lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-			lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "6.7.8.9");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "6.7.8.9");
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.DEPLOYED, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
-			Assert.AreEqual("6.7.8.9", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
+                Assert.AreEqual("6.7.8.9", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing with future baseline != assigned future baseline &&
-			//  current baseline != assigned future baseline
-			// 
+                //
+                // Testing with future baseline != assigned future baseline &&
+                //  current baseline != assigned future baseline
+                // 
 
-			lNotification = new SystemInfo(
-				"TRAIN-5",
-				"",
-				968,
-				0,
-				true,
-				CommunicationLink.WIFI,
-				new ServiceInfoList(),
-				new PisBaseline { CurrentVersionOut = "5.6.2.1", FutureVersionOut = "6.7.5.6" },
-				new PisVersion { VersionPISSoftware = "5.13.0.6" },
-				new PisMission(),
-				true);
+                lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.2.1", FutureVersionOut = "6.7.5.6" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-			lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "3.4.5.6");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "3.4.5.6");
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("5.6.2.1", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
-			Assert.AreEqual("6.7.5.6", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("5.6.2.1", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
+                Assert.AreEqual("6.7.5.6", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			//
-			// Testing with an on-going transfer
-			// 
+                //
+                // Testing with an on-going transfer
+                // 
 
-			lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-			lBaselineProgresses["TRAIN-5"].Status.TaskId = 85;
-			lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
-			lBaselineProgresses["TRAIN-5"].Status.CurrentBaselineVersion = "1.2.3.4";
-			lBaselineProgresses["TRAIN-5"].Status.FutureBaselineVersion = "2.5.3.1";
-			lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.TaskId = 85;
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                lBaselineProgresses["TRAIN-5"].Status.CurrentBaselineVersion = "1.2.3.4";
+                lBaselineProgresses["TRAIN-5"].Status.FutureBaselineVersion = "2.5.3.1";
+                lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
 
-			lNotification = new SystemInfo(
-				"TRAIN-5",
-				"",
-				968,
-				0,
-				true,
-				CommunicationLink.WIFI,
-				new ServiceInfoList(),
-				new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
-				new PisVersion { VersionPISSoftware = "5.13.0.6" },
-				new PisMission(),
-				true);
+                lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-			lTask.TaskState = TaskState.Started;
-			lTask.TaskPhase = TaskPhase.Distribution;
-			lTask.DistributionCompletionPercent = 95;
+                lTask.TaskState = TaskState.Started;
+                lTask.TaskPhase = TaskPhase.Distribution;
+                lTask.DistributionCompletionPercent = 95;
 
-			lT2GMock.Setup(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask));
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask));
 
-			lCallbackMock.Reset();
+                lCallbackMock.Reset();
 
-			BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "3.4.5.6");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "3.4.5.6");
 
-			Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-			Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-			Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
 
-			if (lCallbackMock.UpdatedProgressInfo != null)
-			{
-				Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-			}
-			else
-			{
-				Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
-			}
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
 
-			Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
-			Assert.AreEqual("2.5.3.1", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
+                Assert.AreEqual("5.6.7.8", lCallbackMock.UpdatedProgressInfo.CurrentBaselineVersion);
+                Assert.AreEqual("2.5.3.1", lCallbackMock.UpdatedProgressInfo.FutureBaselineVersion);
 
-			lT2GMock.Verify(x => x.GetTransferTask(
-				It.IsAny<int>(), out lRecipients, out lTask),
-				Times.Once());
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
+            }
 		}
 
         [Test]
@@ -1834,58 +1809,63 @@ namespace DataPackageTests
             TransferTaskData lTask = BuildSampleTransferTask();
             var lBaselineProgresses = new Dictionary<string, TrainBaselineStatusExtendedData>();
 
-            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+            TrainBaselineStatusExtendedData initialInfo = BuildTrainBaselineStatusExtendedData();
+            initialInfo.Status.TrainId = "TRAIN-5";
+            lBaselineProgresses["TRAIN-5"] = initialInfo;
 
-            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(lBaselineProgresses, lT2GMock.Object, lLogManagerMock.Object, null);
 
-            var lNotification = new SystemInfo(
-                "TRAIN-5",
-                "",
-                968,
-                0,
-                true,
-                CommunicationLink.WIFI,
-                new ServiceInfoList(),
-                new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
-                new PisVersion { VersionPISSoftware = "5.13.0.6" },
-                new PisMission(),
-                true);
+                var lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
 
-            lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-            lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-            lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;            
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
 
-            // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
-            // (it will be a string that will contain 'F0308' code)
-            lT2GMock.Setup(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
+                // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
+                // (it will be a string that will contain 'F0308' code)
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
 
-            // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
-            // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
-            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
+                // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
+                // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
+                lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
 
-            BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
 
-            lT2GMock.Verify(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask),
-                Times.Once());
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
 
-            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
-                Times.Once());
+                lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                    Times.Once());
 
-            // Verify that the LogManager.UpdateTrainBaselineStatus() function is called
-            // in order to update baseline update state in persistent storage
-            lLogManagerMock.Verify(x => x.UpdateTrainBaselineStatus(
-                "TRAIN-5",
-                Guid.Empty,
-                0,
-                "968",
-                true,
-                BaselineProgressStatusEnum.UNKNOWN,
-                "5.6.7.8",
-                "6.7.8.9",
-                "5.13.0.6"),
-                Times.Once());
+                // Verify that the LogManager.UpdateTrainBaselineStatus() function is called
+                // in order to update baseline update state in persistent storage
+                lLogManagerMock.Verify(x => x.UpdateTrainBaselineStatus(
+                    "TRAIN-5",
+                    Guid.Empty,
+                    0,
+                    "968",
+                    true,
+                    BaselineProgressStatusEnum.UNKNOWN,
+                    "5.6.7.8",
+                    "6.7.8.9",
+                    "5.13.0.6"),
+                    Times.Once());
+            }
         }
 
         [Test]
@@ -1901,78 +1881,81 @@ namespace DataPackageTests
             var lUpdateProcedure = new BaselineStatusUpdater.BaselineProgressUpdateProcedure(lCallbackMock.UpdateCallback);
             var lRemoveProcedure = new BaselineStatusUpdater.BaselineProgressRemoveProcedure(lCallbackMock.RemoveCallback);
 
-            lBaselineProgresses["TRAIN-5"] = BuildTrainBaselineStatusExtendedData();
+            TrainBaselineStatusExtendedData initialInfo = BuildTrainBaselineStatusExtendedData();
+            initialInfo.Status.TrainId = "TRAIN-5";
+            lBaselineProgresses["TRAIN-5"] = initialInfo;
 
-            BaselineStatusInstrumented.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
-
-            var lNotification = new SystemInfo(
-                "TRAIN-5",
-                "",
-                968,
-                0,
-                true,
-                CommunicationLink.WIFI,
-                new ServiceInfoList(),
-                new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
-                new PisVersion { VersionPISSoftware = "5.13.0.6" },
-                new PisMission(),
-                true);
-
-            lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
-            lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
-            lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
-
-            lCallbackMock.Reset();
-
-            // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
-            // (it will be a string that will contain 'F0308' code)
-            lT2GMock.Setup(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
-
-            // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
-            // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
-            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
-
-            BaselineStatusInstrumented.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
-
-            lT2GMock.Verify(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask),
-                Times.Once());
-
-            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
-                Times.Once());
-
-            // If baseline update status has changed - the BaselineProgressUpdateProcedure should be called
-            // with the appropriate parameters
-            // In the same time the BaselineProgressRemoveProcedure should not be called 
-            Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
-            Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
-            Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
-            
-            if (lCallbackMock.UpdatedProgressInfo != null)
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
             {
-                Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
-                Assert.AreEqual(Guid.Empty, lCallbackMock.UpdatedProgressInfo.RequestId);
-                Assert.AreEqual(0, lCallbackMock.UpdatedProgressInfo.TaskId);
-                Assert.AreEqual(false, lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired);
-            }
-            else
-            {
-                Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                baselineStatusUpdater.Initialize(lBaselineProgresses, lUpdateProcedure, lRemoveProcedure, lT2GMock.Object, null);
+
+                var lNotification = new SystemInfo(
+                    "TRAIN-5",
+                    "",
+                    968,
+                    0,
+                    true,
+                    CommunicationLink.WIFI,
+                    new ServiceInfoList(),
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisVersion { VersionPISSoftware = "5.13.0.6" },
+                    new PisMission(),
+                    true);
+
+                lBaselineProgresses["TRAIN-5"].Status.RequestId = new Guid("4b20eac4-82c7-4b30-bdbb-22ab87015e55");
+                lBaselineProgresses["TRAIN-5"].Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired = true;
+
+                lCallbackMock.Reset();
+
+                // If the provided task Id is unknown for T2G, GetTransferTask should return an appropriate error
+                // (it will be a string that will contain 'F0308' code)
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error: F0308");
+
+                // If there is a "Bad Task Id" error GetErrorCodeByDescription should return
+                // the T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId error
+                lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_BadTaskId);
+
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "7.4.6.2");
+
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
+
+                lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                    Times.Once());
+
+                // If baseline update status has changed - the BaselineProgressUpdateProcedure should be called
+                // with the appropriate parameters
+                // In the same time the BaselineProgressRemoveProcedure should not be called 
+                Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
+                Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
+                Assert.AreEqual("TRAIN-5", lCallbackMock.UpdatedTrain);
+
+                if (lCallbackMock.UpdatedProgressInfo != null)
+                {
+                    Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lCallbackMock.UpdatedProgressInfo.ProgressStatus);
+                    Assert.AreEqual(Guid.Empty, lCallbackMock.UpdatedProgressInfo.RequestId);
+                    Assert.AreEqual(0, lCallbackMock.UpdatedProgressInfo.TaskId);
+                    Assert.AreEqual(false, lBaselineProgresses["TRAIN-5"].IsT2GPollingRequired);
+                }
+                else
+                {
+                    Assert.Fail("lCallbackMock.UpdatedProgressInfo is null");
+                }
             }
         }
 
         [Test]
         public void ProcessSystemChangedNotificationTest_T2GUnknownError()
         {
-            string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
             bool isDeepUpdate = true;
             TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
-            SystemInfo systemInfo = BuildSampleSystemInfo();
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -1983,45 +1966,52 @@ namespace DataPackageTests
 
             lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-            // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
-            lT2GMock.Setup(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error");
+                // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask)).Returns("Error");
 
-            // If there is a T2G error other than "Bad Task Id" GetErrorCodeByDescription should return
-            // the T2GFileDistributionManagerErrorEnum.eT2GFD_Other error
-            lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_Other);
+                // If there is a T2G error other than "Bad Task Id" GetErrorCodeByDescription should return
+                // the T2GFileDistributionManagerErrorEnum.eT2GFD_Other error
+                lT2GMock.Setup(x => x.GetErrorCodeByDescription(It.IsAny<string>())).Returns(T2GFileDistributionManagerErrorEnum.eT2GFD_Other);
 
-            BaselineStatusInstrumented.ProcessSystemChangedNotification(
-                systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                ref lOnBoardFutureBaseline,
-                ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
-            lT2GMock.Verify(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask),
-                Times.Once());
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
-            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
-                Times.Once());
+                SystemInfo systemInfo = BuildSampleSystemInfo();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-            // If GetTransferTask returns an error, other than "Bad Task Id" error - the request params shouldn't be changed          
-            Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
-            Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);            
-            Assert.AreEqual(true, isDeepUpdate);
+
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
+
+                lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                    Times.Once());
+
+                // If GetTransferTask returns an error, other than "Bad Task Id" error - the request params shouldn't be changed          
+                Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
+                Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
+                Assert.AreEqual(true, isDeepUpdate);
+                Assert.IsTrue(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
         }
 
         [Test]
         public void ProcessSystemChangedNotificationTest_T2GNoError()
         {
-            string lOnBoardFutureBaseline = null;
             TrainBaselineStatusData lUpdatedProgress;
             List<Recipient> lRecipients = new List<Recipient>();
             TransferTaskData lTask = BuildSampleTransferTask();
             Mock<IT2GFileDistributionManager> lT2GMock;
-            bool isDeepUpdate = true;
             TrainBaselineStatusData lBaselineStatusData = BuildSampleTrainBaselineStatusData();
-            SystemInfo systemInfo = BuildSampleSystemInfo();
 
             /// SystemInfo = BuildSampleSystemInfo
             /// CurrentBaseline = _latestKnownCurrentBaselineVersion;
@@ -2032,30 +2022,39 @@ namespace DataPackageTests
 
             lT2GMock = new Mock<IT2GFileDistributionManager>();
 
-            BaselineStatusInstrumented.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
+            using (BaselineStatusUpdaterInstrumented baselineStatusUpdater = new BaselineStatusUpdaterInstrumented())
+            {
+                baselineStatusUpdater.Initialize(_baselineProgresses, _baselineProgressUpdateProc, _baselineProgressRemoveProc, lT2GMock.Object, null);
 
-            // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
-            lT2GMock.Setup(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask)).Returns("");
+                // If there is a T2G error the GetTransferTask should return a non-empty string with error's description
+                lT2GMock.Setup(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask)).Returns("");
 
-            BaselineStatusInstrumented.ProcessSystemChangedNotification(
-                systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion,
-                ref lOnBoardFutureBaseline,
-                ref isDeepUpdate, BuildSampleTrainBaselineStatusData(), out lUpdatedProgress);
 
-            lT2GMock.Verify(x => x.GetTransferTask(
-                It.IsAny<int>(), out lRecipients, out lTask),
-                Times.Once());
+                baselineStatusUpdater.ForceProgress(new TrainBaselineStatusExtendedData(BuildSampleTrainBaselineStatusData()));
 
-            // If GetTransferTask doesn't return any error - 
-            // the GetErrorCodeByDescription() should never be called
-            lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
-                Times.Never());
+                SystemInfo systemInfo = BuildSampleSystemInfo();
+                baselineStatusUpdater.ProcessSystemChangedNotification(
+                    systemInfo, _latestKnownCurrentBaselineVersion, _latestKnownFutureBaselineVersion);
+                TrainBaselineStatusExtendedData statusUpdated;
+                Assert.IsTrue(baselineStatusUpdater.TryGetEntry(systemInfo.SystemId, out statusUpdated), "System '{0}' is unknown by baseline status updater", systemInfo.SystemId);
+                lUpdatedProgress = statusUpdated.Status;
 
-            // If GetTransferTask doesn't return any error - the request params shouldn't be changed          
-            Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
-            Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
-            Assert.AreEqual(false, isDeepUpdate);
+
+                lT2GMock.Verify(x => x.GetTransferTask(
+                    It.IsAny<int>(), out lRecipients, out lTask),
+                    Times.Once());
+
+                // If GetTransferTask doesn't return any error - 
+                // the GetErrorCodeByDescription() should never be called
+                lT2GMock.Verify(x => x.GetErrorCodeByDescription(It.IsAny<string>()),
+                    Times.Never());
+
+                // If GetTransferTask doesn't return any error - the request params shouldn't be changed          
+                Assert.AreEqual(lBaselineStatusData.RequestId, lUpdatedProgress.RequestId);
+                Assert.AreEqual(lBaselineStatusData.TaskId, lUpdatedProgress.TaskId);
+                Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
+            }
         }
 
 		#endregion

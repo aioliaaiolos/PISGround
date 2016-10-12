@@ -79,6 +79,8 @@ namespace PIS.Ground.DataPackage
 
 		private static INotificationSender _notificationSender = null;
 
+        private static BaselineStatusUpdater _baselineStatusUpdater = null;
+
 		// Dictionary where the key is the pair(requestId, trainId) and the value is the Baseline Version.
 		private static Dictionary<KeyValuePair<Guid, string>, string> _baselineVersionDic = new Dictionary<KeyValuePair<Guid, string>, string>();
 
@@ -120,7 +122,7 @@ namespace PIS.Ground.DataPackage
 		}
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataPackageService"/> class.
+        /// Initializes a new instance of the <see cref="DataPackageService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="notificationSender">The notification sender.</param>
@@ -128,16 +130,20 @@ namespace PIS.Ground.DataPackage
         /// <param name="requestsFactory">The requests factory.</param>
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
-        /// <remarks>Available for automated testing.</remarks>
+        /// <param name="baselineStatusUpdater">The baseline status updater.</param>
+        /// <remarks>
+        /// Available for automated testing.
+        /// </remarks>
         protected DataPackageService(
             ISessionManager sessionManager,
             INotificationSender notificationSender,
             IT2GManager t2gManager,
             RequestMgt.IRequestContextFactory requestsFactory,
             RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-            RequestMgt.IRequestManager requestManager)
+            RequestMgt.IRequestManager requestManager,
+            BaselineStatusUpdater baselineStatusUpdater)
         {
-            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, true);
+            Initialize(sessionManager, notificationSender, t2gManager, requestsFactory, remoteDataStoreFactory, requestManager, baselineStatusUpdater, true);
         }
 
 		#endregion
@@ -174,12 +180,13 @@ namespace PIS.Ground.DataPackage
 							_notificationSender = new NotificationSender(_sessionManager);
 
 							_t2gManager = T2GManagerContainer.T2GManager;
+                            _baselineStatusUpdater = new BaselineStatusUpdater();
+                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
 							_remoteDateStoreUrl = ConfigurationSettings.AppSettings["RemoteDataStoreUrl"];
                             _requestManager = new RequestMgt.RequestManager();
-                            _requestFactory = new RequestMgt.RequestContextFactory();
+                            _requestFactory = new RequestMgt.RequestContextFactory(_t2gManager, _remoteDataStoreFactory, _baselineStatusUpdater);
 
-                            _remoteDataStoreFactory = new RemoteDataStoreFactory.RemoteDataStoreFactory();
 
                             CommonInitialize();
 						}
@@ -208,9 +215,8 @@ namespace PIS.Ground.DataPackage
             // Getting from the HistoryLogger the list of all baseline deployments statuses recorded so far
             // and registering a T2G client object to be used for updating those statuses
             //
-            ElementList<AvailableElementData> availableElements;
-            _t2gManager.GetAvailableElementDataList(out availableElements);
-            BaselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, availableElements);
+            IDictionary<string, SystemInfo> currentSystems = _t2gManager.GetAvailableSystems();
+            _baselineStatusUpdater.Initialize(_t2gManager.T2GFileDistributionManager, currentSystems);
 
             _t2gManager.T2GFileDistributionManager.RegisterUpdateFileCompletionCallBack(new UpdateFileCompletionCallBack(OnUploadFileMethodCompleted));
 
@@ -221,10 +227,10 @@ namespace PIS.Ground.DataPackage
 
             _baselineStatusThread.Start();
 
-            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
 
             _requestManager.Initialize(_t2gManager, _notificationSender);
             _requestManager.AddRequestRange(getAllBaselineDistributingSavedRequests());
+            _updateBaseLineTimer = new Timer(mUpdateBaselinesAssignation, _updateBaseLineTimerState, TimeSpan.Zero, TimeSpan.FromMinutes(_timeInterval));
             _initialized = true;
         }
 
@@ -238,13 +244,14 @@ namespace PIS.Ground.DataPackage
         /// <param name="remoteDataStoreFactory">The remote data store factory.</param>
         /// <param name="requestManager">The request manager.</param>
         /// <param name="executeCommonLogic">Indicates if the common logic shall be executed</param>
-		public static void Initialize(
-			ISessionManager sessionManager,
-			INotificationSender notificationSender,
-			IT2GManager t2gManager,
-			RequestMgt.IRequestContextFactory requestsFactory,
-			RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
-			RequestMgt.IRequestManager requestManager,
+        public static void Initialize(
+            ISessionManager sessionManager,
+            INotificationSender notificationSender,
+            IT2GManager t2gManager,
+            RequestMgt.IRequestContextFactory requestsFactory,
+            RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory,
+            RequestMgt.IRequestManager requestManager,
+            BaselineStatusUpdater baselineStatusUpdater,
             bool executeCommonLogic)
 		{
             lock (_initializationLock)
@@ -257,6 +264,7 @@ namespace PIS.Ground.DataPackage
                 _requestFactory = requestsFactory;
                 _remoteDataStoreFactory = remoteDataStoreFactory;
                 _requestManager = requestManager;
+                _baselineStatusUpdater = baselineStatusUpdater ?? new BaselineStatusUpdater();
 
                 if (executeCommonLogic)
                 {
@@ -305,6 +313,11 @@ namespace PIS.Ground.DataPackage
                     _baselineStatusThread = null;
                 }
 
+                if (_baselineStatusUpdater != null)
+                {
+                    _baselineStatusUpdater.Dispose();
+                }
+
                 if (_t2gManager != null)
                 {
                     if (_t2gManager.T2GFileDistributionManager != null)
@@ -319,8 +332,6 @@ namespace PIS.Ground.DataPackage
 
                     _t2gManager.Dispose();
                 }
-
-                BaselineStatusUpdater.Uninitialize();
 
                 if (_baselineStatusSystemInformationQueue != null)
                 {
@@ -346,7 +357,7 @@ namespace PIS.Ground.DataPackage
 					{
 						if (lTrainId.SystemId != null)
 						{
-							BaselineStatusUpdater.ProcessTaskId(lTrainId.SystemId, request.RequestId, request.TaskId);
+							_baselineStatusUpdater.ProcessTaskId(lTrainId.SystemId, request.RequestId, request.TaskId);
 						}
 					}
 				}
@@ -410,7 +421,7 @@ namespace PIS.Ground.DataPackage
 			{
 				if (string.IsNullOrEmpty(pNotification.SystemId) == false)
 				{
-					BaselineStatusUpdater.ProcessElementDeletedNotification(pNotification.SystemId);
+					_baselineStatusUpdater.ProcessElementDeletedNotification(pNotification.SystemId);
 
 					_notificationSender.SendNotification(PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DeletedElement, pNotification.SystemId);
 				}
@@ -426,12 +437,17 @@ namespace PIS.Ground.DataPackage
 		{
 			if (pNotification != null)
 			{
-                mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
+                try
+                {
+                    mWriteLog(TraceType.INFO, "OnT2GOnlineOffline", null, "OnT2GOnlineOffline : {0}", pNotification.online);
 
-				if (pNotification.online == false)
-				{
-					BaselineStatusUpdater.ResetStatusEntries(null);
-				}
+                    IDictionary<string, SystemInfo> currentSystems = (pNotification.online) ? _t2gManager.GetAvailableSystems() : null;
+                    _baselineStatusUpdater.ResetStatusEntries(currentSystems);
+                }
+                catch (System.Exception ex)
+                {
+                    mWriteLog(TraceType.EXCEPTION, "PIs.Ground.DataPackage.DataPackageService.OnT2GOnlineOffline", ex, "Processing error while becoming {0} with T2G", (pNotification.online) ? "online" : "offline");
+                }
 			}
 		}
 
@@ -448,7 +464,7 @@ namespace PIS.Ground.DataPackage
 				// on that T2G notification
 				//
 
-				BaselineStatusUpdater.ProcessFileTransferNotification(pNotification);
+				_baselineStatusUpdater.ProcessFileTransferNotification(pNotification);
 			}
 		}
 
@@ -560,7 +576,7 @@ namespace PIS.Ground.DataPackage
 					{
 						_stringListXmlSerializer.Serialize(lstr, lParamList);
 
-						sendNotificationToGroundApp(pFDistrStatusArg.RequestId.ToString(), lNotifEnum, lstr.ToString());
+						sendNotificationToGroundApp(pFDistrStatusArg.RequestId, lNotifEnum, lstr.ToString());
 					}
 				}
 			}
@@ -989,7 +1005,7 @@ namespace PIS.Ground.DataPackage
 
                                         DataPackageService.GetAssignedBaselines(lNextSystemInfo.SystemId, out lAssignedCurrentBaseline, out lAssignedFutureBaseline);
 
-                                        BaselineStatusUpdater.ProcessSystemChangedNotification(
+                                        _baselineStatusUpdater.ProcessSystemChangedNotification(
                                             lNextSystemInfo, lAssignedCurrentBaseline, lAssignedFutureBaseline);
                                     }
                                 }
@@ -1217,9 +1233,7 @@ namespace PIS.Ground.DataPackage
                     DataContainer baselineDistributingSavedRequestsList = remoteDataStoreProxy.getAllBaselineDistributingSavedRequests();
                     requestsList = DataTypeConversion.fromDataContainerToBaselineDistributingSavedRequestsList(
                         baselineDistributingSavedRequestsList,
-                        _requestFactory,
-                        _remoteDataStoreFactory,
-                        _t2gManager);
+                        _requestFactory);
                 }
 			}
 			catch (TimeoutException ex)
@@ -1344,7 +1358,7 @@ namespace PIS.Ground.DataPackage
 								if (lElData.PisBaselineData != null)
 								{
 									lElDescr.ElementArchivedBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.ArchivedVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.ArchivedVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.ArchivedVersionOut))
 									{
 										lElDescr.ElementArchivedBaseline.BaselineVersion = lElData.PisBaselineData.ArchivedVersionOut;
 										lElDescr.ElementArchivedBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.ArchivedValidOut);
@@ -1354,7 +1368,7 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementArchivedBaseline.LMTDataPackageVersion = lElData.PisBaselineData.ArchivedVersionLmtOut;
 									}
 									lElDescr.ElementCurrentBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.CurrentVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.CurrentVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.CurrentVersionOut))
 									{
 										lElDescr.isCurrentBaselineForced = Boolean.Parse(lElData.PisBaselineData.CurrentForcedOut);
 										DateTime ltmpDateTime = new DateTime();
@@ -1372,7 +1386,7 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementFutureBaselineExpirationDate = ltmpDateTime;
 									}
 									lElDescr.ElementFutureBaseline = new ElementBaseline();
-									if (null != lElData.PisBaselineData.FutureVersionOut && !string.IsNullOrEmpty(lElData.PisBaselineData.FutureVersionOut))
+									if (!string.IsNullOrEmpty(lElData.PisBaselineData.FutureVersionOut))
 									{
 										lElDescr.ElementFutureBaseline.BaselineVersion = lElData.PisBaselineData.FutureVersionOut;
 										lElDescr.ElementFutureBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.FutureValidOut);
@@ -1443,7 +1457,7 @@ namespace PIS.Ground.DataPackage
 									lElDescr.ElementFutureBaselineExpirationDate = new DateTime();
 									lElDescr.ElementFutureBaseline = new ElementBaseline();
 									lElDescr.ElementFutureBaseline.BaselineVersion = "";
-									sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+									sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
 								}
 								break;
 							case T2GManagerErrorEnum.eElementNotFound:
@@ -1612,18 +1626,15 @@ namespace PIS.Ground.DataPackage
 		/// <param name="pStatus">Status : Completed/Failed/Processing.</param>
 		/// <param name="pElementId">The concerned ElementId.</param>
 		/// </summary>
-		public static void sendElementIdNotificationToGroundApp(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pElementId)
+		public static void sendElementIdNotificationToGroundApp(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pElementId)
 		{
-			string message = "sendElementIdNotificationToGroundApp : pElementId : {0}; ReqID = {1}; pStatus = {2}";
-			mWriteLog(TraceType.INFO, "sendElementIdNotificationToGroundApp", null, message, pElementId, pRequestId, pStatus);
+            if (LogManager.IsTraceActive(TraceType.INFO))
+            {
+                string message = "sendElementIdNotificationToGroundApp : pElementId : {0}; ReqID = {1}; pStatus = {2}";
+                mWriteLog(TraceType.INFO, "sendElementIdNotificationToGroundApp", null, message, pElementId, pRequestId, pStatus);
+            }
 
 			// Request ID must be a GUID, but may be followed by the "|<CRC>" that should be removed
-
-			int endPos = pRequestId.IndexOf('|');
-			if (endPos != -1)
-			{
-				pRequestId = pRequestId.Substring(0, endPos);
-			}
 
 			try
 			{
@@ -1633,10 +1644,9 @@ namespace PIS.Ground.DataPackage
 					|| pStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingCompleted
 					|| pStatus == PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingCompleted)
 				{
-					Guid requestId = new Guid(pRequestId);
-					UpdateRequestStateToCompleted(requestId, pElementId);
+					UpdateRequestStateToCompleted(pRequestId, pElementId);
 					DistributingElementData distElementData = new DistributingElementData();
-					distElementData.requestId = requestId;
+					distElementData.requestId = pRequestId;
 					distElementData.distributionStatus = PIS.Ground.GroundCore.AppGround.NotificationIdEnum.Completed;
 					lock (_distributingElementDic)
 					{
@@ -1648,7 +1658,7 @@ namespace PIS.Ground.DataPackage
 
 				// Updating on the HistoryLogger the baseline deployments statuses based
 				// on that SIF notification (from PIS Embedded - Media Controller)
-				BaselineStatusUpdater.ProcessSIFNotification(pElementId, pStatus);
+				_baselineStatusUpdater.ProcessSIFNotification(pElementId, pStatus);
 
 				//serialize ElementId.
 				using (StringWriter lstr = new StringWriter())
@@ -1669,16 +1679,14 @@ namespace PIS.Ground.DataPackage
 		/// <param name="pStatus"> Status : Completed/Failed/Processing </param>
 		/// <param name="pParameter"> The serialized parameter under the form of a string</param>
 		/// </summary>
-		public static void sendNotificationToGroundApp(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pParameter)
+		public static void sendNotificationToGroundApp(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pStatus, string pParameter)
 		{
 			mWriteLog(TraceType.INFO, "sendNotificationToGroundApp", null, Logs.INFO_NOTIFICATIONTOAPPGROUND, pRequestId, pStatus);
 
 			try
 			{
-				Guid lRequestId = new Guid(pRequestId);
-
 				//Send Notification to AppGround
-				_notificationSender.SendNotification(pStatus, pParameter, lRequestId);
+				_notificationSender.SendNotification(pStatus, pParameter, pRequestId);
 			}
 			catch (Exception ex)
 			{
@@ -1745,9 +1753,7 @@ namespace PIS.Ground.DataPackage
 										pIncr,
 										baselineVersion,
 										baselineActivationDate,
-										baselineExpirationDate,
-										_remoteDataStoreFactory,
-										_t2gManager);
+										baselineExpirationDate);
 
 									if (request != null)
 									{
@@ -1957,11 +1963,11 @@ namespace PIS.Ground.DataPackage
 									{
 										if (pCommandType == BaselineCommandType.CLEAR_FORCING)
 										{
-											sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingProcessing, element.ElementNumber);
+											sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingProcessing, element.ElementNumber);
 										}
 										else
 										{
-											sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingProcessing, element.ElementNumber);
+											sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingProcessing, element.ElementNumber);
 										}
 
 										ServiceInfo serviceInfo;
@@ -1989,16 +1995,16 @@ namespace PIS.Ground.DataPackage
 
 														if (pCommandType == BaselineCommandType.CLEAR_FORCING)
 														{
-															sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingWaitingToSend, element.ElementNumber);
+															sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineClearForcingWaitingToSend, element.ElementNumber);
 														}
 														else
 														{
-															sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingWaitingToSend, element.ElementNumber);
+															sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingWaitingToSend, element.ElementNumber);
 														}
 													}
 													else
 													{
-														sendElementIdNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingFailed, element.ElementNumber);
+														sendElementIdNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineForcingFailed, element.ElementNumber);
 													}
 												}
 												break;
@@ -2076,7 +2082,7 @@ namespace PIS.Ground.DataPackage
 
 			if (lRqstResult == T2GManagerErrorEnum.eT2GServerOffline)
 			{
-				sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
+				sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageT2GServerOffline, string.Empty);
 			}
 
 			if (lElData == null || string.Compare(pEID, lElData.ElementNumber, true) != 0)
@@ -2896,9 +2902,7 @@ namespace PIS.Ground.DataPackage
 							false,
 							pBLVersion,
 							pActivationDate,
-							pExpirationDate,
-							_remoteDataStoreFactory,
-							_t2gManager);
+							pExpirationDate);
 
 							if (request != null)
 							{
@@ -3012,7 +3016,7 @@ namespace PIS.Ground.DataPackage
                         using (StringWriter lstr = new StringWriter())
                         {
                             _stringListXmlSerializer.Serialize(lstr, lParamList);
-                            sendNotificationToGroundApp(Guid.Empty.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
+                            sendNotificationToGroundApp(Guid.Empty, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageBaselineDefinitionRequest, lstr.ToString());
                         }
                     }
                 }
@@ -3388,7 +3392,7 @@ namespace PIS.Ground.DataPackage
                                             using (StringWriter lstr = new StringWriter())
                                             {
                                                 _stringListXmlSerializer.Serialize(lstr, lParamList);
-                                                sendNotificationToGroundApp(lrequestId.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
+                                                sendNotificationToGroundApp(lrequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageAssignedPackageWasDeleted, lstr.ToString());
                                             }
                                         }
                                     }

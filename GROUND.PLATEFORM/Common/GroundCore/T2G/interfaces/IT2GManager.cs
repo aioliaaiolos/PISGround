@@ -10,6 +10,7 @@ namespace PIS.Ground.Core.T2G
 {
 	using System;
 	using System.Collections.Generic;
+    using PIS.Ground.Core.Data;
 
 	/// <summary>Values that represent T2GManagerErrorEnum.</summary>
 	public enum T2GManagerErrorEnum
@@ -108,6 +109,12 @@ namespace PIS.Ground.Core.T2G
 		/// <param name="lstAvailableElementData">[out] Information describing the list available element.</param>
 		/// <returns>T2GManagerErrorEnum.</returns>
 		T2GManagerErrorEnum GetAvailableElementDataList(out PIS.Ground.Core.Data.ElementList<PIS.Ground.Core.Data.AvailableElementData> lstAvailableElementData);
+
+        /// <summary>
+        /// Gets the available systems.
+        /// </summary>
+        /// <returns>The available systems. The key is the system identifier and the value is the SystemInfo. Null is returned if T2G is offline.</returns>
+        IDictionary<string, SystemInfo> GetAvailableSystems();
 
 		/// <summary>Gets available element data list by mission code.</summary>
 		/// <param name="missionCommercialNumber">The mission commercial number.</param>

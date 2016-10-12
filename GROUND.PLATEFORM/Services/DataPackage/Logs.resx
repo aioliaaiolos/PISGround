@@ -280,6 +280,10 @@
   <data name="INFO_TRANSFER_TASK_PARAMS_FROM_T2G" xml:space="preserve">
     <value>Information for tranfer task id {0} from T2G. Recipient(s) info: {1}.</value>
   </data>
+  <data name="WARNING_CANNOT_CONVERT_GUID_NOTIFICATION_REQUEST" xml:space="preserve">
+    <value>Cannot extract GUID from request id '{0}' received for notification '{1}' from element '{2}'. Default empty GUID used instead.</value>
+    <comment>{0}: request id, {1} = notification id, {2} = element id</comment>
+  </data>
   <data name="WARNING_CANT_RETRIVE_TRANSFER_TASK_INFO" xml:space="preserve">
     <value>Failure to retrieve information for tranfer task id {0} from T2G.</value>
   </data>

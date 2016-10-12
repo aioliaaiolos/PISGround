@@ -53,7 +53,7 @@ namespace PIS.Ground.DataPackage
 
         public void updateBaselineDefinitionStatus(Guid pReqID, string pBLVersion, Notification.NotificationIdEnum pStatus)
         {
-            DataPackageService.sendNotificationToGroundApp(pReqID.ToString(), (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(pBLVersion)); 
+            DataPackageService.sendNotificationToGroundApp(pReqID, (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(pBLVersion)); 
         }
 
         public void missingDataPackageNotification(Guid pReqID, Dictionary<string, string> pDPCharsList)
@@ -66,7 +66,7 @@ namespace PIS.Ground.DataPackage
                 CharacteristicsList.Add(dicEntry.Value);
             }
 
-            DataPackageService.sendNotificationToGroundApp(pReqID.ToString(), PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageMissing, FormatNotificationParameter(CharacteristicsList));
+            DataPackageService.sendNotificationToGroundApp(pReqID, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.DataPackageMissing, FormatNotificationParameter(CharacteristicsList));
         }
 
         public void updatePackageUploadStatus(Guid pReqID, Notification.NotificationIdEnum pStatus, Dictionary<string, string> pDPCharsList)
@@ -79,7 +79,7 @@ namespace PIS.Ground.DataPackage
                 CharacteristicsList.Add(dicEntry.Value);
             }                          
 
-            DataPackageService.sendNotificationToGroundApp(pReqID.ToString(), (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(CharacteristicsList));           
+            DataPackageService.sendNotificationToGroundApp(pReqID, (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(CharacteristicsList));           
         }
 
         public void updateBaselineAssignmentStatus(Guid pReqID, Notification.NotificationIdEnum pStatus, string pElementId, string pBLVersion)
@@ -87,7 +87,7 @@ namespace PIS.Ground.DataPackage
 			List<string> lParamList = new List<string>(2);
 			lParamList.Add(pElementId);
 			lParamList.Add(pBLVersion);
-            DataPackageService.sendNotificationToGroundApp(pReqID.ToString(), (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(lParamList));
+            DataPackageService.sendNotificationToGroundApp(pReqID, (PIS.Ground.GroundCore.AppGround.NotificationIdEnum)pStatus, FormatNotificationParameter(lParamList));
         }        
     }
 }

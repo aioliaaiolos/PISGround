@@ -98,13 +98,16 @@ namespace GroundCoreTests
         public void CheckUrlTests()
         {
             //Test with local file
-            Assert.True(RemoteFileClass.checkUrl(pathString));
+            Assert.True(RemoteFileClass.checkUrl(pathString), "Method RemoteFileClass.checkUrl failed on url '{0}'", pathString);
             //Test HTTP url
-            Assert.True(RemoteFileClass.checkUrl("http://www.google.com"));
+            string url = "http://www.google.com";
+            Assert.True(RemoteFileClass.checkUrl(url), "Method RemoteFileClass.checkUrl failed on url '{0}'", url);
             //Test FTP url
-            Assert.True(RemoteFileClass.checkUrl("ftp://10.95.38.17:2121/Dev/PISGROUND/Tmp/pisbase-testfile.txt"));
-            //Test no valid URL
-            Assert.False(RemoteFileClass.checkUrl("Hello world"));
+            url = "ftp://10.95.38.17:2121/Dev/PISGROUND/Tmp/pisbase-testfile.txt";
+            Assert.True(RemoteFileClass.checkUrl(url), "Method RemoteFileClass.checkUrl failed on url '{0}'", url);
+            //Test invalid URL
+            url = "Hello world";
+            Assert.False(RemoteFileClass.checkUrl(url), "Method RemoteFileClass.checkUrl succeeded on url '{0}'", url);
         }
 
         /// <summary>Test constructor function</summary>

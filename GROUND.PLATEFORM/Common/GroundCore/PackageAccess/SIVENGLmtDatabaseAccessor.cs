@@ -57,7 +57,6 @@ namespace PIS.Ground.Core.PackageAccess
 		/// resources.
 		/// </summary>
 		/// <param name="disposing">True if we want to dispose all ressources, false otherwise.</param>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

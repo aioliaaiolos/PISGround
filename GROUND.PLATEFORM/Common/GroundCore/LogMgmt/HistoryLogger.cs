@@ -1152,7 +1152,7 @@ namespace PIS.Ground.Core.LogMgmt
                 }
                 else
                 {
-                    List<object> parameters = new List<object>();
+                    List<object> parameters = new List<object>(9);
                     parameters.Add(trainId);
                     parameters.Add(requestId.ToString());
                     parameters.Add(taskId);

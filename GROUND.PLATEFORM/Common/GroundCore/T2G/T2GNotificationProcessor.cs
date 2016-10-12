@@ -268,11 +268,11 @@ namespace PIS.Ground.Core.T2G
                     {
                         _localDataStorage.OnSystemChanged(newSystem);
 
-                        ElementEventArgs eaArgs = _localDataStorage.BuildElementInfoChangedEvent(newSystem.SystemId);
+                        ElementEventArgs args = _localDataStorage.BuildElementInfoChangedEvent(newSystem.SystemId);
 
-                        if (eaArgs != null)
+                        if (args != null)
                         {
-                            _notifierTarget.RaiseOnElementInfoChangeEvent(eaArgs);
+                            _notifierTarget.RaiseOnElementInfoChangeEvent(args);
                         }
                     }
                 }

@@ -498,7 +498,7 @@ namespace PIS.Ground.Core.T2G
 		/// <returns>ElementList of AvailableElementData.</returns>
 		public T2GManagerErrorEnum GetAvailableElementDataList(out ElementList<AvailableElementData> elementDataList)
 		{
-			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataList called", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataList", null, EventIdEnum.GroundCore);
+			LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataList called", "PIS.Ground.Core.T2G.T2GManager.GetAvailableElementDataList", null, EventIdEnum.GroundCore);
 
 			T2GManagerErrorEnum result;
 
@@ -570,7 +570,7 @@ namespace PIS.Ground.Core.T2G
 		{
             if (LogManager.IsTraceActive(TraceType.INFO))
             {
-			    LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for commercial number : '" + commercialNumber??string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+			    LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for commercial number : '" + commercialNumber??string.Empty + "'.", "PIS.Ground.Core.T2G.T2GManager.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
             }
 
 
@@ -606,7 +606,7 @@ namespace PIS.Ground.Core.T2G
 		{
             if (LogManager.IsTraceActive(TraceType.INFO))
             {
-                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for mission operator code: '" + missionOperatorCode?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataListByMissionOperatorCode called for mission operator code: '" + missionOperatorCode?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GManager.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
             }
 
 			elementDataList = new ElementList<AvailableElementData>(); // always return an object
@@ -649,7 +649,7 @@ namespace PIS.Ground.Core.T2G
 		{
             if (LogManager.IsTraceActive(TraceType.INFO))
             {
-                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataByElementNumber called for element '" + elementNumber ?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GClient.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
+                LogManager.WriteLog(TraceType.INFO, "GetAvailableElementDataByElementNumber called for element '" + elementNumber ?? string.Empty + "'.", "PIS.Ground.Core.T2G.T2GManager.GetAvailableElementDataByElementNumber", null, EventIdEnum.GroundCore);
             }
 
 
@@ -679,6 +679,27 @@ namespace PIS.Ground.Core.T2G
 
 			return result;
 		}
+
+        /// <summary>
+        /// Gets the available systems.
+        /// </summary>
+        /// <returns>The available systems. The key is the system identifier and the value is the SystemInfo. Null is returned if T2G is offline.</returns>
+        public IDictionary<string, SystemInfo> GetAvailableSystems()
+        {
+            LogManager.WriteLog(TraceType.INFO, "GetAvailableSystems called", "PIS.Ground.Core.T2G.T2GManager.GetAvailableSystems", null, EventIdEnum.GroundCore);
+
+            IDictionary<string, SystemInfo> systems;
+            if (T2GServerConnectionStatus)
+            {
+                systems = _localDataStorage.GetSystemDictionary();
+            }
+            else
+            {
+                systems = null;
+            }
+
+            return systems;
+        }
 
         /// <summary>Verify if a system is online or not.</summary>
         /// <param name="elementNumber">The system identifier to query.</param>

@@ -443,4 +443,8 @@
     <value>Error while notifying subscriber on transfer task created file distribution for request '{0}'.</value>
     <comment>{0} = Request Id</comment>
   </data>
+  <data name="UrlValidationFailed" xml:space="preserve">
+    <value>The url '{0}' is either malformed or it is unreachable.</value>
+    <comment>{0} : The url validated</comment>
+  </data>
 </root>

@@ -19,7 +19,7 @@ namespace DataPackageTests.Stubs
     /// record notification send by datapackage service.
     /// </summary>
     /// <seealso cref="PIS.Ground.Core.Common.INotificationSender" />
-    class NotificationSenderStub : INotificationSender
+    public class NotificationSenderStub : INotificationSender
     {
         #region Fields
 
@@ -95,6 +95,23 @@ namespace DataPackageTests.Stubs
             }
         }
 
+        /// <summary>
+        /// Determines whether if the specified notification has been send.
+        /// </summary>
+        /// <param name="id">The notification identifier.</param>
+        /// <param name="requestId">The request identifier.</param>
+        /// <param name="parameter">The parameter value to search</param>
+        /// <returns>
+        ///   <c>true</c> if the specified notifications was send; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsNotification(NotificationIdEnum id, Guid requestId, string parameter)
+        {
+            lock (_lock)
+            {
+                return _notifications.Any(n => n.Id == id && n.RequestId == requestId && n.Parameter == parameter);
+            }
+        }
+
         #region INotificationSender Members
 
         /// <summary>
@@ -142,6 +159,15 @@ namespace DataPackageTests.Stubs
             if (DisplayNotifications)
             {
                 Console.Out.WriteLine("  GROUND NOTIFICATION: T2GServerConnectionStatus({0})", status);
+            }
+
+            if (status)
+            {
+                SendNotification(NotificationIdEnum.CommonT2GServerOnline);
+            }
+            else
+            {
+                SendNotification(NotificationIdEnum.CommonT2GServerOffline);
             }
         }
 

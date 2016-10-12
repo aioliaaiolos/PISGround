@@ -521,10 +521,8 @@ namespace PIS.Ground.DataPackage
 		/// <param name="baselineDistributingSavedRequestsContainer">The baseline distributing saved
 		/// requests container.</param>
 		/// <param name="requestContextFactory">The request context factory.</param>
-		/// <param name="remoteDataStoreFactory">The remote data store factory.</param>
-		/// <param name="trainToGroundManager">Manager for train to ground.</param>
 		/// <returns>List of requests created from data container data.</returns>
-		internal static List<Core.Data.IRequestContext> fromDataContainerToBaselineDistributingSavedRequestsList(DataContainer baselineDistributingSavedRequestsContainer, RequestMgt.IRequestContextFactory requestContextFactory, RemoteDataStoreFactory.IRemoteDataStoreFactory remoteDataStoreFactory, Core.T2G.IT2GManager trainToGroundManager)
+		internal static List<Core.Data.IRequestContext> fromDataContainerToBaselineDistributingSavedRequestsList(DataContainer baselineDistributingSavedRequestsContainer, RequestMgt.IRequestContextFactory requestContextFactory)
 		{
 			List<Core.Data.IRequestContext> baselineDistributingSavedRequestsList = new List<Core.Data.IRequestContext>();
 			baselineDistributingSavedRequestsContainer.restart();
@@ -596,9 +594,7 @@ namespace PIS.Ground.DataPackage
 						priority,
 						baselineVersion,
 						baselineActivationDate,
-						baselineExpirationDate,
-						remoteDataStoreFactory,
-						trainToGroundManager
+						baselineExpirationDate
 					)
 				);
 			}

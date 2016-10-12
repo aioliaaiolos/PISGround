@@ -558,9 +558,9 @@ namespace PIS.Ground.Core.Data
         {
             string lResultUrl = String.Empty;
             pUrl = pUrl.Replace("/",@"\");
-            if (pUrl.StartsWith("file:") || pUrl.StartsWith(@"\\"))
+            if (pUrl.StartsWith("file:", StringComparison.OrdinalIgnoreCase) || pUrl.StartsWith(@"\\"))
             {
-                if (pUrl.StartsWith("file:"))// remove file:
+                if (pUrl.StartsWith("file:", StringComparison.OrdinalIgnoreCase))// remove file:
                 {
                     pUrl = pUrl.Substring(5);
                 }
@@ -594,7 +594,7 @@ namespace PIS.Ground.Core.Data
             bool lResult = false;
             try 
 	        {
-	            if (pUrl.StartsWith("ftp:"))
+	            if (pUrl.StartsWith("ftp:", StringComparison.OrdinalIgnoreCase))
                 {
                     System.Net.FtpWebRequest lRequest = (System.Net.FtpWebRequest)System.Net.WebRequest.Create(pUrl);
                     lRequest.Method = System.Net.WebRequestMethods.Ftp.GetFileSize;
@@ -603,7 +603,7 @@ namespace PIS.Ground.Core.Data
                         lResult = true;
                     }
                 }
-                else if (pUrl.StartsWith("http:"))
+                else if (pUrl.StartsWith("http:", StringComparison.OrdinalIgnoreCase))
                 {
                     System.Net.HttpWebRequest lRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(pUrl);
 
@@ -622,7 +622,8 @@ namespace PIS.Ground.Core.Data
 	        }
 	        catch (Exception ex)
 	        {
-                PIS.Ground.Core.LogMgmt.LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.Data.RemoteFileClass", ex, EventIdEnum.GroundCore);
+                string message = string.Format(CultureInfo.CurrentCulture, Properties.Resources.UrlValidationFailed, pUrl);
+                PIS.Ground.Core.LogMgmt.LogManager.WriteLog(TraceType.ERROR, message, "PIS.Ground.Core.Data.RemoteFileClass.checkUrl", ex, EventIdEnum.GroundCore);
                 lResult = false;
 	        }
             return lResult;

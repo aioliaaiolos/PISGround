@@ -1,16 +1,16 @@
-﻿// <copyright file="TrainBaselineStatusData.cs" company="Alstom Transport Telecite Inc.">
-// Copyright by Alstom Transport Telecite Inc. 2014.  All rights reserved.
-// 
-// The informiton contained herein is confidential property of Alstom
-// Transport Telecite Inc.  The use, copy, transfer or disclosure of such
-// information is prohibited except by express written agreement with Alstom
-// Transport Telecite Inc.
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="TrainBaselineStatusData.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
+//---------------------------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using System.Runtime.Serialization;
+using System.Text;
 
 /// Class used to store the train baseline status information.
 /// 
@@ -38,17 +38,54 @@ namespace PIS.Ground.Core.Data
         private string _futureBaselineVersion;
         private string _pisOnBoardVersion;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrainBaselineStatusData"/> class.
+        /// </summary>
         public TrainBaselineStatusData()
         {
-            _trainId = "";
+            _trainId = string.Empty;
             _requestId = new Guid();
             _taskId = 0;
-            _trainNumber = "";
+            _trainNumber = string.Empty;
             _onlineStatus = false;
             _progressStatus = BaselineProgressStatusEnum.UNKNOWN;
-            _currentBaselineVersion = "";
-            _futureBaselineVersion = "";
-            _pisOnBoardVersion = "";
+            _currentBaselineVersion = string.Empty;
+            _futureBaselineVersion = string.Empty;
+            _pisOnBoardVersion = string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrainBaselineStatusData"/> class.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="trainNumber">The train number.</param>
+        /// <param name="isOnline">Indicates the online status of the train.</param>
+        /// <param name="currentBaselineVersion">The current baseline version.</param>
+        public TrainBaselineStatusData(string trainId, int trainNumber, bool isOnline, string currentBaselineVersion)
+            : this()
+        {
+            _trainId = trainId;
+            _trainNumber = trainNumber.ToString(CultureInfo.InvariantCulture);
+            _onlineStatus = isOnline;
+            _currentBaselineVersion = currentBaselineVersion;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrainBaselineStatusData"/> class.
+        /// </summary>
+        /// <param name="trainId">The train identifier.</param>
+        /// <param name="trainNumber">The train number.</param>
+        /// <param name="isOnline">Indicates the online status of the train.</param>
+        /// <param name="currentBaselineVersion">The current baseline version.</param>
+        /// <param name="futureBaselineVersion">The future baseline version.</param>
+        /// <param name="pisOnboardVersion">The pis onboard version.</param>
+        /// <param name="progressStatus">The progress status.</param>
+        public TrainBaselineStatusData(string trainId, int trainNumber, bool isOnline, string currentBaselineVersion, string futureBaselineVersion, string pisOnboardVersion, BaselineProgressStatusEnum progressStatus)
+            : this(trainId, trainNumber, isOnline, currentBaselineVersion)
+        {
+            _futureBaselineVersion = futureBaselineVersion;
+            _pisOnBoardVersion = pisOnboardVersion;
+            _progressStatus = progressStatus;
         }
 
         [DataMember]
@@ -173,5 +210,51 @@ namespace PIS.Ground.Core.Data
 
 			return lEqual;
 		}
+
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            return AreEqual(this, obj as TrainBaselineStatusData);
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return Convert.ToInt32(_trainNumber, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder output = new StringBuilder(150);
+
+            output.Append("<id='").Append(TrainId).Append("'");
+            output.Append(", vehicleId=").Append(TrainNumber);
+            output.Append(", request='").Append(RequestId).Append("'");
+            output.Append(", task=").Append(TaskId);
+            output.Append(", online=").Append(OnlineStatus);
+            output.Append(", progress=").Append(ProgressStatus);
+            output.Append(", current=").Append(CurrentBaselineVersion);
+            output.Append(", future=").Append(FutureBaselineVersion);
+            output.Append(", pisVersion=").Append(PisOnBoardVersion);
+            output.Append(">");
+            return output.ToString();
+        }
     }
 }
