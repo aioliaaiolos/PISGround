@@ -979,7 +979,7 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the tier application at the URL &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the third-party application at the URL &apos;{0}&apos;.
         ///Notification parameters are:
         ///{3}.
         /// </summary>
@@ -990,7 +990,7 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the tier application at the URL &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the third-party application at the URL &apos;{0}&apos;..
         /// </summary>
         internal static string SendNotificationErrorMessageWithoutParameter {
             get {
@@ -999,7 +999,7 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The tier application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
+        ///   Looks up a localized string similar to The third-party application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
         ///Reason: {2}.
         ///Notification parameters are: 
         ///{4}.
@@ -1011,7 +1011,7 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The tier application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
+        ///   Looks up a localized string similar to The third-party application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
         ///Reason: {2}..
         /// </summary>
         internal static string SendNotificationPredictableMessageWithoutParameter {
