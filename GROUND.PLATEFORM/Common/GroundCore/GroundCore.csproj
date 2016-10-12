@@ -76,6 +76,7 @@
     <Compile Include="Common\AlstomGlobalDefines.cs" />
     <Compile Include="CommonConfiguration\CommonConfiguration.cs" />
     <Compile Include="Common\CreateOnDispatchServiceAttribute.cs" />
+    <Compile Include="Common\ExceptionMemory.cs" />
     <Compile Include="Common\INotificationSender.cs" />
     <Compile Include="Common\NotificationSender.cs" />
     <Compile Include="Data\AutomaticModeRequest.cs" />
