@@ -7,7 +7,7 @@
 ::                : When invoked with a parameter, this script set environment variables 
 ::                : that define the configuration. Configuration includes version number 
 ::				  : and dependent package.			   
-:: Updated        :	2016-09-26
+:: Updated        :	2016-10-12
 ::=====================================================================================
 @echo off
 
@@ -20,9 +20,9 @@ if "%1"=="" SETLOCAL
 ::=====================================================================================
 :: Fields that need to be updated on every new version - Begin
 ::=====================================================================================
-set VERSION_NUMBER=5.16.8.1
-set SETUP_VERSION=5.16.0801
-SET SETUP_PACKAGE_CODE_GUID={AD42665A-0A36-41E9-81DB-C8E17577CBCF}
+set VERSION_NUMBER=5.16.9.0
+set SETUP_VERSION=5.16.0900
+SET SETUP_PACKAGE_CODE_GUID={D7F352F0-F3D4-44D0-A4A7-CBB2248E92E8}
 :: The setup product code does not need to be changed because PIS-Ground does not support
 :: multiple installation on same machine.
 
