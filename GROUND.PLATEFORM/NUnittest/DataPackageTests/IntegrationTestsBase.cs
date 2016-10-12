@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using DataPackageTests.Data;
 using DataPackageTests.ServicesStub;
 using DataPackageTests.Stubs;
@@ -624,21 +625,51 @@ namespace DataPackageTests
 
         }
 
+        /// <summary>
+        /// Verifies the train baseline status in history log.
+        /// </summary>
+        /// <param name="systemId">The system identifier.</param>
+        /// <param name="expectedOnlineStatus">if set to <c>true</c> [expected online status].</param>
+        /// <param name="expectedBaselineVersion">The expected baseline version.</param>
+        /// <param name="expectedFutureVersion">The expected future version.</param>
+        /// <param name="expectedRequestId">The expected request identifier.</param>
+        /// <param name="expectedTaskId">The expected task identifier.</param>
+        /// <param name="expectedProgress">The expected progress.</param>
+        /// <remarks>This function check up to 8 times in 2 seconds before failing. The reason is that baselines statutes might be updated with a delay.</remarks>
         protected void VerifyTrainBaselineStatusInHistoryLog(string systemId, bool expectedOnlineStatus, string expectedBaselineVersion, string expectedFutureVersion, Guid expectedRequestId, int expectedTaskId, BaselineProgressStatusEnum expectedProgress)
         {
             Dictionary<string, TrainBaselineStatusData> statuses;
 
-            HistoryLogger.GetTrainBaselineStatus(out statuses);
+            bool isOk = false;
+            int count = 0;
 
-            TrainBaselineStatusData analysedTrain;
-            Assert.IsTrue(statuses.TryGetValue(systemId, out analysedTrain), "History log database integrity error for train '{0}': no data found", systemId);
-            AssertAll(
-            () => Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId),
-            () => Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId),
-            () => Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId),
-            () => Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId),
-            () => Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId),
-            () => Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId));
+            do
+            {
+                try
+                {
+                    HistoryLogger.GetTrainBaselineStatus(out statuses);
+
+                    TrainBaselineStatusData analysedTrain;
+                    Assert.IsTrue(statuses.TryGetValue(systemId, out analysedTrain), "History log database integrity error for train '{0}': no data found", systemId);
+                    AssertAll(
+                    () => Assert.AreEqual(expectedOnlineStatus, analysedTrain.OnlineStatus, "History log database integrity error for train '{0}': online status differ than expected", systemId),
+                    () => Assert.AreEqual(expectedRequestId, analysedTrain.RequestId, "History log database integrity error for train '{0}': request id differ than expected", systemId),
+                    () => Assert.AreEqual(expectedTaskId, analysedTrain.TaskId, "History log database integrity error for train '{0}': task id differ than expected", systemId),
+                    () => Assert.AreEqual(expectedProgress, analysedTrain.ProgressStatus, "History log database integrity error for train '{0}': progress status differ than expected", systemId),
+                    () => Assert.AreEqual(expectedBaselineVersion, analysedTrain.CurrentBaselineVersion, "History log database integrity error for train '{0}': current baseline version differ than expected", systemId),
+                    () => Assert.AreEqual(expectedFutureVersion, analysedTrain.FutureBaselineVersion, "History log database integrity error for train '{0}': future baseline version differ than expected", systemId));
+                    isOk = true;
+                }
+                catch
+                {
+                    if (++count > 8)
+                    {
+                        throw;
+                    }
+
+                    Thread.Sleep(250);
+                }
+            } while (!isOk);
         }
 
         protected void WaitBaselineStatusBecomeInState(string trainName, BaselineProgressStatusEnum expectedStatus)
