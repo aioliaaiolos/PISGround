@@ -349,16 +349,12 @@ namespace PIS.Ground.DataPackage
                 {
                     Status.RequestId = Guid.Empty;
                     Status.TaskId = 0;
-                    AssignedFutureBaseline = BaselineStatusUpdater.NoBaselineVersion;
-                    AssignedCurrentBaseline = BaselineStatusUpdater.NoBaselineVersion;
                     IsT2GPollingRequired = false;
                 }
                 else if (Status.RequestId == Guid.Empty)
                 {
                     Status.TaskId = 0;
                     IsT2GPollingRequired = false;
-                    AssignedFutureBaseline = BaselineStatusUpdater.NoBaselineVersion;
-                    AssignedCurrentBaseline = BaselineStatusUpdater.NoBaselineVersion;
                 }
 
                 if (string.IsNullOrEmpty(Status.FutureBaselineVersion))
