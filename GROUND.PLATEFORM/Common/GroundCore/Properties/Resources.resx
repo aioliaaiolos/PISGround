@@ -447,4 +447,38 @@
     <value>The url '{0}' is either malformed or it is unreachable.</value>
     <comment>{0} : The url validated</comment>
   </data>
+  <data name="SendNotificationPredictableMessage" xml:space="preserve">
+    <value>The third-party application at URL '{0}' is unable to process the notification '{1}' of the request '{3}'.
+Reason: {2}.
+Notification parameters are: 
+{4}</value>
+    <comment>{0} = notification url
+{1} = notification identifier
+{2} = message
+{3} = request id associated to notification
+{4} = Notification parameters value.</comment>
+  </data>
+  <data name="SendNotificationErrorMessage" xml:space="preserve">
+    <value>Server error while sending the notification '{1}' of the request '{2}' to the third-party application at the URL '{0}'.
+Notification parameters are:
+{3}</value>
+    <comment>{0} = notification url
+{1} = notification identifier
+{2} = request id associated to notification
+{3} = Notification parameters value.</comment>
+  </data>
+  <data name="SendNotificationErrorMessageWithoutParameter" xml:space="preserve">
+    <value>Server error while sending the notification '{1}' of the request '{2}' to the third-party application at the URL '{0}'.</value>
+    <comment>{0} = notification url
+{1} = notification identifier
+{2} = request id associated to notification</comment>
+  </data>
+  <data name="SendNotificationPredictableMessageWithoutParameter" xml:space="preserve">
+    <value>The third-party application at URL '{0}' is unable to process the notification '{1}' of the request '{3}'.
+Reason: {2}.</value>
+    <comment>{0} = notification url
+{1} = notification identifier
+{2} = message
+{3} = request id associated to notification</comment>
+  </data>
 </root>

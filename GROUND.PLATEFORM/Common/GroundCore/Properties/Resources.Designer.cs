@@ -979,6 +979,48 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the third-party application at the URL &apos;{0}&apos;.
+        ///Notification parameters are:
+        ///{3}.
+        /// </summary>
+        internal static string SendNotificationErrorMessage {
+            get {
+                return ResourceManager.GetString("SendNotificationErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server error while sending the notification &apos;{1}&apos; of the request &apos;{2}&apos; to the third-party application at the URL &apos;{0}&apos;..
+        /// </summary>
+        internal static string SendNotificationErrorMessageWithoutParameter {
+            get {
+                return ResourceManager.GetString("SendNotificationErrorMessageWithoutParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The third-party application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
+        ///Reason: {2}.
+        ///Notification parameters are: 
+        ///{4}.
+        /// </summary>
+        internal static string SendNotificationPredictableMessage {
+            get {
+                return ResourceManager.GetString("SendNotificationPredictableMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The third-party application at URL &apos;{0}&apos; is unable to process the notification &apos;{1}&apos; of the request &apos;{3}&apos;.
+        ///Reason: {2}..
+        /// </summary>
+        internal static string SendNotificationPredictableMessageWithoutParameter {
+            get {
+                return ResourceManager.GetString("SendNotificationPredictableMessageWithoutParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The following items of the T2G notification message of type {0} are missing or misconfigured: {1}. Please verify the configuration in the T2GVehicleInfo.xml file on the T2G server..
         /// </summary>
         internal static string T2GConverterMissingItemsInNotificationMessageError {

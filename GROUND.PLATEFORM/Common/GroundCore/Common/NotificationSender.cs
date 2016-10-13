@@ -1,30 +1,24 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="NotificationSender.cs" company="Alstom">
-//		  (c) Copyright ALSTOM 2013.  All rights reserved.
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //		  This computer program may not be used, copied, distributed, corrected, modified, translated,
 //		  transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
 //---------------------------------------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Security;
+using PIS.Ground.Core.Data;
+using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.SessionMgmt;
+using PIS.Ground.GroundCore.AppGround;
+
 namespace PIS.Ground.Core.Common
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-	using System.Threading;
-	using PIS.Ground.Core.Data;
-	using PIS.Ground.Core.LogMgmt;
-	using PIS.Ground.Core.Properties;
-	using PIS.Ground.Core.T2G.WebServices.FileTransfer;
-	using PIS.Ground.Core.T2G.WebServices.Identification;
-	using PIS.Ground.Core.T2G.WebServices.Notification;
-	using PIS.Ground.Core.T2G.WebServices.VehicleInfo;
-	using PIS.Ground.Core.Utility;
-	using System.ComponentModel;
-	using PIS.Ground.Core.SessionMgmt;
-	using PIS.Ground.GroundCore.AppGround;
-	using System.Globalization;
 
 	/// <summary>Class used to send notification to PIS Ground clients.</summary>
 	public class NotificationSender : INotificationSender
@@ -33,6 +27,11 @@ namespace PIS.Ground.Core.Common
 
 		/// <summary>Manager for session.</summary>
 		private ISessionManager _sessionManager;
+
+        /// <summary>
+        /// Collection that keep previous exception intercepted.
+        /// </summary>
+        private ExceptionMemoryCollection _previousExceptions = new ExceptionMemoryCollection();
 
 		#endregion
 
@@ -51,7 +50,7 @@ namespace PIS.Ground.Core.Common
 
 		private delegate void SendNotificationAsync(PIS.Ground.GroundCore.AppGround.NotificationIdEnum pNotification, string pParameter, Guid pRequestID);
 
-		private delegate void SendNotificationAppGroundAsync(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pNotification, string pParameter, System.ServiceModel.Channels.Binding ingpBinding, System.ServiceModel.EndpointAddress pEndpointAddress, string pNotifcationURL);
+		private delegate void SendNotificationAppGroundAsync(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pNotification, string pParameter, System.ServiceModel.Channels.Binding ingpBinding, System.ServiceModel.EndpointAddress pEndpointAddress, string pNotifcationURL);
 
 		#endregion
 
@@ -64,7 +63,7 @@ namespace PIS.Ground.Core.Common
 		/// <param name="pBinding">Represents an interoperable binding that supports distributed transactions and secure, reliable sessions.</param>
 		/// <param name="pEndpointAddress">Provides a unique network address that a client uses to communicate with a service endpoint.</param>
 		/// <param name="pNotifcationURL">Destination URL of the notification sent.</param>
-		private void SendNotificationAppGroundTask(string pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pNotification, string pParameter, System.ServiceModel.Channels.Binding pBinding, System.ServiceModel.EndpointAddress pEndpointAddress, string pNotifcationURL)
+		private void SendNotificationAppGroundTask(Guid pRequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum pNotification, string pParameter, System.ServiceModel.Channels.Binding pBinding, System.ServiceModel.EndpointAddress pEndpointAddress, string pNotifcationURL)
 		{
 			try
 			{
@@ -72,7 +71,8 @@ namespace PIS.Ground.Core.Common
 				{
 					try
 					{
-						lGroundNotificationClient.SendNotification(pRequestId, pNotification, pParameter);
+						lGroundNotificationClient.SendNotification(pRequestId.ToString(), pNotification, pParameter);
+                        lGroundNotificationClient.Close();
 					}
 					finally
 					{
@@ -83,21 +83,9 @@ namespace PIS.Ground.Core.Common
 					}
 				}
 			}
-			catch (System.Net.WebException lEx)
-			{
-				LogManager.WriteLog(TraceType.INFO,
-									"Sending notification " + pNotification.ToString() + " to " + pNotifcationURL + " failed.",
-									"PIS.Ground.GroundCore.Common.NotificationSender",
-									lEx,
-									EventIdEnum.GroundCore);
-			}
 			catch (Exception ex)
 			{
-				LogManager.WriteLog(TraceType.ERROR,
-									"Sending notification " + pNotification.ToString() + " to " + pNotifcationURL + " failed.",
-									"PIS.Ground.GroundCore.Common.NotificationSender",
-									ex,
-									EventIdEnum.GroundCore);
+                LogException(pNotifcationURL, ex, pRequestId, pNotification, pParameter);
 			}
 		}
 
@@ -134,73 +122,81 @@ namespace PIS.Ground.Core.Common
 						}
 					}
 
-					if (0 != lNotificationURLs.Count)
-					{
-						string lRequestId;
+                    if (0 != lNotificationURLs.Count)
+                    {
+                        // EndPoint Configuration
+                        System.ServiceModel.Channels.Binding lBinding = getBinding();
 
-						if (pRequestID == null)
-						{
-							lRequestId = new Guid().ToString();
-						}
-						else
-						{
-							lRequestId = pRequestID.ToString();
-						}
+                        if (!string.IsNullOrEmpty(pParameter))
+                        {
+                            lParameter = pParameter;
+                        }
 
-						// EndPoint Configuration
-						System.ServiceModel.Channels.Binding lBinding = getBinding();
+                        // Send notifications
+                        foreach (string lNotifcationURL in lNotificationURLs.Distinct())
+                        {
+                            // Send notification only if we have a non empty url.
+                            if (!string.IsNullOrEmpty(lNotifcationURL))
+                            {
+                                try
+                                {
+                                    System.ServiceModel.EndpointAddress lEndpointAddress = new System.ServiceModel.EndpointAddress(lNotifcationURL);
 
-						if (!string.IsNullOrEmpty(pParameter))
-						{
-							lParameter = pParameter;
-						}
-
-						// Send notifications
-						try
-						{
-							foreach (string lNotifcationURL in lNotificationURLs.Distinct())
-							{
-								if (!string.IsNullOrEmpty(lNotifcationURL))
-								{
-									System.ServiceModel.EndpointAddress lEndpointAddress = new System.ServiceModel.EndpointAddress(lNotifcationURL);
-
-									SendNotificationAppGroundAsync worker = new SendNotificationAppGroundAsync(SendNotificationAppGroundTask);
-									worker.BeginInvoke(lRequestId, pNotification, lParameter, lBinding, lEndpointAddress, lNotifcationURL, worker.EndInvoke, null);
-								}
-								else
-								{
-									// Url is empty, don't send anything.
-								}
-							}
-						}
-						catch (Exception ex)
-						{
-							LogManager.WriteLog(TraceType.ERROR,
-								ex.Message,
-								"PIS.Ground.GroundCore.Common.NotificationSender",
-								ex,
-								EventIdEnum.GroundCore);
-						}
-					}
-					else
-					{
-						LogManager.WriteLog(TraceType.INFO,
-													"NotificationURLs list is empty.",
-													"PIS.Ground.GroundCore.Common.NotificationSender",
-													null,
-													EventIdEnum.GroundCore);
-					}
+                                    SendNotificationAppGroundAsync worker = new SendNotificationAppGroundAsync(SendNotificationAppGroundTask);
+                                    worker.BeginInvoke(pRequestID, pNotification, lParameter, lBinding, lEndpointAddress, lNotifcationURL, worker.EndInvoke, null);
+                                }
+                                catch (Exception exception)
+                                {
+                                    LogException(lNotifcationURL, exception, pRequestID, pNotification, pParameter);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogManager.WriteLog(TraceType.DEBUG,
+                                                    "NotificationURLs list is empty.",
+                                                    "PIS.Ground.GroundCore.Common.NotificationSender",
+                                                    null,
+                                                    EventIdEnum.SendNotification);
+                    }
 				}
 			}
 			catch (System.Exception exception)
 			{
-				LogManager.WriteLog(TraceType.EXCEPTION,
-									string.Format(CultureInfo.InvariantCulture, "unexpected error while handling notification of type {0} for request {1}", pNotification, pRequestID),
-									"PIS.Ground.GroundCore.Common.NotificationSender",
-									exception,
-									EventIdEnum.GroundCore);
+                LogException(string.Empty, exception, pRequestID, pNotification, pParameter);
 			}
 		}
+
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="notificationUrl">The notification URL.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="requestId">The request identifier.</param>
+        /// <param name="id">The notification identifier send.</param>
+        private void LogException(string notificationUrl, Exception exception, Guid requestId, NotificationIdEnum id, string parameters)
+        {
+            TraceType traceType = _previousExceptions.IsFirstOccurrence(notificationUrl??string.Empty, exception) ? TraceType.ERROR : TraceType.DEBUG;
+
+            if (LogManager.IsTraceActive(traceType))
+            {
+                if (IsPredictableException(exception))
+                {
+                    string messageFormat = (string.IsNullOrEmpty(parameters)) ? Properties.Resources.SendNotificationPredictableMessageWithoutParameter : Properties.Resources.SendNotificationPredictableMessage;
+                    string errorMessage = string.Format(CultureInfo.CurrentCulture, messageFormat, notificationUrl, id, exception.Message, requestId, parameters);
+                    LogManager.WriteLog(traceType, errorMessage, "PIS.Ground.GroundCore.Common.NotificationSender", null, EventIdEnum.SendNotification);
+                    
+                }
+                else
+                {
+                    string messageFormat = (string.IsNullOrEmpty(parameters)) ? Properties.Resources.SendNotificationErrorMessageWithoutParameter : Properties.Resources.SendNotificationErrorMessage;
+                    string errorMessage = string.Format(CultureInfo.CurrentCulture, messageFormat, notificationUrl, id, requestId, parameters);
+                    LogManager.WriteLog(traceType, errorMessage, "PIS.Ground.GroundCore.Common.NotificationSender", exception, EventIdEnum.SendNotification);
+                }
+            }
+        }
+
 
 		#endregion
 
@@ -279,6 +275,29 @@ namespace PIS.Ground.Core.Common
 				SendNotification(NotificationIdEnum.CommonT2GServerOffline);
 			}
 		}
+
+        /// <summary>
+        /// Determines whether is specified exception object is considered as predictable error or not.
+        /// </summary>
+        /// <param name="ex">The exception object to evaluate.</param>
+        /// <returns>
+        ///   <c>true</c> if specified exception object is considered as predictable error, false otherwise.
+        /// </returns>
+        public static bool IsPredictableException(Exception ex)
+        {
+            return (ex is FaultException
+                    || ex is TimeoutException
+                    || ex is EndpointNotFoundException
+                    || ex is ActionNotSupportedException
+                    || ex is ServerTooBusyException
+                    || ex is ProtocolException
+                    || ex is AddressAccessDeniedException
+                    || ex is ChannelTerminatedException
+                    || ex is SecurityNegotiationException
+                    || ex is SecurityAccessDeniedException
+                    || ex is MessageSecurityException
+                );
+        }
 	}
 
 		#endregion

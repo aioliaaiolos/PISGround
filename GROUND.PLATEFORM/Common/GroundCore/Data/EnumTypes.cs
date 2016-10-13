@@ -1,5 +1,13 @@
-﻿using System.Runtime.Serialization;
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="EnumTypes.cs" company="Alstom">
+//		  (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//		  This computer program may not be used, copied, distributed, corrected, modified, translated,
+//		  transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
 using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace PIS.Ground.Core.Data
 {
@@ -67,28 +75,84 @@ namespace PIS.Ground.Core.Data
     /// </summary>
     public enum EventIdEnum
     {
+        /// <summary>
+        /// Default value.
+        /// </summary>
         Default = 0,
+
+        /// <summary>
+        /// Data package service.
+        /// </summary>
         DataPackage = 1,
+
+        /// <summary>
+        /// GroundCore module.
+        /// </summary>
         GroundCore = 2,
+
+        /// <summary>
+        /// Infotainment journaling service.
+        /// </summary>
         InfotainmentJournaling = 3,
+
+        /// <summary>
+        /// Instant message service.
+        /// </summary>
         InstantMessage = 4,
+
+        /// <summary>
+        /// Maintenance service.
+        /// </summary>
         Maintenance = 5,
+
+        /// <summary>
+        /// Mission service.
+        /// </summary>
         Mission = 6,
+
+        /// <summary>
+        /// Remote datastore service.
+        /// </summary>
         RemoteDataStore = 7,
+
+        /// <summary>
+        /// Session service.
+        /// </summary>
         Session = 8,
+
+        /// <summary>
+        /// Debug trace.
+        /// </summary>
         Debug = 9,
+
+        /// <summary>
+        /// History log module.
+        /// </summary>
         HistoryLog = 10,
-		LiveVideoControl = 11,
-		RealTime = 12
+
+        /// <summary>
+        /// Live video control service.
+        /// </summary>
+        LiveVideoControl = 11,
+
+        /// <summary>
+        /// Real-time service.
+        /// </summary>
+        RealTime = 12,
+
+        /// <summary>
+        /// Error when notifying external application fails.
+        /// </summary>
+        SendNotification = 13
     }
 
     /// <summary>
-    /// Represts the Status of the Request
+    /// Represents the Status of the Request
     /// </summary>
     public enum RequestStatus
     {
         /// <summary>
-        /// Represents Status Inprogress
+        /// Represents Status In progress
         /// </summary>
         InProgress = 0,
 

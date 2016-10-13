@@ -3006,7 +3006,7 @@ namespace PIS.Ground.DataPackage
                             pLmtVersion);
 
                         // Serialize the parameters to send in the notification.
-                        List<string> lParamList = new List<string>();
+                        List<string> lParamList = new List<string>(4);
 
                         lParamList.Add(pPisBaseVersion);
                         lParamList.Add(pPisMissionVersion);
