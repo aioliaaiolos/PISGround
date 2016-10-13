@@ -148,6 +148,27 @@ namespace PIS.Ground.Core.Data
         
         #endregion
 
+
+        #region Properties
+
+        /// <summary>
+        /// Determinate if the information of this object can be used or not.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is initialized; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsInitialized
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(CurrentVersionOut) && IsValidBooleanValue(CurrentValidOut))
+                    || (!string.IsNullOrEmpty(FutureVersionOut) && IsValidBooleanValue(FutureValidOut))
+                    || (!string.IsNullOrEmpty(ArchivedVersionOut) && IsValidBooleanValue(ArchivedValidOut));
+            }
+        }
+
+        #endregion
+
         public PisBaseline()
         {
             this.FutureVersionPisInfotainmentOut = string.Empty;
@@ -203,6 +224,24 @@ namespace PIS.Ground.Core.Data
                 this.ArchivedVersionPisInfotainmentOut = other.ArchivedVersionPisInfotainmentOut;
                 this.ArchivedVersionLmtOut = other.ArchivedVersionLmtOut;
             }           
+        }
+
+        /// <summary>
+        /// Determines whether if provided string value designate a valid boolean value
+        /// </summary>
+        /// <param name="value">The value to evaluate.</param>
+        /// <returns>
+        ///   <c>true</c> if parameter value designate a boolean value; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsValidBooleanValue(string value)
+        {
+            return !string.IsNullOrEmpty(value)
+                && (StringComparer.OrdinalIgnoreCase.Equals(value, "true")
+                || StringComparer.OrdinalIgnoreCase.Equals(value, "false")
+                || StringComparer.OrdinalIgnoreCase.Equals(value, "yes")
+                || StringComparer.OrdinalIgnoreCase.Equals(value, "no")
+                || StringComparer.Ordinal.Equals(value, "0")
+                || StringComparer.Ordinal.Equals(value, "1"));
         }
 
         #region Equality comparison

@@ -1,4 +1,12 @@
-﻿using System;
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="TrainBaselineStatusExtendedDataTests.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,8 +71,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, NoBaselineVersion, string.Empty, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
-
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
 
@@ -77,7 +84,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, NoBaselineVersion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -92,7 +99,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, CurrentBaselineVersion, NoBaselineVersion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -106,7 +113,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, FutureBaselineversion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -121,7 +128,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, CurrentBaselineVersion, FutureBaselineversion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -135,7 +142,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, NoBaselineVersion, string.Empty, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -149,7 +156,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, NoBaselineVersion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -163,7 +170,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, CurrentBaselineVersion, NoBaselineVersion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -177,7 +184,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, FutureBaselineversion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -191,7 +198,7 @@ namespace DataPackageTests
             data.Update(system);
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, CurrentBaselineVersion, FutureBaselineversion, PisVersionString, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, FutureBaselineversion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
@@ -212,15 +219,36 @@ namespace DataPackageTests
 
 
             TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, NoBaselineVersion, string.Empty, BaselineProgressStatusEnum.UNKNOWN);
-            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, true);
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, null, NoBaselineVersion, null, false);
 
             Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
         }
 
         [Test, Category("Update")]
-        public void TrainBaselineStatusExtendedData_UpdateExisting_Offline_StatusTransferPlanned_CurrentVersionUnseetAndFutureVersionSet_WithOfflineSystem_WithoutAnyT2GMessage()
+        public void TrainBaselineStatusExtendedData_UpdateExisting_Offline_StatusTransferPlanned_CurrentVersionUnsetAndFutureVersionSet_WithOfflineSystem_WithoutAnyT2GMessage()
         {
             TrainBaselineStatusData statusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, false, NoBaselineVersion, FutureBaselineversion, string.Empty, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+            statusData.RequestId = RequestId;
+            statusData.TaskId = TaskId;
+            TrainBaselineStatusExtendedData data = new TrainBaselineStatusExtendedData(statusData, FutureBaselineversion, NoBaselineVersion, NoBaselineVersion, true);
+
+
+            SystemInfo system = CreateSystem(TrainName_1, TrainId_1, false);
+            data.Update(system);
+
+
+            TrainBaselineStatusData expectedStatusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, system.IsOnline, NoBaselineVersion, FutureBaselineversion, string.Empty, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+            expectedStatusData.RequestId = RequestId;
+            expectedStatusData.TaskId = TaskId;
+            TrainBaselineStatusExtendedData expectedData = new TrainBaselineStatusExtendedData(expectedStatusData, FutureBaselineversion, NoBaselineVersion, NoBaselineVersion, true);
+
+            Assert.AreEqual(expectedData, data, "Method TrainBaselineStatusExtendedData.Update didn't behave as expected");
+        }
+
+        [Test, Category("Update")]
+        public void TrainBaselineStatusExtendedData_UpdateExisting_Offline_StatusTransferPlanned_CurrentVersionAndFutureVersionUnset_AssignedFutureSet_WithOfflineSystem_WithoutAnyT2GMessage()
+        {
+            TrainBaselineStatusData statusData = new TrainBaselineStatusData(TrainName_1, TrainId_1, false, NoBaselineVersion, NoBaselineVersion, string.Empty, BaselineProgressStatusEnum.TRANSFER_PLANNED);
             statusData.RequestId = RequestId;
             statusData.TaskId = TaskId;
             TrainBaselineStatusExtendedData data = new TrainBaselineStatusExtendedData(statusData, FutureBaselineversion, NoBaselineVersion, NoBaselineVersion, true);

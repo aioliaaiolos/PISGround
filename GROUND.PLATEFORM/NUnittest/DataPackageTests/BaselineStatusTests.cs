@@ -114,6 +114,8 @@ namespace DataPackageTests
 			PisBaseline baseline = new PisBaseline();
 			baseline.CurrentVersionOut = _trainCurrentVersion;
 			baseline.FutureVersionOut = _trainFutureVersion;
+            baseline.CurrentValidOut = "true";
+            baseline.FutureValidOut = "true";
 
 			PisVersion version = new PisVersion();
 			version.VersionPISSoftware = _trainPISVersion;
@@ -141,8 +143,6 @@ namespace DataPackageTests
 		private static SystemInfo BuildSampleSystemInfo_OfflineWithoutVersions()
 		{
 			PisBaseline baseline = new PisBaseline();
-			baseline.CurrentVersionOut = string.Empty;
-			baseline.FutureVersionOut = string.Empty;
 
 			PisVersion version = new PisVersion();
 			version.VersionPISSoftware = string.Empty;
@@ -172,6 +172,8 @@ namespace DataPackageTests
 			PisBaseline baseline = new PisBaseline();
 			baseline.CurrentVersionOut = _trainCurrentVersion;
 			baseline.FutureVersionOut = _trainFutureVersion;
+            baseline.CurrentValidOut = "true";
+            baseline.FutureValidOut = "true";
 
 			PisVersion version = new PisVersion();
 			version.VersionPISSoftware = _trainPISVersion;
@@ -635,7 +637,7 @@ namespace DataPackageTests
                 Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.TRANSFER_COMPLETED, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_latestKnownCurrentBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
                 Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
                 Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
@@ -679,8 +681,8 @@ namespace DataPackageTests
                 Assert.AreEqual(_vehicleId.ToString(), lUpdatedProgress.TrainNumber);
                 Assert.AreEqual(false, lUpdatedProgress.OnlineStatus);
                 Assert.AreEqual(BaselineProgressStatusEnum.UNKNOWN, lUpdatedProgress.ProgressStatus);
-                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
-                Assert.AreEqual(BaselineStatusUpdater.NoBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
+                Assert.AreEqual(_latestKnownCurrentBaselineVersion, lUpdatedProgress.CurrentBaselineVersion);
+                Assert.AreEqual(_latestKnownFutureBaselineVersion, lUpdatedProgress.FutureBaselineVersion);
                 Assert.AreEqual(_latestKnownPISOnboardVersion, lUpdatedProgress.PisOnBoardVersion);
                 Assert.IsFalse(statusUpdated.IsT2GPollingRequired, "IsT2GPollingRequired wasn't updated as expected");
             }
@@ -1595,7 +1597,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "3.4.5.6", FutureVersionOut = "5.6.7.8" },
+                    new PisBaseline { CurrentVersionOut = "3.4.5.6", FutureVersionOut = "5.6.7.8", CurrentValidOut="true", FutureValidOut="true" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1632,7 +1634,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "0.0.0.0" },
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "0.0.0.0", CurrentValidOut="true", FutureValidOut="false" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1672,7 +1674,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9", CurrentValidOut="true", FutureValidOut="true"},
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1713,7 +1715,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.2.1", FutureVersionOut = "6.7.5.6" },
+                    new PisBaseline { CurrentVersionOut = "5.6.2.1", FutureVersionOut = "6.7.5.6", CurrentValidOut="true", FutureValidOut="true" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1760,7 +1762,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9", CurrentValidOut = "true", FutureValidOut = "true" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1774,7 +1776,7 @@ namespace DataPackageTests
 
                 lCallbackMock.Reset();
 
-                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "3.4.5.6");
+                baselineStatusUpdater.ProcessSystemChangedNotification(lNotification, "0.0.0.0", "2.5.3.1");
 
                 Assert.AreEqual(1, lCallbackMock.UpdateCallCount);
                 Assert.AreEqual(0, lCallbackMock.RemoveCallCount);
@@ -1825,7 +1827,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9", CurrentValidOut="true", FutureValidOut="true" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);
@@ -1897,7 +1899,7 @@ namespace DataPackageTests
                     true,
                     CommunicationLink.WIFI,
                     new ServiceInfoList(),
-                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9" },
+                    new PisBaseline { CurrentVersionOut = "5.6.7.8", FutureVersionOut = "6.7.8.9", CurrentValidOut = "true", FutureValidOut = "true" },
                     new PisVersion { VersionPISSoftware = "5.13.0.6" },
                     new PisMission(),
                     true);

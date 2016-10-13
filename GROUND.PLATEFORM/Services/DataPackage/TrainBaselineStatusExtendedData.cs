@@ -170,7 +170,7 @@ namespace PIS.Ground.DataPackage
             }
 
 
-            if (info.PisBaseline != null)
+            if (info.PisBaseline != null && info.PisBaseline.IsInitialized)
             {
 
                 string lNotificationCurrentVersion = info.PisBaseline.CurrentVersionOut;
@@ -189,12 +189,16 @@ namespace PIS.Ground.DataPackage
                         lNotificationFutureVersion = BaselineStatusUpdater.NoBaselineVersion;
                     }
 
-                    if (Status == null)
+                    string lEffectiveFutureVersion = IsValidVersion(AssignedFutureBaseline) ? AssignedFutureBaseline :
+                                                    IsValidVersion(AssignedCurrentBaseline) ? AssignedCurrentBaseline :
+                                                    IsValidVersion(Status.FutureBaselineVersion) ? Status.FutureBaselineVersion :
+                                                    BaselineStatusUpdater.NoBaselineVersion;
+
+
+                    OnBoardFutureBaseline = lNotificationFutureVersion;
+                    if (Status != null)
                     {
-                        OnBoardFutureBaseline = lNotificationFutureVersion;
-                    }
-                    else // Status != null
-                    {
+
                         switch (Status.ProgressStatus)
                         {
                             case BaselineProgressStatusEnum.UPDATED:
@@ -210,19 +214,18 @@ namespace PIS.Ground.DataPackage
                                 }
 
                                 Status.FutureBaselineVersion = lNotificationFutureVersion;
-                                OnBoardFutureBaseline = lNotificationFutureVersion;
                                 IsT2GPollingRequired = false;
                                 break;
 
                             case BaselineProgressStatusEnum.DEPLOYED:
 
-                                if (Status.FutureBaselineVersion == lNotificationCurrentVersion)
+                                if (lEffectiveFutureVersion == lNotificationCurrentVersion)
                                 {
                                     // The future baseline has been promoted to current
 
                                     Status.ProgressStatus = BaselineProgressStatusEnum.UPDATED;
                                 }
-                                else if (Status.FutureBaselineVersion != lNotificationFutureVersion)
+                                else if (lEffectiveFutureVersion != lNotificationFutureVersion)
                                 {
                                     // The future baseline changed unexpectedly
 
@@ -233,11 +236,11 @@ namespace PIS.Ground.DataPackage
                                 else
                                 {
                                     // Nothing special occurred
+                                    Status.FutureBaselineVersion = lEffectiveFutureVersion;
                                 }
 
                                 Status.CurrentBaselineVersion = lNotificationCurrentVersion;
                                 Status.FutureBaselineVersion = lNotificationFutureVersion;
-                                OnBoardFutureBaseline = lNotificationFutureVersion;
                                 IsT2GPollingRequired = false;
                                 break;
 
@@ -246,58 +249,59 @@ namespace PIS.Ground.DataPackage
                             case BaselineProgressStatusEnum.TRANSFER_PAUSED:
                             case BaselineProgressStatusEnum.TRANSFER_PLANNED:
 
-                                if (Status.FutureBaselineVersion == lNotificationCurrentVersion)
+                                // Expect that request id is set when we are in these statuses and we expect a future version
+                                if (Status.RequestId == Guid.Empty || !IsValidVersion(lEffectiveFutureVersion))
+                                {
+                                    Status.FutureBaselineVersion = lNotificationFutureVersion;
+                                    Status.CurrentBaselineVersion = lNotificationCurrentVersion;
+                                    Status.TaskId = 0;
+                                    Status.ProgressStatus = BaselineProgressStatusEnum.UNKNOWN;
+                                }
+                                else if (lEffectiveFutureVersion == lNotificationCurrentVersion && IsValidVersion(lNotificationCurrentVersion))
                                 {
                                     // The assigned baseline has been promoted to current baseline
                                     // Note: In the current state, the future baseline is set to the assigned baseline.
 
                                     Status.ProgressStatus = BaselineProgressStatusEnum.UPDATED;
                                     Status.FutureBaselineVersion = lNotificationFutureVersion;
-                                    OnBoardFutureBaseline = lNotificationFutureVersion;
                                     IsT2GPollingRequired = false;
                                 }
-                                else if (Status.FutureBaselineVersion == lNotificationFutureVersion)
+                                else if (lEffectiveFutureVersion == lNotificationFutureVersion)
                                 {
                                     // The assigned baseline has been promoted to future baseline
                                     // Note: In the current state, the future baseline is set to the assigned baseline.
 
                                     Status.ProgressStatus = BaselineProgressStatusEnum.DEPLOYED;
-                                    OnBoardFutureBaseline = lNotificationFutureVersion;
                                     IsT2GPollingRequired = false;
                                 }
                                 else
                                 {
-                                    AssignedFutureBaseline = Status.FutureBaselineVersion;
-                                    OnBoardFutureBaseline = lNotificationFutureVersion;
+                                    Status.FutureBaselineVersion =  lEffectiveFutureVersion;
+                                    if (!IsValidVersion(AssignedFutureBaseline) && !IsValidVersion(AssignedCurrentBaseline))
+                                    {
+                                        AssignedFutureBaseline = lEffectiveFutureVersion;
+                                    }
                                 }
-
+                                
                                 // Do not update the future baseline since in the current state,
                                 // it is set to the assigned baseline (not the on board baseline)
                                 Status.CurrentBaselineVersion = lNotificationCurrentVersion;
-
                                 break;
 
                             case BaselineProgressStatusEnum.UNKNOWN:
 
                                 if (Status.RequestId != Guid.Empty)
                                 {
-                                    string lAssignedBaseline = AssignedFutureBaseline;
-
-                                    if (string.IsNullOrEmpty(lAssignedBaseline) || lAssignedBaseline == BaselineStatusUpdater.NoBaselineVersion)
+                                    if (IsValidVersion(lEffectiveFutureVersion))
                                     {
-                                        lAssignedBaseline = AssignedCurrentBaseline;
-                                    }
-
-                                    if (!string.IsNullOrEmpty(lAssignedBaseline) && lAssignedBaseline != BaselineStatusUpdater.NoBaselineVersion)
-                                    {
-                                        if (lAssignedBaseline == lNotificationCurrentVersion)
+                                        if (lEffectiveFutureVersion == lNotificationCurrentVersion)
                                         {
                                             // The assigned baseline has been promoted to current baseline
 
                                             Status.ProgressStatus = BaselineProgressStatusEnum.UPDATED;
                                             IsT2GPollingRequired = false;
                                         }
-                                        else if (lAssignedBaseline == lNotificationFutureVersion)
+                                        else if (lEffectiveFutureVersion == lNotificationFutureVersion)
                                         {
                                             // The assigned baseline has been promoted to future baseline
                                             // Note: In the current state, the future baseline is set to the assigned baseline.
@@ -314,12 +318,56 @@ namespace PIS.Ground.DataPackage
 
                                 Status.CurrentBaselineVersion = lNotificationCurrentVersion;
                                 Status.FutureBaselineVersion = lNotificationFutureVersion;
-                                OnBoardFutureBaseline = lNotificationFutureVersion;
                                 break;
                         }
                     }
                 }
             }
+            else
+            {
+                // Pis Baseline is not initialized yet. Only ensure that future version is set.
+                OnBoardFutureBaseline = BaselineStatusUpdater.NoBaselineVersion;
+
+                if (Status.RequestId != Guid.Empty)
+                {
+                    string lEffectiveFutureVersion = IsValidVersion(AssignedFutureBaseline) ? AssignedFutureBaseline :
+                        IsValidVersion(AssignedCurrentBaseline) ? AssignedCurrentBaseline :
+                        BaselineStatusUpdater.NoBaselineVersion;
+
+                    // Perform update only if we expect a future version and current baseline is not set to future version
+                    if (IsValidVersion(lEffectiveFutureVersion) && Status.CurrentBaselineVersion != lEffectiveFutureVersion)
+                    {
+                        Status.FutureBaselineVersion = lEffectiveFutureVersion;
+                    }
+                }
+
+            }
+
+            if (Status != null)
+            {
+                if (Status.ProgressStatus == BaselineProgressStatusEnum.UPDATED)
+                {
+                    Status.RequestId = Guid.Empty;
+                    Status.TaskId = 0;
+                    IsT2GPollingRequired = false;
+                }
+                else if (Status.RequestId == Guid.Empty)
+                {
+                    Status.TaskId = 0;
+                    IsT2GPollingRequired = false;
+                }
+
+                if (string.IsNullOrEmpty(Status.FutureBaselineVersion))
+                {
+                    Status.FutureBaselineVersion = BaselineStatusUpdater.NoBaselineVersion;
+                }
+
+                if (string.IsNullOrEmpty(Status.CurrentBaselineVersion))
+                {
+                    Status.CurrentBaselineVersion = BaselineStatusUpdater.NoBaselineVersion;
+                }
+            }
+
         }
 
         /// <summary>
@@ -363,6 +411,18 @@ namespace PIS.Ground.DataPackage
         public override int GetHashCode()
         {
             return Status != null ? (Status.TrainId ?? string.Empty).GetHashCode() : string.Empty.GetHashCode();
+        }
+
+        /// <summary>
+        /// Determines whether if provided version designate a valid version or not..
+        /// </summary>
+        /// <param name="version">The version to verify.</param>
+        /// <returns>
+        ///   <c>true</c> if provided version is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidVersion(string version)
+        {
+            return !string.IsNullOrEmpty(version) && version != BaselineStatusUpdater.NoBaselineVersion;
         }
     }
 }
