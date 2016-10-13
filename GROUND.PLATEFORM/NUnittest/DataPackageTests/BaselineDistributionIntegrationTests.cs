@@ -145,7 +145,7 @@ namespace DataPackageTests
             _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
 
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", Guid.Empty, 0, BaselineProgressStatusEnum.UPDATED);
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace DataPackageTests
             _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
 
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", Guid.Empty, 0, BaselineProgressStatusEnum.UPDATED);
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace DataPackageTests
             _vehicleInfoServiceStub.UpdateMessageData(baselineInfo);
 
             WaitBaselineStatusBecomeInState(TRAIN_NAME_1, BaselineProgressStatusEnum.UPDATED);
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", result.reqId, transferTaskId, BaselineProgressStatusEnum.UPDATED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, FUTURE_VERSION, "0.0.0.0", Guid.Empty, 0, BaselineProgressStatusEnum.UPDATED);
         }
 
         /// <summary>
