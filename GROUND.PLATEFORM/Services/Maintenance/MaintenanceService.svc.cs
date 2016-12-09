@@ -327,9 +327,7 @@ namespace PIS.Ground.Maintenance
 			MaintenanceElementListResponse result = new MaintenanceElementListResponse();
 			result.ResultCode = ResultCodeEnum.InternalError;
 
-			SessionData sessionData;
-			string error = _sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (error == string.Empty)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				T2GManagerErrorEnum lResult = _t2gManager.GetAvailableElementDataList(out result.ElementList);
 
@@ -365,10 +363,7 @@ namespace PIS.Ground.Maintenance
 
 			if (requestTimeout <= MAX_REQUEST_TIMEOUT)
 			{
-				SessionData sessionData;
-				_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-				if (sessionData != null) // TODO requires modification to method GetSessionDetails
+				if (_sessionManager.IsSessionValid(sessionId))
 				{
 					Guid requestId = Guid.Empty;
 					_sessionManager.GenerateRequestID(sessionId, out requestId);
@@ -452,9 +447,7 @@ namespace PIS.Ground.Maintenance
 		{
 			HistoryLogResponse result = new HistoryLogResponse();
 			result.RequestId = Guid.Empty;
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				string response = string.Empty;
 				if (startDateTime.SafeCompareTo(DateTime.UtcNow) > 0)
@@ -493,9 +486,7 @@ namespace PIS.Ground.Maintenance
 		{
 			HistoryLogResponse result = new HistoryLogResponse();
 			result.RequestId = Guid.Empty;
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				string response = string.Empty;
 				if (commandList.Count <= 0)
@@ -526,9 +517,7 @@ namespace PIS.Ground.Maintenance
 		{
 			HistoryLogResponse result = new HistoryLogResponse();
 			result.RequestId = Guid.Empty;
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				string response = string.Empty;
 				if (commandList.Count <= 0)
@@ -559,9 +548,7 @@ namespace PIS.Ground.Maintenance
 		{
 			MaintenanceResponse result = new MaintenanceResponse();
 			result.RequestId = Guid.Empty;
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				if (commandList.Count <= 0)
 				{
@@ -600,9 +587,7 @@ namespace PIS.Ground.Maintenance
 		public MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId)
 		{
 			MaintenanceTrainBaselineStatusListResponse result = new MaintenanceTrainBaselineStatusListResponse();
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				Dictionary<string, TrainBaselineStatusData> dictionaryResponse = null;
 				result.ResultCode = LogManager.GetTrainBaselineStatus(out dictionaryResponse);
@@ -633,10 +618,7 @@ namespace PIS.Ground.Maintenance
 
 			if (requestTimeout <= MAX_REQUEST_TIMEOUT)
 			{
-				SessionData sessionData;
-				_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-				if (sessionData != null) // TODO requires modification to method GetSessionDetails
+				if (_sessionManager.IsSessionValid(sessionId))
 				{
 					Guid requestId;
 					_sessionManager.GenerateRequestID(sessionId, out requestId);

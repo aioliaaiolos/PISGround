@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="ISessionManager.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2013.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -42,12 +42,6 @@ namespace PIS.Ground.Core.SessionMgmt
 		/// <param name="notificationUrls">[out] The notification urls.</param>
 		/// <returns>The notification urls.</returns>
 		string GetNotificationUrls(System.Collections.Generic.List<string> notificationUrls);
-
-		/// <summary>Gets session details.</summary>
-		/// <param name="sessionId">Identifier for the session.</param>
-		/// <param name="objSessionDetails">[out] The object session details.</param>
-		/// <returns>The session details.</returns>
-		string GetSessionDetails(Guid sessionId, out PIS.Ground.Core.Data.SessionData objSessionDetails);
 
 		/// <summary>Query if 'sessionId' is session valid.</summary>
 		/// <param name="sessionId">Identifier for the session.</param>

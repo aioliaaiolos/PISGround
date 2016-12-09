@@ -359,9 +359,7 @@ namespace PIS.Ground.Infotainment.Journaling
 			InfotainmentJournalingElementListResponse result = new InfotainmentJournalingElementListResponse();
 			result.ResultCode = ResultCodeEnum.InternalError;
 
-			SessionData sessionData;
-			string error = _sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (error == string.Empty)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				T2GManagerErrorEnum lResult = _t2gManager.GetAvailableElementDataList(out result.ElementList);
 
@@ -397,10 +395,7 @@ namespace PIS.Ground.Infotainment.Journaling
 
 			if (requestTimeout <= MAX_REQUEST_TIMEOUT)
 			{
-				SessionData sessionData;
-				_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-				if (sessionData != null) // TODO requires modification to method GetSessionDetails
+				if (_sessionManager.IsSessionValid(sessionId))
 				{
 					Guid requestId = Guid.Empty;
 					_sessionManager.GenerateRequestID(sessionId, out requestId);

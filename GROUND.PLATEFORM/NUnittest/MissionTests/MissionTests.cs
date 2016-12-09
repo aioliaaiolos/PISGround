@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="MissionTests.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2015.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
@@ -80,8 +80,7 @@ namespace PIS.Ground.MissionTests
         public void GetAvailableElementListInvalidSessionId()
         {
             Guid sessionId = Guid.NewGuid();
-            SessionData sessionData;
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns("error");
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(false);
 
             MissionServiceElementListResult result = _missionService.GetAvailableElementList(sessionId);
             
@@ -100,10 +99,9 @@ namespace PIS.Ground.MissionTests
         {
             ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
             T2GManagerErrorEnum returns = T2GManagerErrorEnum.eElementNotFound;
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _train2groundClientMock.Setup(y => y.GetAvailableElementDataList(out elementList)).Returns(returns);
 
             MissionServiceElementListResult result = _missionService.GetAvailableElementList(sessionId);
@@ -118,10 +116,9 @@ namespace PIS.Ground.MissionTests
         {
             ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
             T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 
             MissionServiceElementListResult result = _missionService.GetAvailableElementList(sessionId);
@@ -150,11 +147,10 @@ namespace PIS.Ground.MissionTests
             automaticModeRequest.SessionId = sessionId;
             automaticModeRequest.StartDate = DateTime.Now.ToString();
             automaticModeRequest.StationInsertion = new StationInsertion();
-            SessionData sessionData = new SessionData();
             Guid requestId = Guid.NewGuid();
             AvailableElementData elementData;
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out requestId)).Returns(string.Empty);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber(automaticModeRequest.ElementAlphaNumber, out elementData)).Returns(T2GManagerErrorEnum.eSuccess);
 
@@ -179,11 +175,10 @@ namespace PIS.Ground.MissionTests
             manualModeRequest.RequestTimeout = 60;
             manualModeRequest.SessionId = sessionId;
             manualModeRequest.StartDate = DateTime.Now.ToString();
-            SessionData sessionData = new SessionData();
             Guid requestId = Guid.NewGuid();
             AvailableElementData elementData;
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out requestId)).Returns(string.Empty);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber(manualModeRequest.ElementAlphaNumber, out elementData)).Returns(T2GManagerErrorEnum.eSuccess);
 
@@ -208,11 +203,10 @@ namespace PIS.Ground.MissionTests
             modifiedModeRequest.RequestTimeout = 60;
             modifiedModeRequest.SessionId = sessionId;
             modifiedModeRequest.StartDate = DateTime.Now.ToString();
-            SessionData sessionData = new SessionData();
             Guid requestId = Guid.NewGuid();
             AvailableElementData elementData;
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out requestId)).Returns(string.Empty);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber(modifiedModeRequest.ElementAlphaNumber, out elementData)).Returns(T2GManagerErrorEnum.eSuccess);
 

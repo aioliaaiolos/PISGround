@@ -238,9 +238,7 @@ namespace PIS.Ground.Mission
 			MissionServiceElementListResult result = new MissionServiceElementListResult();
 			result.ResultCode = MissionErrorCode.InternalError;
 
-			SessionData sessionData;
-			string error = _sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (string.IsNullOrEmpty(error))
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				T2GManagerErrorEnum lResult = _t2gManager.GetAvailableElementDataList(out result.ElementList);
 
@@ -278,10 +276,7 @@ namespace PIS.Ground.Mission
 			{
 				if (automaticModeRequest.RequestTimeout <= MAX_REQUEST_TIMEOUT)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(automaticModeRequest.SessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(automaticModeRequest.SessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(automaticModeRequest.SessionId, out requestId);
@@ -393,10 +388,7 @@ namespace PIS.Ground.Mission
 			{
 				if (modifiedModeRequest.RequestTimeout <= MAX_REQUEST_TIMEOUT)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(modifiedModeRequest.SessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(modifiedModeRequest.SessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(modifiedModeRequest.SessionId, out requestId);
@@ -506,10 +498,7 @@ namespace PIS.Ground.Mission
 			{
 				if (manualModeRequest.RequestTimeout <= MAX_REQUEST_TIMEOUT)
 				{
-					SessionData sessionData = new SessionData();
-					_sessionManager.GetSessionDetails(manualModeRequest.SessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(manualModeRequest.SessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(manualModeRequest.SessionId, out requestId);
@@ -625,10 +614,7 @@ namespace PIS.Ground.Mission
 
 			if (pTimeOut <= MAX_REQUEST_TIMEOUT)
 			{
-				SessionData sessionData = new SessionData();
-				_sessionManager.GetSessionDetails(pSessionId, out sessionData);
-
-				if (sessionData != null)
+				if (_sessionManager.IsSessionValid(pSessionId))
 				{
 					Guid requestId = Guid.Empty;
 					_sessionManager.GenerateRequestID(pSessionId, out requestId);

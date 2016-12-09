@@ -550,13 +550,10 @@ namespace RealTimeTests
             // Step 3 : Send weather only
 
             // Initialization of the session manager
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
             Guid sessionIdGet = Guid.NewGuid();
             Guid generatedRequestGuid = Guid.NewGuid();
             Guid generatedRequestGuidForGet = Guid.NewGuid();
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionIdGet, out sessionData)).Returns(string.Empty);
             _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _sessionManagerMock.Setup(x => x.IsSessionValid(sessionIdGet)).Returns(true);
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestGuid)).Returns(string.Empty).Verifiable("Method SetMissionRealTimeInformation does not invoke GenerateRequestGuid as expected");
@@ -828,13 +825,10 @@ namespace RealTimeTests
         {
             Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
             // Initialization of the session manager
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
             Guid sessionIdGet = Guid.NewGuid();
             Guid generatedRequestGuid = Guid.NewGuid();
             Guid generatedRequestGuidForGet = Guid.NewGuid();
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionIdGet, out sessionData)).Returns(string.Empty);
             _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _sessionManagerMock.Setup(x => x.IsSessionValid(sessionIdGet)).Returns(true);
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestGuid)).Returns(string.Empty).Verifiable("Method SetMissionRealTimeInformation does not invoke GenerateRequestGuid as expected");

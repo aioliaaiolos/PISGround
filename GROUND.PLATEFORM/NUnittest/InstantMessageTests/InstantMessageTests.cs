@@ -165,8 +165,7 @@ namespace PIS.Ground.InstantMessageTests
 		public void GetAvailableElementListInvalidSessionId()
 		{
 			Guid sessionId = Guid.NewGuid();
-			SessionData sessionData;
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns("error");
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(false);
 
             using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
             {
@@ -188,9 +187,8 @@ namespace PIS.Ground.InstantMessageTests
 		{
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eElementNotFound;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(y => y.GetAvailableElementDataList(out elementList)).Returns(returns);
 
             using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
@@ -208,10 +206,9 @@ namespace PIS.Ground.InstantMessageTests
 		{
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 
             using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
@@ -503,7 +500,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -521,7 +517,7 @@ namespace PIS.Ground.InstantMessageTests
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -575,7 +571,6 @@ namespace PIS.Ground.InstantMessageTests
             ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
             elementList.Add(train1);
             T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
             TargetAddressType target = new TargetAddressType();
             target.Id = "TRAIN-1";
@@ -593,7 +588,7 @@ namespace PIS.Ground.InstantMessageTests
             ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
             Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -648,7 +643,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -666,7 +660,7 @@ namespace PIS.Ground.InstantMessageTests
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -724,7 +718,6 @@ namespace PIS.Ground.InstantMessageTests
             ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
             elementList.Add(train1);
             T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
             TargetAddressType target = new TargetAddressType();
             target.Id = "TRAIN-1";
@@ -742,7 +735,7 @@ namespace PIS.Ground.InstantMessageTests
             ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
             Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -795,7 +788,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid generatedRequestId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
@@ -812,7 +804,7 @@ namespace PIS.Ground.InstantMessageTests
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -869,7 +861,6 @@ namespace PIS.Ground.InstantMessageTests
             ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
             elementList.Add(train1);
             T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-            SessionData sessionData = new SessionData();
             Guid sessionId = Guid.NewGuid();
             Guid generatedRequestId = Guid.NewGuid();
             TargetAddressType target = new TargetAddressType();
@@ -886,7 +877,7 @@ namespace PIS.Ground.InstantMessageTests
             Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
             _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-            _sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
             _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -930,7 +921,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid generatedRequestId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
@@ -947,7 +937,7 @@ namespace PIS.Ground.InstantMessageTests
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1002,7 +992,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid generatedRequestId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
@@ -1018,7 +1007,7 @@ namespace PIS.Ground.InstantMessageTests
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1114,7 +1103,6 @@ namespace PIS.Ground.InstantMessageTests
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid generatedRequestId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
@@ -1131,7 +1119,7 @@ namespace PIS.Ground.InstantMessageTests
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1262,7 +1250,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid cancelRequestId = Guid.NewGuid();
 			Guid generatedCancelRequestId = Guid.NewGuid();
@@ -1280,7 +1267,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1340,7 +1327,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid cancelRequestId = Guid.NewGuid();
 			Guid generatedCancelRequestId = Guid.NewGuid();
@@ -1360,7 +1346,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1448,7 +1434,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid cancelRequestId = Guid.NewGuid();
 			Guid generatedCancelRequestId = Guid.NewGuid();
@@ -1468,7 +1453,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1550,7 +1535,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			Guid cancelRequestId = Guid.NewGuid();
 			Guid generatedCancelRequestId = Guid.NewGuid();
@@ -1568,7 +1552,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
 			_sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedCancelRequestId)).Returns(string.Empty);
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1628,7 +1612,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -1643,7 +1626,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1736,7 +1719,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -1759,7 +1741,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1869,7 +1851,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -1892,7 +1873,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -1990,7 +1971,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2008,7 +1988,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -2091,7 +2071,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2117,7 +2096,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -2210,7 +2189,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2237,7 +2215,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -2321,7 +2299,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2339,7 +2316,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -2422,7 +2399,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2448,7 +2424,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
@@ -2541,7 +2517,6 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
 			elementList.Add(train1);
 			T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
-			SessionData sessionData = new SessionData();
 			Guid sessionId = Guid.NewGuid();
 			TargetAddressType target = new TargetAddressType();
 			target.Id = "TRAIN-1";
@@ -2568,7 +2543,7 @@ where MR.RequestID = @RequestId and CT.Command = @CommandType";
 			ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
 			Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
 
-			_sessionManagerMock.Setup(x => x.GetSessionDetails(sessionId, out sessionData)).Returns(string.Empty);
+			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(It.IsAny<TargetAddressType>(), out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
