@@ -304,15 +304,6 @@ namespace PIS.Ground.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error Occured while Selecting the SessionDetails for the SessionID :{0} from the DataBase: Details:{1}.
-        /// </summary>
-        internal static string ExSelectSessionDetails {
-            get {
-                return ResourceManager.GetString("ExSelectSessionDetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Session DataBase not found.
         /// </summary>
         internal static string ExSessionDBNotFound {

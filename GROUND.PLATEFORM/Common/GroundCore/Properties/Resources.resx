@@ -162,9 +162,6 @@
   <data name="ExSelectNotificationUrls" xml:space="preserve">
     <value>Error Occured while getting all the NotificationUrls from the DataBase: Details:{0}</value>
   </data>
-  <data name="ExSelectSessionDetails" xml:space="preserve">
-    <value>Error Occured while Selecting the SessionDetails for the SessionID :{0} from the DataBase: Details:{1}</value>
-  </data>
   <data name="ExSessionDBNotFound" xml:space="preserve">
     <value>Session DataBase not found</value>
   </data>

@@ -3046,10 +3046,8 @@ namespace PIS.Ground.DataPackage
 			result.error_code = DataPackageErrorEnum.ERROR;
 			pElementDataList = new ElementList<AvailableElementData>();
 
-			SessionData sessionData;
-			string error = _sessionManager.GetSessionDetails(pSessionId, out sessionData);
-			if (error == string.Empty)
-			{
+            if (_sessionManager.IsSessionValid(pSessionId))
+            {
 				T2GManagerErrorEnum lResult = _t2gManager.GetAvailableElementDataList(out pElementDataList);
 
 				if (lResult == T2GManagerErrorEnum.eSuccess)

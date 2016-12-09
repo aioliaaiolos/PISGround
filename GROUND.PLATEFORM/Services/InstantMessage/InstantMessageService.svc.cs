@@ -816,9 +816,7 @@ namespace PIS.Ground.InstantMessage
 			var result = new InstantMessageElementListResult();
 			result.ResultCode = InstantMessageErrorEnum.ElementListNotAvailable;
 
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				try
 				{
@@ -860,10 +858,7 @@ namespace PIS.Ground.InstantMessage
 			result.ResultCode = InstantMessageErrorEnum.TemplateListNotAvailable;
 			result.MessageTemplateList = new MessageTemplateListType();
 
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				ElementList<AvailableElementData> elements;
 				T2GManagerErrorEnum rqstResult = _train2groundManager.GetAvailableElementDataByTargetAddress(targetAddress, out elements);
@@ -971,10 +966,7 @@ namespace PIS.Ground.InstantMessage
 			result.ResultCode = InstantMessageErrorEnum.StationListNotAvailable;
 			result.InstantMessageStationList = new List<StationType>();
 
-			SessionData sessionData;
-			_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-			if (sessionData != null)
+			if (_sessionManager.IsSessionValid(sessionId))
 			{
 				ElementList<AvailableElementData> elements;
 				T2GManagerErrorEnum rqstResult = _train2groundManager.GetAvailableElementDataByTargetAddress(targetAddress, out elements);
@@ -1090,10 +1082,7 @@ namespace PIS.Ground.InstantMessage
 			{
 				if (requestTimeout != null && requestTimeout.Value <= MaxRequestTimeout)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(sessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(sessionId, out requestId);
@@ -1213,10 +1202,7 @@ namespace PIS.Ground.InstantMessage
 			{
 				if (requestTimeout != null && requestTimeout.Value <= MaxRequestTimeout)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(sessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(sessionId, out requestId);
@@ -1375,10 +1361,7 @@ namespace PIS.Ground.InstantMessage
 			{
 				if (requestTimeout != null && requestTimeout.Value <= MaxRequestTimeout)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(sessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(sessionId, out requestId);
@@ -1501,10 +1484,7 @@ namespace PIS.Ground.InstantMessage
 			{
 				if (requestTimeout != null && requestTimeout.Value <= MaxRequestTimeout)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(sessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(sessionId, out requestId);
@@ -1601,10 +1581,7 @@ namespace PIS.Ground.InstantMessage
 			{
 				if (requestTimeout != null && requestTimeout.Value <= MaxRequestTimeout)
 				{
-					SessionData sessionData;
-					_sessionManager.GetSessionDetails(sessionId, out sessionData);
-
-					if (sessionData != null)
+					if (_sessionManager.IsSessionValid(sessionId))
 					{
 						Guid requestId = Guid.Empty;
 						_sessionManager.GenerateRequestID(sessionId, out requestId);

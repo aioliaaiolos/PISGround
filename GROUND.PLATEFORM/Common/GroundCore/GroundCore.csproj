@@ -165,7 +165,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Data\SessionData.cs" />
     <Compile Include="SessionMgmt\SessionManager.cs" />
     <Compile Include="SQLite\SQLiteWrapper.cs" />
     <Compile Include="T2G\generated\FileTransferClient.cs" />

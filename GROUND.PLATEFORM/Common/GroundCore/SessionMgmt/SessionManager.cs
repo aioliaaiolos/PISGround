@@ -1,19 +1,27 @@
-﻿/// 
+﻿//---------------------------------------------------------------------------------------------------
+// <copyright file="SessionManager.cs" company="Alstom">
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
+//
+//          This computer program may not be used, copied, distributed, corrected, modified, translated,
+//          transmitted or assigned without the prior written authorization of ALSTOM.
+// </copyright>
+//---------------------------------------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using PIS.Ground.Core.Data;
+using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.Properties;
+using PIS.Ground.Core.SQLite;
+using PIS.Ground.Core.Utility;
+using System.Timers;
+
 namespace PIS.Ground.Core.SessionMgmt
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Data;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using PIS.Ground.Core.Data;
-    using PIS.Ground.Core.LogMgmt;
-    using PIS.Ground.Core.Properties;
-    using PIS.Ground.Core.SQLite;
-    using PIS.Ground.Core.Utility;
-    using System.Timers;
 
     /// <summary>
     /// Manages the user session
@@ -49,7 +57,7 @@ namespace PIS.Ground.Core.SessionMgmt
         /// <summary>
         /// Query to select all NotificationURLs
         /// </summary>
-        private const string SelectNotificationUrls = "SELECT NotificationURL FROM Session";
+        private const string SelectNotificationUrls = "SELECT DISTINCT NotificationURL FROM Session where NotificationURL IS NOT NULL AND NotificationURL <> ''";
 
         /// <summary>
         /// Query to select NotificationURL by session id
@@ -62,22 +70,12 @@ namespace PIS.Ground.Core.SessionMgmt
         private const string SelectSessionIdByRequestIdQuery = "SELECT SessionID FROM SessionData Where SessionData.RequestID = '{0}'";
         
         /// <summary>
-        /// Query to select SessionData by session id
-        /// </summary>
-        private const string SelectSessionBySessionIdQuery = "SELECT SessionID,UserName,Password,NotificationURL,LastAccessedTime,LoginTime FROM Session Where Session.SessionID = '{0}'";
-        
-        /// <summary>
-        /// Query to select SessionID,RequestID,Status by session id
-        /// </summary>
-        private const string SelectSessionDataBySessionIdQuery = "SELECT SessionID,RequestID,Status FROM SessionData Where SessionData.SessionID = '{0}'";
-        
-        /// <summary>
         /// Query to select from Session.
         /// </summary>
         private const string SelectSessionQuery = "SELECT SessionID,LastAccessedTime,UserTimeOutSet,UserTimeOut FROM Session";
 
         /// <summary>
-        /// Sesion Id field
+        /// Session Id field
         /// </summary>
         private const string SessionIdField = "SessionID";
 
@@ -375,6 +373,11 @@ namespace PIS.Ground.Core.SessionMgmt
                     objSqlWpr.mExecuteQuery(SelectNotificationUrls, tableResult);
                     if (tableResult.Rows != null && tableResult.Columns != null && tableResult.Columns.Contains(NotificationUrlField) && tableResult.Rows.Count > 0)
                     {
+                        if (notificationUrls.Capacity < tableResult.Rows.Count)
+                        {
+                            notificationUrls.Capacity = tableResult.Rows.Count;
+                        }
+
                         for (int i = 0; i < tableResult.Rows.Count; i++)
                         {
                             notificationUrls.Add(tableResult.Rows[i][NotificationUrlField].ToString());
@@ -564,117 +567,6 @@ namespace PIS.Ground.Core.SessionMgmt
             else
             {
                 error = string.Format(CultureInfo.CurrentCulture, Resources.ErrorSessionNotFound, sessionId);
-            }
-
-            return error;
-        }
-
-        /// <summary>
-        /// Get Session Details of the SessionId
-        /// </summary>
-        /// <param name="sessionId">Input sessionId</param>
-        /// <param name="objSessionDetails"> output session details</param>
-        /// <returns>True if Session exists else False</returns>
-        public string GetSessionDetails(Guid sessionId, out SessionData objSessionDetails)
-        {
-            string error = string.Empty;
-            objSessionDetails = null;
-            if (this.ValidateSession(sessionId))
-            {
-                string strQuery = string.Format(CultureInfo.InvariantCulture, SelectSessionBySessionIdQuery, sessionId.ToString());
-                bool executeNextStep = false;
-                try
-                {
-                    objSessionDetails = new SessionData();
-                    using (SQLiteWrapperClass objSqlWpr = new SQLiteWrapperClass(ServiceConfiguration.SessionSqLiteDBPath))
-                    using (DataTable tableResult = new DataTable())
-                    {
-                        tableResult.Locale = CultureInfo.InvariantCulture;
-                        objSqlWpr.mExecuteQuery(strQuery, tableResult);
-                        if (tableResult.Rows != null && tableResult.Columns != null && tableResult.Rows.Count > 0)
-                        {
-                            executeNextStep = true;
-                            DataRow rowSession = tableResult.Rows[0];
-                            if (tableResult.Columns.Contains(SessionIdField) && rowSession[SessionIdField] != null)
-                            {
-                                objSessionDetails.SessionID = rowSession[SessionIdField].ToString();
-                            }
-
-                            if (tableResult.Columns.Contains(UserNameField) && rowSession[UserNameField] != null)
-                            {
-                                objSessionDetails.UserName = rowSession[UserNameField].ToString();
-                            }
-
-                            if (tableResult.Columns.Contains(PasswordField) && rowSession[PasswordField] != null)
-                            {
-                                objSessionDetails.Password = rowSession[PasswordField].ToString();
-                            }
-
-                            if (tableResult.Columns.Contains(NotificationUrlField) && rowSession[NotificationUrlField] != null)
-                            {
-                                objSessionDetails.NotificationUrl = rowSession[NotificationUrlField].ToString();
-                            }
-
-                            if (tableResult.Columns.Contains(LastAccessTimeField) && rowSession[LastAccessTimeField] != null)
-                            {
-                                objSessionDetails.LastAccessedTime = DateTime.Parse(rowSession[LastAccessTimeField].ToString(), CultureInfo.InvariantCulture);
-                            }
-
-                            if (tableResult.Columns.Contains(LoginTimeField) && rowSession[LoginTimeField] != null)
-                            {
-                                objSessionDetails.LoginDateTime = DateTime.Parse(rowSession[LoginTimeField].ToString(), CultureInfo.InvariantCulture);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogManager.WriteLog(TraceType.ERROR, string.Format(CultureInfo.CurrentCulture, Resources.ExSelectSessionDetails, sessionId, ex.Message), "PIS.Ground.Core.SessionMgmt.SessionManager.GetSessionDetails", ex, EventIdEnum.GroundCore);
-                    error = string.Format(CultureInfo.CurrentCulture, Resources.ExSelectSessionDetails, sessionId, ex.Message);
-                    objSessionDetails = null;
-                    return error;
-                }
-
-                try
-                {
-                    if (executeNextStep)
-                    {
-                        using (SQLiteWrapperClass objSqlWpr = new SQLiteWrapperClass(ServiceConfiguration.SessionSqLiteDBPath))
-                        using (DataTable tableResult = new DataTable())
-                        {
-                            strQuery = string.Format(CultureInfo.InvariantCulture, SelectSessionDataBySessionIdQuery, sessionId.ToString());
-                            tableResult.Locale = CultureInfo.InvariantCulture;
-                            objSqlWpr.mExecuteQuery(strQuery, tableResult);
-                            if (tableResult.Rows != null && tableResult.Columns != null && tableResult.Rows.Count > 0)
-                            {
-                                foreach (DataRow rowRequest in tableResult.Rows)
-                                {
-                                    RequestDetails objRequestDetails = new RequestDetails();
-                                    if (rowRequest[RequestIdField] != null)
-                                    {
-                                        objRequestDetails.RequestID = rowRequest[RequestIdField].ToString();
-                                    }
-
-                                    if (rowRequest[StatusField] != null)
-                                    {
-                                        objRequestDetails.Status = rowRequest[StatusField].ToString();
-                                    }
-
-                                    objSessionDetails.Add(objRequestDetails);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
-            else
-            {
-                error = string.Format(CultureInfo.CurrentCulture, Resources.ErrorSessionNotFound, sessionId);
-                objSessionDetails = null;
-                return error;
             }
 
             return error;
