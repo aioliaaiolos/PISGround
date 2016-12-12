@@ -487,6 +487,57 @@ namespace PIS.Ground.Core.Utility
         }
 
         /// <summary>
+        /// Gets the value of a boolean parameter from the configuration file.
+        /// </summary>
+        /// <param name="parameterName">Name of the parameter.</param>
+        /// <param name="defaultValue">Default value to use.</param>
+        /// <param name="parameterValue"></param>
+        /// <returns>True if the parameter value in the configuration file is present and valid, otherwise false.</returns>
+        public static bool GetBooleanParameterValue(string parameterName, bool defaultValue, out bool parameterValue)
+        {
+            parameterValue = defaultValue;
+            bool success = true;
+
+            string valueText = ConfigurationManager.AppSettings[parameterName];
+            if (string.Equals(valueText, Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                parameterValue = true;
+            }
+            else if (string.Equals(valueText, Boolean.FalseString, StringComparison.OrdinalIgnoreCase))
+            {
+                parameterValue = false;
+            }
+            else if (string.IsNullOrEmpty(valueText))
+            {
+                success = false;
+                parameterValue = defaultValue;
+                string errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                        Properties.Resources.ConfigurationErrorMissingParameter,
+                                        parameterName,
+                                        (parameterValue ? Boolean.TrueString : Boolean.FalseString));
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.GetBooleanParameterValue", RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
+            }
+            else
+            {
+                success = false;
+                parameterValue = defaultValue;
+
+                string errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                        Properties.Resources.ConfigurationErrorInvalidBooleanValue,
+                                        valueText,
+                                        parameterName,
+                                        (parameterValue ? Boolean.TrueString : Boolean.FalseString),
+                                        Boolean.TrueString,
+                                        Boolean.FalseString);
+                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.GetBooleanParameterValue", RunningServiceName);
+                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
+            }
+
+            return success;
+        }
+
+        /// <summary>
         /// Initializes the name of the running service.
         /// </summary>
         private static void InitializeRunningServiceName()
@@ -566,44 +617,9 @@ namespace PIS.Ground.Core.Utility
         /// <returns>Success of the initialization. True if no error has been detected, false otherwise.</returns>
         private static bool InitializeFilterLocalTrainParameter()
         {
-            bool success = true;
-
-            string filterValue = ConfigurationManager.AppSettings[ParameterNameFilterLocalTrainService];
-            if (string.Equals(filterValue, Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
-            {
-                FilterLocalTrainService = true;
-            }
-            else if (string.Equals(filterValue, Boolean.FalseString, StringComparison.OrdinalIgnoreCase))
-            {
-                FilterLocalTrainService = false;
-            }
-            else if (string.IsNullOrEmpty(filterValue))
-            {
-                success = false;
-                FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
-                string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                                        Properties.Resources.ConfigurationErrorMissingParameter,
-                                        ParameterNameFilterLocalTrainService,
-                                        (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString));
-                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
-                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-            }
-            else
-            {
-                success = false;
-                FilterLocalTrainService = DefaultValueForFilterOnLocalTrainService;
-
-                string errorMessage = string.Format(CultureInfo.CurrentCulture,
-                                        Properties.Resources.ConfigurationErrorInvalidBooleanValue,
-                                        filterValue,
-                                        ParameterNameFilterLocalTrainService,
-                                        (FilterLocalTrainService ? Boolean.TrueString : Boolean.FalseString),
-                                        Boolean.TrueString,
-                                        Boolean.FalseString);
-                string errorContext = string.Format(CultureInfo.CurrentCulture, "{0} of service {1}", "PIS.Ground.Core.Utility.ServiceConfiguration.InitializeFilterLocalTrainParameter", RunningServiceName);
-                LogManager.WriteLog(TraceType.ERROR, errorMessage, errorContext, null, EventIdEnum.GroundCore);
-            }
-
+            bool value;
+            bool success = GetBooleanParameterValue(ParameterNameFilterLocalTrainService, DefaultValueForFilterOnLocalTrainService, out value);
+            FilterLocalTrainService = value;
             return success;
         }
 

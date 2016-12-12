@@ -46,18 +46,36 @@ namespace PIS.Ground.InstantMessageTests
 
 			}
 		}
-		internal InstantMessageService.InstantMessageRequestContext LastAddedRequest { get; private set; }
+		internal InstantMessageService.InstantMessageRequestContext LastAddedRequest { get; set; }
+
+        /// <summary>Initializes a new instance of the InstantMessageService class to be used for unitests purpose.</summary>
+        /// <param name="sessionManager">Manager for session.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <param name="trainToGoundManager">Manager for T2G.</param>
+        /// <param name="logManager">Manager for log.</param>
+        internal InstantMessageServiceStub(
+            ISessionManager sessionManager,
+            INotificationSender notificationSender,
+            IT2GManager trainToGoundManager,
+            ILogManager logManager) :
+            this(sessionManager, notificationSender, trainToGoundManager, logManager, false)
+        {
+            // No logic body.
+        }
+
 		/// <summary>Initializes a new instance of the InstantMessageService class to be used for unitests purpose.</summary>
 		/// <param name="sessionManager">Manager for session.</param>
 		/// <param name="notificationSender">The notification sender.</param>
-		/// <param name="train2groungManager">Manager for 2g.</param>
+        /// <param name="trainToGoundManager">Manager for T2G.</param>
 		/// <param name="logManager">Manager for log.</param>
+        /// <param name="keepOnlyLatestFreeTextMessageRequest">Indicates if only the latest free text message for a train shall be kept.</param>
 		internal InstantMessageServiceStub(
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
-			IT2GManager train2groungManager,
-			ILogManager logManager) :
-			base(sessionManager, notificationSender, train2groungManager, logManager)
+			IT2GManager trainToGoundManager,
+			ILogManager logManager,
+            bool keepOnlyLatestFreeTextMessageRequest) :
+            base(sessionManager, notificationSender, trainToGoundManager, logManager, keepOnlyLatestFreeTextMessageRequest)
 		{
             _isElementKnownByDataStore = true;
 		}
