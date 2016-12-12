@@ -120,6 +120,13 @@
   <data name="GenerateRequestIdentifierError" xml:space="preserve">
     <value>Failed to generate the request identifier</value>
   </data>
+  <data name="RequestCancelInfoWithFormat" xml:space="preserve">
+    <value>Request canceled.
+ID: {0}
+Element ID: {1}
+Type: {2}</value>
+    <comment>{0} = request id, {1} = element id, {2} = class type</comment>
+  </data>
   <data name="RequestExpiredInfoWithFormat" xml:space="preserve">
     <value>Request expired.
 ID: {0}

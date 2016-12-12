@@ -96,14 +96,16 @@ namespace PIS.Ground.InstantMessageTests
         /// <summary>
         /// Creates the default instant message service.
         /// </summary>
+        /// <param name="keepOnlyLatestFreeTextRequest">Indicates if only the latest free message request shall be kept for a train.</param>
         /// <returns>The service created</returns>
-        private InstantMessageService CreateDefaultInstantMessageService()
+        private InstantMessageService CreateDefaultInstantMessageService(bool keepOnlyLatestFreeTextRequest)
         {
             return new InstantMessageService(
                    _sessionManagerMock.Object,
                    _notificationSenderMock.Object,
                    _train2groundClientMock.Object,
-                   _logManagerMock.Object);
+                   _logManagerMock.Object,
+                   keepOnlyLatestFreeTextRequest);
         }
 
 		/// <summary>Setups called before each test to initialize variables.</summary>
@@ -167,7 +169,7 @@ namespace PIS.Ground.InstantMessageTests
 			Guid sessionId = Guid.NewGuid();
 			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(false);
 
-            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
+            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService(false))
             {
                 InstantMessageElementListResult result = instantMessageService.GetAvailableElementList(sessionId);
 
@@ -191,7 +193,7 @@ namespace PIS.Ground.InstantMessageTests
 			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(y => y.GetAvailableElementDataList(out elementList)).Returns(returns);
 
-            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
+            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService(false))
             {
                 InstantMessageElementListResult result = instantMessageService.GetAvailableElementList(sessionId);
 
@@ -211,7 +213,7 @@ namespace PIS.Ground.InstantMessageTests
 			_sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
 			_train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
 
-            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService())
+            using (InstantMessageService instantMessageService = CreateDefaultInstantMessageService(false))
             {
                 InstantMessageElementListResult result = instantMessageService.GetAvailableElementList(sessionId);
 
@@ -559,6 +561,287 @@ namespace PIS.Ground.InstantMessageTests
                 }
             }
 		}
+
+        /// <summary>Verify that method SendFreeTextMessage send multiple messages successfully to the train when keep latest free text request is configured to value false.</summary>
+        [Test, Category("SendFreeTextMessage")]
+        public void SendFreeTextMessage_SendThreeRequestsToOfflineTrain_ExpectSendingAllRequestWhenTrainBecomeOnline()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
+
+            ILogManager logManager = new LogManager();
+            AvailableElementData train1 = CreateAvailableElement("TRAIN-1", false, "5.12.14.0");
+            AvailableElementData train2 = CreateAvailableElement("TRAIN-2", false, "5.12.14.1");
+            ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
+            elementList.Add(train1);
+            ElementList<AvailableElementData> elementList2 = new ElementList<AvailableElementData>();
+            elementList2.Add(train2);
+            T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
+            Guid sessionId = Guid.NewGuid();
+            TargetAddressType target = new TargetAddressType();
+            target.Id = "TRAIN-1";
+            target.Type = AddressTypeEnum.Element;
+            TargetAddressType target2 = new TargetAddressType();
+            target2.Id = "TRAIN-2";
+            target2.Type = AddressTypeEnum.Element;
+
+            bool isTrain1Online = false;
+            bool isTrain2Online = false;
+            uint requestTimeout = 2;
+
+            FreeTextMessageType freeTextMessageType = new FreeTextMessageType();
+            freeTextMessageType.Identifier = "M1";
+            freeTextMessageType.NumberOfRepetitions = 1;
+            freeTextMessageType.DelayBetweenRepetitions = 0;
+            freeTextMessageType.DisplayDuration = 45;
+            freeTextMessageType.AttentionGetter = false;
+            freeTextMessageType.FreeText = "This is a free text message";
+
+            ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
+            ServiceInfo train2ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8201 /* port */);
+            Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
+            Uri train2ServiceAddress = new Uri("http://127.0.0.1:8201/");
+
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(target, out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(target2, out elementList2)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-2", out train2)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-2", out isTrain2Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-1", (int)eServiceID.eSrvSIF_InstantMessageServer, out train1ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-2", (int)eServiceID.eSrvSIF_InstantMessageServer, out train2ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+
+            TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
+            TrainInstantMessageServiceStub train2Service = new TrainInstantMessageServiceStub();
+
+            using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
+            using (ServiceHost host2 = new ServiceHost(train2Service, train2ServiceAddress))
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
+                    host2.Open();
+
+                    // SEND REQUEST 1 to TRAIN 1
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext1 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // SEND REQUEST 2 to TRAIN 1
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // SEND REQUEST 3 to TRAIN 2
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target2, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext3 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // Sleep 5 seconds
+                    Thread.Sleep(5 * 1000);
+
+                    Expect(sendFreeTextRequestContext3.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext1.IsStateFinal, Is.False, "Expect that this free text message is not send");
+
+                    // TRAIN-2 become online
+                    train2.OnlineStatus = isTrain2Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-2", out isTrain2Online)).Returns(T2GManagerErrorEnum.eSuccess);
+
+                    Expect(() => sendFreeTextRequestContext3.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext1.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext3.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(train2Service.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(0), "The free text message has not been transmitted to the train as expected.");
+
+
+                    // TRAIN-1 become online
+                    train1.OnlineStatus = isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+
+                    Expect(() => sendFreeTextRequestContext1.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(sendFreeTextRequestContext2.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(sendFreeTextRequestContext1.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(train2Service.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(2), "The free text message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+
+                    if (host2.State == CommunicationState.Faulted)
+                    {
+                        host2.Abort();
+                    }
+                }
+            }
+        }
+
+        /// <summary>Verify that method SendFreeTextMessage send the message a expected to the train when kepp only latest free text request is configured to value true.</summary>
+        [Test, Category("SendFreeTextMessage")]
+        public void SendFreeTextMessage_SendThreeRequestsToOfflineTrain_WhenKeepingOnlyLatestFreeTextRequest()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add<ServiceContractAttribute>();
+
+            ILogManager logManager = new LogManager();
+            AvailableElementData train1 = CreateAvailableElement("TRAIN-1", false, "5.12.14.0");
+            AvailableElementData train2 = CreateAvailableElement("TRAIN-2", false, "5.12.14.1");
+            ElementList<AvailableElementData> elementList = new ElementList<AvailableElementData>();
+            elementList.Add(train1);
+            ElementList<AvailableElementData> elementList2 = new ElementList<AvailableElementData>();
+            elementList2.Add(train2);
+            T2GManagerErrorEnum returns = T2GManagerErrorEnum.eSuccess;
+            Guid sessionId = Guid.NewGuid();
+            TargetAddressType target = new TargetAddressType();
+            target.Id = "TRAIN-1";
+            target.Type = AddressTypeEnum.Element;
+            TargetAddressType target2 = new TargetAddressType();
+            target2.Id = "TRAIN-2";
+            target2.Type = AddressTypeEnum.Element;
+
+            bool isTrain1Online = false;
+            bool isTrain2Online = false;
+            uint requestTimeout = 2;
+
+            FreeTextMessageType freeTextMessageType = new FreeTextMessageType();
+            freeTextMessageType.Identifier = "M1";
+            freeTextMessageType.NumberOfRepetitions = 1;
+            freeTextMessageType.DelayBetweenRepetitions = 0;
+            freeTextMessageType.DisplayDuration = 45;
+            freeTextMessageType.AttentionGetter = false;
+            freeTextMessageType.FreeText = "This is a free text message";
+
+            ServiceInfo train1ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8200 /* port */);
+            ServiceInfo train2ServiceInfo = new ServiceInfo((ushort)eServiceID.eSrvSIF_InstantMessageServer, "InstantMessageServer", 0, 0, true, "127.0.0.1" /* ip */, "", "", 8201 /* port */);
+            Uri trainServiceAddress = new Uri("http://127.0.0.1:8200/");
+            Uri train2ServiceAddress = new Uri("http://127.0.0.1:8201/");
+
+            _sessionManagerMock.Setup(x => x.IsSessionValid(sessionId)).Returns(true);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataList(out elementList)).Returns(returns);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(target, out elementList)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByTargetAddress(target2, out elementList2)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-1", out train1)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableElementDataByElementNumber("TRAIN-2", out train2)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-2", out isTrain2Online)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-1", (int)eServiceID.eSrvSIF_InstantMessageServer, out train1ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+            _train2groundClientMock.Setup(x => x.GetAvailableServiceData("TRAIN-2", (int)eServiceID.eSrvSIF_InstantMessageServer, out train2ServiceInfo)).Returns(T2GManagerErrorEnum.eSuccess);
+
+            TrainInstantMessageServiceStub trainService = new TrainInstantMessageServiceStub();
+            TrainInstantMessageServiceStub train2Service = new TrainInstantMessageServiceStub();
+
+            using (ServiceHost host = new ServiceHost(trainService, trainServiceAddress))
+            using (ServiceHost host2 = new ServiceHost(train2Service, train2ServiceAddress))
+            using (InstantMessageServiceStub instantMessageService = new InstantMessageServiceStub(
+                _sessionManagerMock.Object,
+                _notificationSenderMock.Object,
+                _train2groundClientMock.Object,
+                logManager,
+                true /* keep only latest free text request */))
+            {
+                try
+                {
+                    IInstantMessageService instantMessageServiceInterface = (IInstantMessageService)instantMessageService;
+                    host.Open();
+                    host2.Open();
+
+                    // SEND REQUEST 1 to TRAIN 1
+                    Guid generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    InstantMessageResult result = instantMessageService.SendFreeTextMessage(sessionId, target, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext1 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // SEND REQUEST 2 to TRAIN 1
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext2 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // SEND REQUEST 3 to TRAIN 2
+                    generatedRequestId = Guid.NewGuid();
+                    _sessionManagerMock.Setup(x => x.GenerateRequestID(sessionId, out generatedRequestId)).Returns(string.Empty);
+                    result = instantMessageService.SendFreeTextMessage(sessionId, target2, requestTimeout, freeTextMessageType);
+                    Expect(result.ResultCode, Is.EqualTo(InstantMessageErrorEnum.RequestAccepted), "SendFreeTextMessage didn't accepted the valid request");
+                    Expect(instantMessageService.LastAddedRequest, Is.Not.Null, "SendFreeTextMessage method didn't created a request");
+                    InstantMessageService.InstantMessageRequestContext sendFreeTextRequestContext3 = instantMessageService.LastAddedRequest;
+                    instantMessageService.LastAddedRequest = null;
+
+                    // Sleep 5 seconds
+                    Thread.Sleep(5 * 1000);
+
+                    Expect(sendFreeTextRequestContext3.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext1.IsStateFinal, Is.True, "Expect that this free text message is canceled");
+                    Expect(sendFreeTextRequestContext1.State, Is.EqualTo(RequestState.Error), "State of free text message is not set to expected value");
+
+                    // TRAIN-2 become online
+                    train2.OnlineStatus = isTrain2Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-2", out isTrain2Online)).Returns(T2GManagerErrorEnum.eSuccess);
+
+                    Expect(() => sendFreeTextRequestContext3.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(sendFreeTextRequestContext2.IsStateFinal, Is.False, "Expect that this free text message is not send");
+                    Expect(sendFreeTextRequestContext3.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(train2Service.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(0), "The free text message has not been transmitted to the train as expected.");
+
+
+                    // TRAIN-1 become online
+                    train1.OnlineStatus = isTrain1Online = true;
+                    _train2groundClientMock.Setup(x => x.IsElementOnline("TRAIN-1", out isTrain1Online)).Returns(T2GManagerErrorEnum.eSuccess);
+
+                    Expect(() => sendFreeTextRequestContext1.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(() => sendFreeTextRequestContext2.IsStateFinal, Is.True.After(30 * 1000, 250), "FreeText message still not transmitted after a period of 30 seconds");
+                    Expect(sendFreeTextRequestContext2.State, Is.EqualTo(RequestState.Completed), "State of free text message is not set to expected value");
+                    Expect(sendFreeTextRequestContext1.State, Is.EqualTo(RequestState.Error), "State of free text message is not set to expected value");
+                    Expect(train2Service.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                    Expect(trainService.SendFreeTextMessageCallCount, Is.EqualTo(1), "The free text message has not been transmitted to the train as expected.");
+                }
+                finally
+                {
+                    if (host.State == CommunicationState.Faulted)
+                    {
+                        host.Abort();
+                    }
+
+                    if (host2.State == CommunicationState.Faulted)
+                    {
+                        host2.Abort();
+                    }
+                }
+            }
+        }
 
         /// <summary>Verify that method SendFreeTextMessage returns the correct value when no baseline is assigned to the train in the remote datastore.</summary>
         [Test, Category("SendFreeTextMessage")]

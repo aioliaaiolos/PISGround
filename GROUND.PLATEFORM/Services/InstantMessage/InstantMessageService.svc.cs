@@ -23,6 +23,7 @@ using PIS.Ground.Core.T2G;
 using PIS.Ground.Core.Utility;
 using PIS.Ground.RemoteDataStore;
 using PIS.Train.InstantMessage;
+using System.Configuration;
 
 namespace PIS.Ground.InstantMessage
 {
@@ -32,6 +33,11 @@ namespace PIS.Ground.InstantMessage
 	public class InstantMessageService : IInstantMessageService, IDisposable
 	{
 		#region Constants
+        
+        /// <summary>
+        /// The parameter name that indicate if functionality to keep only the latest free text message shall be kept.
+        /// </summary>
+        private const string ParameterNameEnableKeepOnlyLatestFreeTextMessageRequest = "EnableKeepOnlyLatestFreeTextRequest";
 
 		/// <summary>
 		/// Maximum allowed request timeout (in minutes).
@@ -100,6 +106,11 @@ namespace PIS.Ground.InstantMessage
 
         private static List<InstantMessageRequestContext> _newRequests = new List<InstantMessageRequestContext>();
 
+        /// <summary>
+        /// Flags that indicates if only the latest free text message request for a train is kept in the processing queue. This prevent to sent multiple request to a train in a row.
+        /// </summary>
+        private static bool _keepOnlyLatestFreeTextRequest;
+
         #endregion
 
 		#endregion
@@ -120,13 +131,15 @@ namespace PIS.Ground.InstantMessage
 		/// <param name="notificationSender">The notification sender.</param>
 		/// <param name="train2groungManager">Manager for 2g.</param>
 		/// <param name="logManager">Manager for log.</param>
-		internal InstantMessageService(
+        /// <param name="keepOnlyLatestFreeTextRequest">Indicates if only the lated free text message request shall be kept in the request queue.</param>
+        internal InstantMessageService(
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
 			IT2GManager train2groungManager,
-			ILogManager logManager)
+			ILogManager logManager,
+            bool keepOnlyLatestFreeTextRequest)
 		{
-			Initialize(this, sessionManager, notificationSender, train2groungManager, logManager);
+            Initialize(this, sessionManager, notificationSender, train2groungManager, logManager, keepOnlyLatestFreeTextRequest);
 		}
 
 		/// <summary>
@@ -150,6 +163,7 @@ namespace PIS.Ground.InstantMessage
 
                         _train2groundManager = T2GManagerContainer.T2GManager;
 
+                        LoadConfiguration();
                         HistoryLogger.Initialize();
                         HistoryLogger.MarkPendingMessagesAsCanceledByStartup();
 
@@ -231,12 +245,14 @@ namespace PIS.Ground.InstantMessage
 		/// <param name="notificationSender">The notification sender.</param>
 		/// <param name="train2groungManager">Manager for 2g.</param>
 		/// <param name="logManager">Manager for log.</param>
-		private static void Initialize(
+        /// <param name="keepOnlyLatestFreeTextRequest">Indicates if only the lated free text message request shall be kept in the request queue.</param>
+        private static void Initialize(
             InstantMessageService creator,
 			ISessionManager sessionManager,
 			INotificationSender notificationSender,
 			IT2GManager train2groungManager,
-			ILogManager logManager)
+			ILogManager logManager,
+            bool keepOnlyLatestFreeTextRequest)
 		{
 			try
 			{
@@ -252,6 +268,7 @@ namespace PIS.Ground.InstantMessage
                 _instanceCreator = creator;
 				_sessionManager = sessionManager;
                 _stopRequested = false;
+                _keepOnlyLatestFreeTextRequest = keepOnlyLatestFreeTextRequest;
 
 				_notificationSender = notificationSender;
 
@@ -274,6 +291,14 @@ namespace PIS.Ground.InstantMessage
 				Uninitialize(true);
 			}
 		}
+
+        /// <summary>
+        /// Loads the configuration parameters specific to instant message service.
+        /// </summary>
+        private static void LoadConfiguration()
+        {
+            ServiceConfiguration.GetBooleanParameterValue(ParameterNameEnableKeepOnlyLatestFreeTextMessageRequest, false, out _keepOnlyLatestFreeTextRequest);
+        }
 
 		/// <summary> Callback called when Element Online state changes (signaled by the T2G Client).</summary>
 		/// <param name="sender">Source of the event.</param>
@@ -1686,6 +1711,7 @@ namespace PIS.Ground.InstantMessage
             try
             {
                 var currentRequests = new List<InstantMessageRequestContext>();
+                var requestToCancel = new List<InstantMessageRequestContext>();
 
                 while (!_stopRequested)
                 {
@@ -1703,10 +1729,24 @@ namespace PIS.Ground.InstantMessage
                     {
                         if (_newRequests.Count != 0)
                         {
-                            currentRequests.AddRange(_newRequests);
-                            _newRequests.Clear();
-                            currentRequests.RemoveAll(c => c == null);
+                            if (!_keepOnlyLatestFreeTextRequest || !ContainFreeTextRequest(_newRequests))
+                            {
+                                currentRequests.AddRange(_newRequests);
+                                currentRequests.RemoveAll(c => c == null);
+                                _newRequests.Clear();
+                            }
+                            else
+                            {
+                                AppendRequestsAndVerifyFreeTextRequestToCancel(_newRequests, currentRequests, requestToCancel);
+                                _newRequests.Clear();
+                            }
                         }
+                    }
+
+                    if (requestToCancel.Count != 0)
+                    {
+                        CancelRequests(requestToCancel);
+                        requestToCancel.Clear();
                     }
 
                     foreach (var request in currentRequests)
@@ -1812,6 +1852,68 @@ namespace PIS.Ground.InstantMessage
                 }
             }
 		}
+
+        /// <summary>
+        /// Cancels the requests.
+        /// </summary>
+        /// <param name="requestToCancel">The list of requests to cancel.</param>
+        private void CancelRequests(List<InstantMessageRequestContext> requestToCancel)
+        {
+            foreach (InstantMessageRequestContext request in requestToCancel)
+            {
+                if (!request.IsStateFinal)
+                {
+                    request.ErrorStatus = true;
+                    string logString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.RequestCancelInfoWithFormat, request.RequestId, request.ElementId, request.GetType().FullName);
+                    _logManager.WriteLog(TraceType.INFO, logString, "PIS.Ground.InstantMessage.InstantMessageService.CancelRequests", null, EventIdEnum.InstantMessage);
+                    request.LogStatusInHistoryLog(MessageStatusType.InstantMessageDistributionCanceled);
+                    SendNotificationToGroundApp(request.RequestId, PIS.Ground.GroundCore.AppGround.NotificationIdEnum.InstantMessageDistributionCanceled, request.ElementId);
+
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verify if the request list contains at least one request to send a free text message
+        /// </summary>
+        /// <param name="requests">The request list to evaluate.</param>
+        /// <returns>True if the list contain at least one free text request, false otherwise.</returns>
+        private bool ContainFreeTextRequest(List<InstantMessageRequestContext> requests)
+        {
+            return requests.Any(x => x is ProcessSendFreeTextMessageRequestContext);
+        }
+
+        /// <summary>
+        /// Appends the new requests into current requests and populate request to cancel when with request that need to be canceled.
+        /// </summary>
+        /// <param name="newRequests">The new requests to add.</param>
+        /// <param name="currentRequests">The current requests were new request shall be added..</param>
+        /// <param name="requestToCancel">The requests to cancel.</param>
+        private void AppendRequestsAndVerifyFreeTextRequestToCancel(List<InstantMessageRequestContext> newRequests, List<InstantMessageRequestContext> currentRequests, List<InstantMessageRequestContext> requestToCancel)
+        {
+            int initialCount = currentRequests.Count;
+            currentRequests.AddRange(newRequests);
+
+            for (int i = initialCount; i < currentRequests.Count; ++i)
+            {
+                ProcessSendFreeTextMessageRequestContext newFreeTextRequest = currentRequests[i] as ProcessSendFreeTextMessageRequestContext;
+                if (!object.ReferenceEquals(newFreeTextRequest, null))
+                {
+                    for (int j = 0; j < i; ++j)
+                    {
+                        InstantMessageRequestContext currentRequest = currentRequests[j];
+                        if (currentRequest.ElementId == newFreeTextRequest.ElementId &&
+                            currentRequest is ProcessSendFreeTextMessageRequestContext)
+                        {
+                            if (!requestToCancel.Contains(currentRequest))
+                            {
+                                requestToCancel.Add(currentRequest);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
 		/// <summary>Validate send predefined messages request.</summary>
 		/// <exception cref="PisDataStoreNotAccessibleException">Thrown when the Pis Data Store Not

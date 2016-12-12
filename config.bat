@@ -41,7 +41,7 @@ set GroundServer_Requisites_ZIPFileName=%GroundServer_Requisites_PrefixFileName%
 set GroundServer_Requisites_x64_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x64-V%REQUESITE_VERSION%.zip
 set GroundServer_Requisites_x86_ZIPFileName=%GroundServer_Requisites_PrefixFileName%x86-V%REQUESITE_VERSION%.zip
 set Groundserver_TestPackages_ZIPFileName=PISGroundIntegrationTestsPackages_V5.16.0.zip
-set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.3.0.zip
+set PISEmbeddedSDK_ZIPFileName=PISEmbeddedSDK_V5.16.5.0.zip
 
 ::=====================================================================================
 :: Updatable section - END
