@@ -1282,7 +1282,7 @@ namespace PIS.Ground.DataPackage
 		#region private methods
 
 		/// <summary>
-		/// Return the baselines corresping to an element : the on board baselines, asking T2G, the assigned baselines, asking RemoteDataStore
+		/// Return the baselines corresponding to an element : the on board baselines, asking T2G, the assigned baselines, asking RemoteDataStore
 		/// </summary>
 		/// <param name="pSessionId">The Id of the session in which the request is executed.</param>
 		/// <param name="pTargetAddress">The element(s) address you want the baselines.</param>
@@ -1368,11 +1368,13 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementArchivedBaseline.LMTDataPackageVersion = lElData.PisBaselineData.ArchivedVersionLmtOut;
 									}
 									lElDescr.ElementCurrentBaseline = new ElementBaseline();
+
+                                    const string dateTimeFormat = "(yyyy-MM-dd\\THH:mm:ss.f)";
 									if (!string.IsNullOrEmpty(lElData.PisBaselineData.CurrentVersionOut))
 									{
 										lElDescr.isCurrentBaselineForced = Boolean.Parse(lElData.PisBaselineData.CurrentForcedOut);
-										DateTime ltmpDateTime = new DateTime();
-										DateTime.TryParse(lElData.PisBaselineData.CurrentExpirationDateOut, out ltmpDateTime);
+                                        DateTime ltmpDateTime;
+                                        DateTime.TryParseExact(lElData.PisBaselineData.CurrentExpirationDateOut, dateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out ltmpDateTime);
 										lElDescr.ElementCurrentBaselineExpirationDate = ltmpDateTime;
 										lElDescr.ElementCurrentBaseline.BaselineVersion = lElData.PisBaselineData.CurrentVersionOut;
 										lElDescr.ElementCurrentBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.CurrentValidOut);
@@ -1380,20 +1382,21 @@ namespace PIS.Ground.DataPackage
 										lElDescr.ElementCurrentBaseline.PISMissionDataPackageVersion = lElData.PisBaselineData.CurrentVersionPisMissionOut;
 										lElDescr.ElementCurrentBaseline.PISInfotainmentDataPackageVersion = lElData.PisBaselineData.CurrentVersionPisInfotainmentOut;
 										lElDescr.ElementCurrentBaseline.LMTDataPackageVersion = lElData.PisBaselineData.CurrentVersionLmtOut;
-										DateTime.TryParse(lElData.PisBaselineData.CurrentExpirationDateOut, out ltmpDateTime);
-										lElDescr.ElementFutureBaselineActivationDate = ltmpDateTime;
-										DateTime.TryParse(lElData.PisBaselineData.FutureExpirationDateOut, out ltmpDateTime);
-										lElDescr.ElementFutureBaselineExpirationDate = ltmpDateTime;
 									}
 									lElDescr.ElementFutureBaseline = new ElementBaseline();
 									if (!string.IsNullOrEmpty(lElData.PisBaselineData.FutureVersionOut))
 									{
+                                        DateTime ltmpDateTime;
 										lElDescr.ElementFutureBaseline.BaselineVersion = lElData.PisBaselineData.FutureVersionOut;
 										lElDescr.ElementFutureBaseline.BaselineValidity = Boolean.Parse(lElData.PisBaselineData.FutureValidOut);
 										lElDescr.ElementFutureBaseline.PISBaseDataPackageVersion = lElData.PisBaselineData.FutureVersionPisBaseOut;
 										lElDescr.ElementFutureBaseline.PISMissionDataPackageVersion = lElData.PisBaselineData.FutureVersionPisMissionOut;
 										lElDescr.ElementFutureBaseline.PISInfotainmentDataPackageVersion = lElData.PisBaselineData.FutureVersionPisInfotainmentOut;
 										lElDescr.ElementFutureBaseline.LMTDataPackageVersion = lElData.PisBaselineData.FutureVersionLmtOut;
+                                        DateTime.TryParseExact(lElData.PisBaselineData.FutureActivationDateOut, dateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out ltmpDateTime);
+                                        lElDescr.ElementFutureBaselineActivationDate = ltmpDateTime;
+                                        DateTime.TryParseExact(lElData.PisBaselineData.FutureExpirationDateOut, dateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out ltmpDateTime);
+                                        lElDescr.ElementFutureBaselineExpirationDate = ltmpDateTime;
 									}
 
 									//Add baseline description from RemoteDataStore
