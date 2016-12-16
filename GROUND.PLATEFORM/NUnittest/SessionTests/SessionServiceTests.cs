@@ -210,8 +210,10 @@ namespace SessionTests
         }
 
         /// <summary>
-        /// Verify the function SetNotificationInformation still working properly after 5 failures.
+        /// Verify the function SetNotificationInformation still working properly after 6 failures.
         /// </summary>
+        /// <remarks>This test verify the fix for CR atvcm00750190 - Manque de robustesse liée à l'échec de notification.
+        /// In this CR, the function SetNotificationInformation stop working with valid url after being called 5 times with invalid url.</remarks>
         [Test]
         public void SetNotificationInformationUrlRobustnessAfterFailure_atvcm00750190()
         {
