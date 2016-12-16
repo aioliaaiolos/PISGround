@@ -12,7 +12,15 @@ namespace PIS.Ground.Core.SessionMgmt
 	/// <summary>Interface for session manager.</summary>
 	public interface ISessionManager
 	{
+        /// <summary>
+        /// Starts the monitoring sessions.
+        /// </summary>
         void StartMonitoringSessions();
+
+        /// <summary>
+        /// Stops the monitoring sessions.
+        /// </summary>
+        void StopMonitoringSessions();
 
 		/// <summary>Generates a request identifier.</summary>
 		/// <param name="sessionId">Identifier for the session.</param>

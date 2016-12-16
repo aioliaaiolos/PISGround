@@ -1,24 +1,16 @@
 ﻿//---------------------------------------------------------------------------------------------------
 // <copyright file="RemoteFileClassTest.cs" company="Alstom">
-//          (c) Copyright ALSTOM 2014.  All rights reserved.
+//          (c) Copyright ALSTOM 2016.  All rights reserved.
 //
 //          This computer program may not be used, copied, distributed, corrected, modified, translated,
 //          transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
 //---------------------------------------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Moq;
-using NUnit.Framework;
-using PIS.Ground.Core;
-using PIS.Ground.Core.SessionMgmt;
-using PIS.Ground.Core.T2G;
-using System.Reflection;
-using System.Diagnostics;
-using PIS.Ground.Core.Data;
 using System.Configuration;
 using System.IO;
+using NUnit.Framework;
+using PIS.Ground.Core.Data;
 
 namespace GroundCoreTests
 {
@@ -59,6 +51,19 @@ namespace GroundCoreTests
                 Directory.CreateDirectory(remoteDataStorePath);
             }
 
+            string tempPath = Path.Combine(remoteDataStorePath, "PISBASE");
+
+            if (!Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
+
+            tempPath = Path.Combine(remoteDataStorePath, "TMP");
+
+            if (!Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
 
             if (!System.IO.File.Exists(pathString))
             {
@@ -132,5 +137,58 @@ namespace GroundCoreTests
             }
             Assert.True(rFile1.Exists);
         }
+
+        /// <summary>
+        /// Verify the robustness of RemoteFileClass on FTP urls.
+        /// </summary>
+        [Test, Category("Robustness")]
+        public void RobustnessOfRemoteFileClassWithInvalidFtpUrl()
+        {
+            //Test FTP url
+            string validUrl = "ftp://10.95.38.17:2121/Dev/PISGROUND/Tmp/pisbase-testfile.txt";
+            string invalidUrl = "ftp://10.95.38.17:2121/Dev/PISGROUND/Tmp/pisbase-testfile.notexist.txt";
+            Assert.False(RemoteFileClass.checkUrl(invalidUrl), "Method RemoteFileClass.checkUrl succeeded on url '{0}' while expecting not", invalidUrl);
+            Assert.True(RemoteFileClass.checkUrl(validUrl), "Method RemoteFileClass.checkUrl failed on url '{0}' while expecting not", validUrl);
+
+            for (int i = 0; i < 5; ++i)
+            {
+                RemoteFileClass remoteFile = new RemoteFileClass(invalidUrl, true);
+                Assert.False(remoteFile.Exists, "File '{0}' exists while expecting not", invalidUrl);
+                Assert.True(remoteFile.IsInitialized, "RemoteFileClass on file '{0}' wasn't initialized as expected", invalidUrl);
+            }
+
+            RemoteFileClass remoteFileExist = new RemoteFileClass(validUrl, true);
+            Assert.True(remoteFileExist.Exists, "File '{0}' does not exists as expected", validUrl);
+            Assert.True(remoteFileExist.IsInitialized, "RemoteFileClass on file '{0}' wasn't initialized as expected", validUrl);
+            Assert.AreNotEqual(0, remoteFileExist.Size, "Size of file '{0}' wasn't initialized as expected", validUrl);
+            Assert.AreNotEqual(0, remoteFileExist.CRC, "CRC of file '{0}' wasn't initialized as expected", validUrl);
+        }
+
+        /// <summary>
+        /// Verify the robustness of RemoteFileClass on FTP urls.
+        /// </summary>
+        [Test, Category("Robustness")]
+        public void RobustnessOfRemoteFileClassWithInvalidHttpUrl()
+        {
+            //Test FTP url
+            string validUrl = "http://10.95.38.17/index.html";
+            string invalidUrl = "http://10.95.38.17/fileNotFound.txt";
+            Assert.False(RemoteFileClass.checkUrl(invalidUrl), "Method RemoteFileClass.checkUrl succeeded on url '{0}' while expecting not", invalidUrl);
+            Assert.True(RemoteFileClass.checkUrl(validUrl), "Method RemoteFileClass.checkUrl failed on url '{0}' while expecting not", validUrl);
+
+            for (int i = 0; i < 5; ++i)
+            {
+                RemoteFileClass remoteFile = new RemoteFileClass(invalidUrl, true);
+                Assert.False(remoteFile.Exists, "File '{0}' exists while expecting not", invalidUrl);
+                Assert.True(remoteFile.IsInitialized, "RemoteFileClass on file '{0}' wasn't initialized as expected", invalidUrl);
+            }
+
+            RemoteFileClass remoteFileExist = new RemoteFileClass(validUrl, true);
+            Assert.True(remoteFileExist.Exists, "File '{0}' does not exists as expected", validUrl);
+            Assert.True(remoteFileExist.IsInitialized, "RemoteFileClass on file '{0}' wasn't initialized as expected", validUrl);
+            Assert.AreNotEqual(0, remoteFileExist.Size, "Size of file '{0}' wasn't initialized as expected", validUrl);
+            Assert.AreNotEqual(0, remoteFileExist.CRC, "CRC of file '{0}' wasn't initialized as expected", validUrl);
+        }
+ 
     }
 }

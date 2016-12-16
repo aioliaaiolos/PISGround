@@ -681,6 +681,17 @@ namespace PIS.Ground.Core.SessionMgmt
         {
             SetSessionCheckTimer();
         }
+
+        /// <summary>Stops monitoring sessions.</summary>
+        public void StopMonitoringSessions()
+        {
+            if (timer != null)
+            {
+                timer.Enabled = false;
+                timer.Dispose();
+                timer = null;
+            }
+        }
             
         /// <summary>
         /// Set the Session Timer to check the unused session

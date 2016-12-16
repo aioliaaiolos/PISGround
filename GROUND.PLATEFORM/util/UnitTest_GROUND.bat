@@ -2,7 +2,7 @@
 :: File name      : 		UnitTest_GROUND.bat
 :: Description    : Execute unit test for PIS-GROUND
 ::				  : 	
-:: Update         :			   2016-10-11			
+:: Update         :			   2016-12-15			
 ::=====================================================================================
 @echo off
 SETLOCAL
@@ -39,6 +39,15 @@ if not exist "%WORKING_DIR%GROUND_TEST_RESULTS" (
 :ExecuteTests
  
 @echo -------- TESTS SUMMARY [!date! !time:~0,2!:!time:~3,2!:!time:~6,2!] ---------- > "%WORKING_DIR%GROUND_TEST_RESULTS\summary_tests.log" 
+
+echo Execute Session Tests > CON
+echo Execute Session Tests 
+"%WORKING_DIR%\GROUND.PLATEFORM\Dependencies\NUnit-2.6.2\nunit-console-x86.exe" "%WORKING_DIR%GROUND.PLATEFORM\NUnittest\SessionTests\bin\Release\SessionTests.dll" /xml="%WORKING_DIR%GROUND_TEST_RESULTS\nunit_PISGround_Session_Result.xml"
+IF ERRORLEVEL 1 ( echo [FAILED][!date! !time:~0,2!:!time:~3,2!:!time:~6,2!] SessionTests.dll >> "%WORKING_DIR%GROUND_TEST_RESULTS\summary_tests.log" 
+	set /A nFailed=nFailed+1
+	) else ( echo [PASSED][!date! !time:~0,2!:!time:~3,2!:!time:~6,2!] SessionTests.dll >> "%WORKING_DIR%GROUND_TEST_RESULTS\summary_tests.log"
+	set /A nPassed=nPassed+1	
+	)
 
 echo Execute LiveVideoControl Tests > CON
 echo Execute LiveVideoControl Tests 
