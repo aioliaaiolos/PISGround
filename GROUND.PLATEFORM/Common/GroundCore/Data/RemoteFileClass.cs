@@ -8,10 +8,10 @@
 //---------------------------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Configuration;
-using PIS.Ground.Core.LogMgmt;
 using System.Globalization;
+using System.IO;
+using System.Net;
 using PIS.Ground.Core.Properties;
 
 namespace PIS.Ground.Core.Data
@@ -46,9 +46,9 @@ namespace PIS.Ground.Core.Data
         /// <summary>Type of the file.</summary>
         private FileTypeEnum     _fileType;
         /// <summary>The CRC.</summary>
-        private string           _crc ="";
+        private string _crc = string.Empty;
         /// <summary>Destination remote file in case of ftp or http.</summary>
-        private string _destRemoteFile = "";
+        private string _destRemoteFile = string.Empty;
         /// <summary>FtpStatus of the file transfer</summary>
         private FtpStatus _ftpStatus;
         /// <summary>
@@ -82,8 +82,9 @@ namespace PIS.Ground.Core.Data
                     string lDataStorePath = System.IO.Path.GetFullPath(ConfigurationSettings.AppSettings["RemoteDataStoreUrl"]);
                     string lFileName = _fileName;
                     string lFileNameWExt = Path.GetFileNameWithoutExtension(_filePath);
-                    string lType = lFileNameWExt.Substring(0, lFileName.IndexOf('-')).ToUpperInvariant();
-                    string lDestFolder = lDataStorePath + lType;
+                    int indexHyphen = lFileName.IndexOf('-');
+                    string lType = (indexHyphen > 0) ? lFileNameWExt.Substring(0, indexHyphen).ToUpperInvariant() : "TMP";
+                    string lDestFolder = Path.Combine(lDataStorePath,lType);
                     // Saving the remote destination file.
                     _destRemoteFile = Path.Combine(lDestFolder, lFileName);
 
@@ -312,29 +313,56 @@ namespace PIS.Ground.Core.Data
         {
             try
             {
+                string connectionGroupName = Guid.NewGuid().ToString();
                 System.Net.FtpWebRequest lRequest = (System.Net.FtpWebRequest)System.Net.WebRequest.Create(_filePath);
-
-                lRequest.Method = System.Net.WebRequestMethods.Ftp.GetFileSize;
-                using (System.Net.WebResponse lResponse = lRequest.GetResponse())
+                lRequest.ConnectionGroupName = connectionGroupName;
+                ServicePoint servicePoint = lRequest.ServicePoint;
+                try
                 {
-                    _exists = true;
-                    _fileType = FileTypeEnum.FtpFile;
-
-                    //CalculCRC 
-                    Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
-                    System.IO.Stream lFileStream;
-
-                    OpenReadFtpFile(out lFileStream);
-
-                    if (lFileStream != null)
+                    lRequest.Method = System.Net.WebRequestMethods.Ftp.GetFileSize;
+                    using (System.Net.WebResponse lResponse = lRequest.GetResponse())
                     {
-                        _size = lFileStream.Length;
-                        _crc = lCrcCalculator.CalculateChecksum(lFileStream);
-                        lFileStream.Close();
+                        _exists = true;
+                        _fileType = FileTypeEnum.FtpFile;
+
+                        //CalculCRC 
+                        Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
+                        System.IO.Stream lFileStream;
+
+                        OpenReadFtpFile(out lFileStream, connectionGroupName);
+
+                        if (lFileStream != null)
+                        {
+                            using (lFileStream)
+                            {
+                                _size = lFileStream.Length;
+                                _crc = lCrcCalculator.CalculateChecksum(lFileStream);
+                            }
+                        }
+                        else
+                        {
+                            PIS.Ground.Core.LogMgmt.LogManager.WriteLog(PIS.Ground.Core.Data.TraceType.ERROR, "OpenReadFtpFile returned null file", "PIS.Ground.Core.Data.RemoteFileClass", null, EventIdEnum.GroundCore);
+                        }
                     }
-                    else
+                }
+                finally
+                {
+                    if (lRequest != null)
                     {
-                        PIS.Ground.Core.LogMgmt.LogManager.WriteLog(PIS.Ground.Core.Data.TraceType.ERROR, "OpenReadFtpFile returned null file", "PIS.Ground.Core.Data.RemoteFileClass", null, EventIdEnum.GroundCore);
+                        try
+                        {
+                            lRequest.Abort();
+                        }
+                        catch (NotImplementedException)
+                        {
+                            // Ignore the not implemented exception
+                        }
+                    }
+
+                    if (servicePoint != null)
+                    {
+                        servicePoint.CloseConnectionGroup(connectionGroupName);
+                        servicePoint = null;
                     }
                 }
             }
@@ -365,31 +393,57 @@ namespace PIS.Ground.Core.Data
         {
             try
             {
+                string connectionGroupName = Guid.NewGuid().ToString();
                 System.Net.HttpWebRequest lRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(_filePath);
-
-                lRequest.Method = System.Net.WebRequestMethods.Http.Head;
-                using (System.Net.HttpWebResponse lResponse = (System.Net.HttpWebResponse)lRequest.GetResponse())
+                lRequest.ConnectionGroupName = connectionGroupName;
+                ServicePoint servicePoint = lRequest.ServicePoint;
+                try
                 {
-                    _exists = true;
-                    _fileType = FileTypeEnum.HttpFile;
-
-                    //CalculCRC 
-                    Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
-
-                    System.IO.Stream lFileStream;
-                    OpenReadHttpFile(out lFileStream);
-                    if (lFileStream != null)
+                    lRequest.Method = System.Net.WebRequestMethods.Http.Head;
+                    using (System.Net.HttpWebResponse lResponse = (System.Net.HttpWebResponse)lRequest.GetResponse())
                     {
-                        _crc = lCrcCalculator.CalculateChecksum(lFileStream);
-                        _size = lFileStream.Length;
-						lFileStream.Close();
-                    }
-                    else
-                    {
-                        PIS.Ground.Core.LogMgmt.LogManager.WriteLog(PIS.Ground.Core.Data.TraceType.ERROR, "mInitHttpFile returned null file", "PIS.Ground.Core.Data.RemoteFileClass", null, EventIdEnum.GroundCore);
+                        _exists = true;
+                        _fileType = FileTypeEnum.HttpFile;
+
+                        //CalculCRC 
+                        Utility.Crc32 lCrcCalculator = new PIS.Ground.Core.Utility.Crc32();
+
+                        System.IO.Stream lFileStream;
+                        OpenReadHttpFile(out lFileStream, connectionGroupName);
+                        if (lFileStream != null)
+                        {
+                            using (lFileStream)
+                            {
+                                _size = lFileStream.Length;
+                                _crc = lCrcCalculator.CalculateChecksum(lFileStream);
+                            }
+                        }
+                        else
+                        {
+                            PIS.Ground.Core.LogMgmt.LogManager.WriteLog(PIS.Ground.Core.Data.TraceType.ERROR, "mInitHttpFile returned null file", "PIS.Ground.Core.Data.RemoteFileClass", null, EventIdEnum.GroundCore);
+                        }
                     }
                 }
+                finally
+                {
+                    if (lRequest != null)
+                    {
+                        try
+                        {
+                            lRequest.Abort();
+                        }
+                        catch (NotImplementedException)
+                        {
+                            // Ignore the not implemented exception
+                        }
+                    }
 
+                    if (servicePoint != null)
+                    {
+                        servicePoint.CloseConnectionGroup(connectionGroupName);
+                        servicePoint = null;
+                    }
+                }
             }
             catch (NotSupportedException lEx)
             {
@@ -471,37 +525,58 @@ namespace PIS.Ground.Core.Data
         /// Open Ftp file in a MemoryStream for read only. The FtpStream is copied in a MemoryStream.
         /// </summary>
         /// <param name="pStream">The ouput stream.</param>
-        private void OpenReadFtpFile(out System.IO.Stream pStream)
+        /// <param name="connectionGroupName">The group name for the connection</param>
+        private void OpenReadFtpFile(out System.IO.Stream pStream, string connectionGroupName)
         {
             pStream = null;
             try
             {
                 System.Net.FtpWebRequest lRequestFileDl = (System.Net.FtpWebRequest)System.Net.WebRequest.Create(_filePath);
-                lRequestFileDl.Method = System.Net.WebRequestMethods.Ftp.DownloadFile;
-                System.Net.FtpWebResponse lResponseFileDl = (System.Net.FtpWebResponse)lRequestFileDl.GetResponse();
-
-                FileInfo lDestFileInfo = new FileInfo(_destRemoteFile);
-
-                using (System.IO.FileStream lFileStream = lDestFileInfo.OpenWrite())
+                try
                 {
-                    using (System.IO.Stream lStream = lResponseFileDl.GetResponseStream())
+                    lRequestFileDl.ConnectionGroupName = connectionGroupName;
+                    lRequestFileDl.Method = System.Net.WebRequestMethods.Ftp.DownloadFile;
+                    System.Net.FtpWebResponse lResponseFileDl = (System.Net.FtpWebResponse)lRequestFileDl.GetResponse();
+                    try
                     {
-                        int i = 0;
-                        byte[] bytes = new byte[2048];
-                        do
+                        FileInfo lDestFileInfo = new FileInfo(_destRemoteFile);
+
+                        using (System.IO.FileStream lFileStream = lDestFileInfo.OpenWrite())
                         {
-                            i = lStream.Read(bytes, 0, bytes.Length);
-                            lFileStream.Write(bytes, 0, i);
-                        } while (i != 0);
+                            using (System.IO.Stream lStream = lResponseFileDl.GetResponseStream())
+                            {
+                                int i = 0;
+                                byte[] bytes = new byte[2048];
+                                do
+                                {
+                                    i = lStream.Read(bytes, 0, bytes.Length);
+                                    lFileStream.Write(bytes, 0, i);
+                                } while (i != 0);
 
-                        lStream.Close();
+                                lStream.Close();
+                            }
+                            lFileStream.Close();
+                        }
+
+                        pStream = lDestFileInfo.OpenRead();
+                        pStream.Seek(0, System.IO.SeekOrigin.Begin);
                     }
-                    lFileStream.Close();
+                    finally
+                    {
+                        lResponseFileDl.Close();
+                    }
                 }
-                
-                pStream = lDestFileInfo.OpenRead();
-                pStream.Seek(0, System.IO.SeekOrigin.Begin);
-
+                finally
+                {
+                    try
+                    {
+                        lRequestFileDl.Abort();
+                    }
+                    catch (NotImplementedException)
+                    {
+                        // Ignore the not implemented exception
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -513,30 +588,52 @@ namespace PIS.Ground.Core.Data
         /// Open Http file in a MemoryStream for read only. The HttpStream is copied in a MemoryStream.
         /// </summary>
         /// <param name="pStream">The ouput stream.</param>
-        private void OpenReadHttpFile(out System.IO.Stream pStream)
+        /// <param name="connectionGroupName">The connection group name to use for http requests.</param>
+        private void OpenReadHttpFile(out System.IO.Stream pStream, string connectionGroupName)
         {
             pStream = null;
+            FileInfo lDestFileInfo = new FileInfo(_destRemoteFile);
             try
             {
                 System.Net.HttpWebRequest lRequestFileDl = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(_filePath);
-                System.Net.HttpWebResponse lResponseFileDl = (System.Net.HttpWebResponse)lRequestFileDl.GetResponse();
-
-                FileInfo lDestFileInfo = new FileInfo(_destRemoteFile);
-
-                using (System.IO.FileStream lFileStream = lDestFileInfo.OpenWrite())
+                try
                 {
-                    using (System.IO.Stream lStream = lResponseFileDl.GetResponseStream())
+                    lRequestFileDl.ConnectionGroupName = connectionGroupName;
+                    System.Net.HttpWebResponse lResponseFileDl = (System.Net.HttpWebResponse)lRequestFileDl.GetResponse();
+                    try
                     {
-                        int i = 0;
-                        byte[] bytes = new byte[2048];
-                        do
+                        using (System.IO.FileStream lFileStream = lDestFileInfo.OpenWrite())
                         {
-                            i = lStream.Read(bytes, 0, bytes.Length);
-                            lFileStream.Write(bytes, 0, i);
-                        } while (i != 0);
-                        lStream.Close();
+                            using (System.IO.Stream lStream = lResponseFileDl.GetResponseStream())
+                            {
+                                int i = 0;
+                                byte[] bytes = new byte[2048];
+                                do
+                                {
+                                    i = lStream.Read(bytes, 0, bytes.Length);
+                                    lFileStream.Write(bytes, 0, i);
+                                } while (i != 0);
+                                lStream.Close();
+                            }
+                            lFileStream.Close();
+                        }
                     }
-                    lFileStream.Close();
+                    finally
+                    {
+                        lResponseFileDl.Close();
+                    }
+
+                }
+                finally
+                {
+                    try
+                    {
+                        lRequestFileDl.Abort();
+                    }
+                    catch (NotImplementedException)
+                    {
+                        // Ignore the not implemented exception
+                    }
                 }
 
                 pStream = lDestFileInfo.OpenRead();

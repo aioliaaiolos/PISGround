@@ -6,24 +6,19 @@
 //          transmitted or assigned without the prior written authorization of ALSTOM.
 // </copyright>
 //---------------------------------------------------------------------------------------------------
+using System;
+using System.Net;
+using System.ServiceModel;
+using System.Threading;
+using PIS.Ground.Common;
+using PIS.Ground.Core.Common;
+using PIS.Ground.Core.Data;
+using PIS.Ground.Core.LogMgmt;
+using PIS.Ground.Core.SessionMgmt;
+using PIS.Ground.Core.T2G;
+
 namespace PIS.Ground.Session
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.Serialization;
-    using System.ServiceModel;
-    using System.Text;
-    using PIS.Ground.Core.Data;
-    using PIS.Ground.Core.LogMgmt;
-    using PIS.Ground.Core.T2G;
-    using PIS.Ground.Core.SessionMgmt;
-    using System.Configuration;
-    using PIS.Ground.Common;
-    using PIS.Ground.Core.Utility;
-    using PIS.Ground.Core.Common;
-    using System.Threading;
-
     /// <summary>
     /// Session service
     /// </summary>    
@@ -56,6 +51,45 @@ namespace PIS.Ground.Session
             Initialize();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SessionService"/> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="t2gManager">The T2G manager.</param>
+        /// <param name="notificationSender">The notification sender.</param>
+        /// <exception cref="ArgumentNullException">
+        /// sessionManager
+        /// or
+        /// t2gManager
+        /// or
+        /// notificationSender is null.
+        /// </exception>
+        protected SessionService(ISessionManager sessionManager, IT2GManager t2gManager, INotificationSender notificationSender)
+        {
+            if (sessionManager == null)
+            {
+                throw new ArgumentNullException("sessionManager");
+            }
+            else if (t2gManager == null)
+            {
+                throw new ArgumentNullException("t2gManager");
+            }
+            else if (notificationSender == null)
+            {
+                throw new ArgumentNullException("notificationSender");
+            }
+
+            lock (_initializationLock)
+            {
+                Uninitialize();
+                _sessionManager = sessionManager;
+                _t2gManager = t2gManager;
+                _notificationSender = notificationSender;
+                CommonInitialize();
+                _initialized = true;
+            }
+        }
+
         public static void Initialize()
         {
             if (!_initialized)
@@ -68,28 +102,62 @@ namespace PIS.Ground.Session
                         {
                             _sessionManager = new SessionManager();
                             
-                            _sessionManager.StartMonitoringSessions();
 
                             _notificationSender = new NotificationSender(_sessionManager);
 
                             _t2gManager = T2GManagerContainer.T2GManager;
 
-                            _t2gManager.SubscribeToT2GOnlineStatusNotification(
-                                "PIS.Ground.Session.SessionService",
-                                new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline),
-                                true);                            
+                            CommonInitialize();
+
+                            _initialized = true;
                         }
                         catch (System.Exception e)
                         {
                             LogManager.WriteLog(TraceType.ERROR, e.Message, "PIS.Ground.Session.SessionService.Initialize", e, EventIdEnum.Session);
+                            Uninitialize();
                         }
-
-                        _initialized = true;
                     }
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Execute the common logic to initialize this instance.
+        /// </summary>
+        private static void CommonInitialize()
+        {
+            _sessionManager.StartMonitoringSessions();
+            _t2gManager.SubscribeToT2GOnlineStatusNotification(
+                "PIS.Ground.Session.SessionService",
+                new EventHandler<T2GOnlineStatusNotificationArgs>(OnT2GOnlineOffline),
+                true);
+        }
+
+        /// <summary>
+        /// Uninitializes this instance.
+        /// </summary>
+        public static void Uninitialize()
+        {
+            lock (_initializationLock)
+            {
+                _initialized = false;
+
+                if (_sessionManager != null)
+                {
+                    _sessionManager.StopMonitoringSessions();
+                    _sessionManager = null;
+                }
+
+                if (_t2gManager != null)
+                {
+                    _t2gManager.UnsubscribeFromT2GOnlineStatusNotification("PIS.Ground.Session.SessionService");
+                    _t2gManager = null;
+                }
+
+                _notificationSender = null;
+            }
+        }
+
         /// <summary>
         /// Notification received when a T2G is connecting / disconnecting.
         /// </summary>
@@ -115,7 +183,7 @@ namespace PIS.Ground.Session
         /// <returns>session id</returns>
         public Guid Login(string username, string password)
         {
-            SessionManager objSessionMgr = new SessionManager();
+            ISessionManager objSessionMgr = new SessionManager();
             Guid objGuid;
             try
             {
@@ -136,7 +204,7 @@ namespace PIS.Ground.Session
         /// <returns>true if success else false</returns>
         public bool Logout(Guid sessionId)
         {
-            SessionManager objSessionMgr = new SessionManager();
+            ISessionManager objSessionMgr = new SessionManager();
             try
             {
                 string error = objSessionMgr.RemoveSessionID(sessionId);
@@ -164,29 +232,58 @@ namespace PIS.Ground.Session
         /// <returns>true if success else false</returns>
         public bool SetNotificationInformation(Guid sessionId, string notificationURL)
         {
-            SessionManager objSessionMgr = new SessionManager();
+            ISessionManager objSessionMgr = new SessionManager();
             try
             {
-                System.Net.HttpWebRequest lRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(notificationURL); 
-                lRequest.Method = System.Net.WebRequestMethods.Http.Get; 
-                System.Net.HttpWebResponse lResponse = (System.Net.HttpWebResponse)lRequest.GetResponse();
-                if (lResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                string connectionGroupName = Guid.NewGuid().ToString();
+                System.Net.HttpWebRequest lRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(notificationURL);
+                lRequest.ConnectionGroupName = connectionGroupName;
+                ServicePoint servicePoint = lRequest.ServicePoint;
+                try
                 {
-                    string error = objSessionMgr.SetNotificationURL(sessionId, notificationURL);
-                    if (error == string.Empty)
+                    lRequest.Method = System.Net.WebRequestMethods.Http.Get;
+
+                    using (System.Net.HttpWebResponse lResponse = (System.Net.HttpWebResponse)lRequest.GetResponse())
                     {
-                        return true;
-                    }
-                    else
-                    {
-                        LogManager.WriteLog(TraceType.ERROR, "Invalid Session Id", "PIS.Ground.Session.SessionService.SetNotificationInformation()", null, EventIdEnum.Session);
-                        return false;
+                        if (lResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            string error = objSessionMgr.SetNotificationURL(sessionId, notificationURL);
+                            if (error == string.Empty)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                LogManager.WriteLog(TraceType.ERROR, "Invalid Session Id", "PIS.Ground.Session.SessionService.SetNotificationInformation()", null, EventIdEnum.Session);
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            LogManager.WriteLog(TraceType.ERROR, "Invalid Notification URL", "PIS.Ground.Session.SessionService.SetNotificationInformation()", null, EventIdEnum.Session);
+                            return false;
+                        }
                     }
                 }
-                else
+                finally
                 {
-                    LogManager.WriteLog(TraceType.ERROR, "Invalid Notification URL", "PIS.Ground.Session.SessionService.SetNotificationInformation()", null, EventIdEnum.Session);
-                    return false;
+                    if (lRequest != null)
+                    {
+                        try
+                        {
+                            lRequest.Abort();
+                        }
+                        catch (NotImplementedException)
+                        {
+                            // Ignore the not implemented exception
+                        }
+                    }
+
+                    if (servicePoint != null)
+                    {
+                        servicePoint.CloseConnectionGroup(connectionGroupName);
+                        servicePoint = null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -203,7 +300,7 @@ namespace PIS.Ground.Session
         /// <returns>if Valid return true else false</returns>
         public bool IsSessionValid(Guid sessionId)
         {
-            SessionManager objSessionMgr = new SessionManager();
+            ISessionManager objSessionMgr = new SessionManager();
             try
             {
                 return objSessionMgr.IsSessionValid(sessionId);                
