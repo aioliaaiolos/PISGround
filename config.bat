@@ -20,9 +20,9 @@ if "%1"=="" SETLOCAL
 ::=====================================================================================
 :: Fields that need to be updated on every new version - Begin
 ::=====================================================================================
-set VERSION_NUMBER=5.16.10.1
-set SETUP_VERSION=5.16.1001
-SET SETUP_PACKAGE_CODE_GUID={DFE52D62-3515-42AA-A169-F0855252B05C}
+set VERSION_NUMBER=5.16.11.0
+set SETUP_VERSION=5.16.1100
+SET SETUP_PACKAGE_CODE_GUID={44DB74DA-41C3-4DC6-AB89-DFEBE73AF7ED}
 :: The setup product code does not need to be changed because PIS-Ground does not support
 :: multiple installation on same machine.
 
