@@ -662,12 +662,12 @@ namespace DataPackageTests
                 }
                 catch
                 {
-                    if (++count > 8)
+                    if (++count > 4)
                     {
                         throw;
                     }
 
-                    Thread.Sleep(250);
+                    Thread.Sleep(100);
                 }
             } while (!isOk);
         }

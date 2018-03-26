@@ -113,7 +113,7 @@
   </wsdl:binding>
   <wsdl:service name="MissionService">
     <wsdl:port name="BasicHttpBinding_IMissionService" binding="tns:BasicHttpBinding_IMissionService">
-      <soap:address location="http://alstom-ground-pis-server/Mission/MissionService.svc" />
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
