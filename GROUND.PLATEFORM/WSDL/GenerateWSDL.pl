@@ -89,7 +89,7 @@ sub process()
 		
 		if (/address location="http:\/\/(.*?)\//)
 		{
-			s/address location="http:\/\/(.*?)\//address location="http:\/\/alstom-ground-pis-server\//;
+			s/address location="http:\/\/(.*?)\//address location="http:\/\/win-rrsvoanoagi.adetel.com\//;
 		}
 		print OUT "$_";
 	}

@@ -1,0 +1,558 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/" />
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage1.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage" />
+  <xs:element name="uploadDataPackages">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="pFilesURLs" nillable="true" type="q1:ArrayOfstring" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="uploadDataPackagesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="uploadDataPackagesResult" nillable="true" type="q2:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="DataPackageResult">
+    <xs:sequence>
+      <xs:element xmlns:q3="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="error_code" type="q3:DataPackageErrorEnum" />
+      <xs:element minOccurs="0" name="reqId" type="ser:guid" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q4="http://alstom.com/pacis/pis/ground/datapackage/" name="DataPackageResult" nillable="true" type="q4:DataPackageResult" />
+  <xs:simpleType name="DataPackageErrorEnum">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ERROR" />
+      <xs:enumeration value="REQUEST_ACCEPTED" />
+      <xs:enumeration value="INVALID_SESSION_ID" />
+      <xs:enumeration value="REMOTEDATASTORE_NOT_ACCESSIBLE" />
+      <xs:enumeration value="T2G_SERVER_OFFLINE" />
+      <xs:enumeration value="INVALID_BASELINE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">10</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_MISSION_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">11</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_INFOTAINMENT_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">12</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_LMT_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">13</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_BASE_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">14</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ELEMENT_ID_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">20</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_MISSION_ID">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">21</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SERVICE_INFO_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">22</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_EXPIRATION_DATEANDTIME">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">30</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="FILE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">40</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PATH">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">41</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="FILE_CURRENTLY_DOWNLOADING">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">42</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_TRANSFER_MODE">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">50</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_TIMEOUT">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">51</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BASELINE_IS_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">61</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SOME_BASELINES_ARE_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">62</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BASELINE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">63</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_IS_USED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">70</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_IS_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">71</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_INVALID_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">72</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">73</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q5="http://alstom.com/pacis/pis/ground/datapackage/" name="DataPackageErrorEnum" nillable="true" type="q5:DataPackageErrorEnum" />
+  <xs:element name="defineNewBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q6="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="pBLDef" nillable="true" type="q6:BaselineDefinition" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="BaselineDefinition">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BaselineCreationDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="BaselineDescription" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="BaselineVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LMTDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISBaseDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISMissionDataPackageVersion" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q7="http://alstom.com/pacis/pis/ground/datapackage/" name="BaselineDefinition" nillable="true" type="q7:BaselineDefinition" />
+  <xs:element name="defineNewBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="defineNewBaselineResult" nillable="true" type="q8:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteBaselineDefinition">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="pVersion" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteBaselineDefinitionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q9="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="deleteBaselineDefinitionResult" type="q9:DataPackageErrorEnum" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementDataList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementDataListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q10="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="GetAvailableElementDataListResult" nillable="true" type="q10:DataPackageResult" />
+        <xs:element xmlns:q11="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementDataList" nillable="true" type="q11:ElementAvailableElementDataList" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignCurrentBaselineFromElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignCurrentBaselineFromElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q12="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="unassignCurrentBaselineFromElementResult" type="q12:DataPackageErrorEnum" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignFutureBaselineFromElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignFutureBaselineFromElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q13="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="unassignFutureBaselineFromElementResult" type="q13:DataPackageErrorEnum" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getDataPackagesVersionsList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q14="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="pPackageType" type="q14:DataPackageType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="DataPackageType">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PISBASE" />
+      <xs:enumeration value="PISMISSION" />
+      <xs:enumeration value="PISINFOTAINMENT" />
+      <xs:enumeration value="LMT" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q15="http://alstom.com/pacis/pis/ground/datapackage/" name="DataPackageType" nillable="true" type="q15:DataPackageType" />
+  <xs:element name="getDataPackagesVersionsListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q16="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="getDataPackagesVersionsListResult" type="q16:DataPackageErrorEnum" />
+        <xs:element xmlns:q17="http://alstom.com/pacis/pis/ground/datapackage" minOccurs="0" name="pVersionsList" nillable="true" type="q17:DataPackagesVersionsList" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteDataPackage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q18="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="pPackageType" type="q18:DataPackageType" />
+        <xs:element minOccurs="0" name="pPackageVersion" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pForceDeleting" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteDataPackageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q19="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="deleteDataPackageResult" nillable="true" type="q19:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="removeBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element minOccurs="0" name="pVersion" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="removeBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q20="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="removeBaselineResult" nillable="true" type="q20:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getBaselinesList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q21="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="pListType" type="q21:BaselinesListType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="BaselinesListType">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/" />
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ALL" />
+      <xs:enumeration value="DEFINED" />
+      <xs:enumeration value="UNDEFINED" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element xmlns:q22="http://alstom.com/pacis/pis/ground/datapackage/" name="BaselinesListType" nillable="true" type="q22:BaselinesListType" />
+  <xs:element name="getBaselinesListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q23="http://alstom.com/pacis/pis/ground/datapackage" minOccurs="0" name="getBaselinesListResult" nillable="true" type="q23:GetBaselineListResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfBaselineDefinition">
+    <xs:sequence>
+      <xs:element xmlns:q24="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" maxOccurs="unbounded" name="BaselineDefinition" nillable="true" type="q24:BaselineDefinition" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q25="http://alstom.com/pacis/pis/ground/datapackage/" name="ArrayOfBaselineDefinition" nillable="true" type="q25:ArrayOfBaselineDefinition" />
+  <xs:element name="getAddresseesDataPackagesBaselines">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q26="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pTargetAddress" nillable="true" type="q26:TargetAddressType" />
+        <xs:element xmlns:q27="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q27:TargetAddressType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getAddresseesDataPackagesBaselinesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q28="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="getAddresseesDataPackagesBaselinesResult" nillable="true" type="q28:GetAdresseesDataPackageBaselinesResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="GetAdresseesDataPackageBaselinesResult">
+    <xs:sequence>
+      <xs:element xmlns:q29="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="ElementDesc" nillable="true" type="q29:ArrayOfElementDescription" />
+      <xs:element xmlns:q30="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="error_code" type="q30:DataPackageErrorEnum" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q31="http://alstom.com/pacis/pis/ground/datapackage/" name="GetAdresseesDataPackageBaselinesResult" nillable="true" type="q31:GetAdresseesDataPackageBaselinesResult" />
+  <xs:complexType name="ArrayOfElementDescription">
+    <xs:sequence>
+      <xs:element xmlns:q32="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" maxOccurs="unbounded" name="ElementDescription" nillable="true" type="q32:ElementDescription" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q33="http://alstom.com/pacis/pis/ground/datapackage/" name="ArrayOfElementDescription" nillable="true" type="q33:ArrayOfElementDescription" />
+  <xs:complexType name="ElementDescription">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AssignedCurrentBaseline" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AssignedCurrentBaselineExpirationDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="AssignedFutureBaseline" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AssignedFutureBaselineActivationDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="AssignedFutureBaselineExpirationDate" type="xs:dateTime" />
+      <xs:element xmlns:q34="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="ElementArchivedBaseline" nillable="true" type="q34:ElementBaseline" />
+      <xs:element minOccurs="0" name="ElementArchivedBaselineExpirationDate" type="xs:dateTime" />
+      <xs:element xmlns:q35="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="ElementCurrentBaseline" nillable="true" type="q35:ElementBaseline" />
+      <xs:element minOccurs="0" name="ElementCurrentBaselineExpirationDate" type="xs:dateTime" />
+      <xs:element xmlns:q36="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="ElementFutureBaseline" nillable="true" type="q36:ElementBaseline" />
+      <xs:element minOccurs="0" name="ElementFutureBaselineActivationDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="ElementFutureBaselineExpirationDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="ElementID" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="UndefinedBaselineLmtVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="UndefinedBaselinePisBaseVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="UndefinedBaselinePisInfotainmentVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="UndefinedBaselinePisMissionVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="isCurrentBaselineForced" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q37="http://alstom.com/pacis/pis/ground/datapackage/" name="ElementDescription" nillable="true" type="q37:ElementDescription" />
+  <xs:complexType name="ElementBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BaselineDescription" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="BaselineValidity" type="xs:boolean" />
+      <xs:element minOccurs="0" name="BaselineVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LMTDataPackageValidity" type="xs:boolean" />
+      <xs:element minOccurs="0" name="LMTDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISBaseDataPackageValidity" type="xs:boolean" />
+      <xs:element minOccurs="0" name="PISBaseDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageValidity" type="xs:boolean" />
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PISMissionDataPackageValidity" type="xs:boolean" />
+      <xs:element minOccurs="0" name="PISMissionDataPackageVersion" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q38="http://alstom.com/pacis/pis/ground/datapackage/" name="ElementBaseline" nillable="true" type="q38:ElementBaseline" />
+  <xs:element name="assignFutureBaselineToElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q39="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q39:TargetAddressType" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pActDate" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="pExpDate" type="xs:dateTime" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignFutureBaselineToElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q40="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="assignFutureBaselineToElementResult" nillable="true" type="q40:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignCurrentBaselineToElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q41="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q41:TargetAddressType" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pExpDate" type="xs:dateTime" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignCurrentBaselineToElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q42="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="assignCurrentBaselineToElementResult" nillable="true" type="q42:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesFutureBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q43="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q43:TargetAddressType" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesFutureBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q44="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="forceAddresseesFutureBaselineResult" nillable="true" type="q44:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesArchivedBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q45="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q45:TargetAddressType" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesArchivedBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q46="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="forceAddresseesArchivedBaselineResult" nillable="true" type="q46:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="clearAddreeseesForcingStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q47="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q47:TargetAddressType" />
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="clearAddreeseesForcingStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q48="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="clearAddreeseesForcingStatusResult" nillable="true" type="q48:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="distributeBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid" />
+        <xs:element xmlns:q49="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pElementAddress" nillable="true" type="q49:TargetAddressType" />
+        <xs:element xmlns:q50="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="pTargetAddress" nillable="true" type="q50:TargetAddressType" />
+        <xs:element xmlns:q51="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="pBLAttributes" nillable="true" type="q51:BaselineDistributionAttributes" />
+        <xs:element minOccurs="0" name="pIncr" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="BaselineDistributionAttributes">
+    <xs:sequence>
+      <xs:element xmlns:q52="http://alstom.com/pacis/pis/schema/" minOccurs="0" name="TransferMode" type="q52:FileTransferMode" />
+      <xs:element minOccurs="0" name="fileCompression" type="xs:boolean" />
+      <xs:element minOccurs="0" name="priority" type="xs:byte" />
+      <xs:element minOccurs="0" name="transferDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="transferExpirationDate" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element xmlns:q53="http://alstom.com/pacis/pis/ground/datapackage/" name="BaselineDistributionAttributes" nillable="true" type="q53:BaselineDistributionAttributes" />
+  <xs:element name="distributeBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q54="http://alstom.com/pacis/pis/ground/datapackage/" minOccurs="0" name="distributeBaselineResult" nillable="true" type="q54:DataPackageResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

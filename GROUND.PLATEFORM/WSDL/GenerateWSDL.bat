@@ -9,7 +9,7 @@ rem This batch file generates the WSDL files corresponding to the PIS Ground WCF
 @cd DataPackage
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/DataPackage/DataPackageService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -20,7 +20,7 @@ perl ..\GenerateWSDL.pl
 @cd InfotainmentJournaling
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/InfotainmentJournaling/JournalingService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/InfotainmentJournaling/JournalingService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -31,7 +31,7 @@ perl ..\GenerateWSDL.pl
 @cd InstantMessage
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/InstantMessage/InstantMessageService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/InstantMessage/InstantMessageService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -42,7 +42,7 @@ perl ..\GenerateWSDL.pl
 @cd Maintenance
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/Maintenance/MaintenanceService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/Maintenance/MaintenanceService.svc
 perl ..\GenerateWSDL.pl
 cscript RemoveObsoleteMaintenanceMethods.wsf
 @cd ..
@@ -54,7 +54,7 @@ cscript RemoveObsoleteMaintenanceMethods.wsf
 @cd Session
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/Session/SessionService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/Session/SessionService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -65,7 +65,7 @@ perl ..\GenerateWSDL.pl
 @cd Mission
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/Mission/MissionService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -76,7 +76,7 @@ perl ..\GenerateWSDL.pl
 @cd LiveVideoControl
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/LiveVideoControl/LiveVideoControlService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/LiveVideoControl/LiveVideoControlService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 
@@ -87,7 +87,7 @@ perl ..\GenerateWSDL.pl
 @cd RealTime
 @del /Q /F .\*.wsdl
 @del /Q /F .\*.xsd
-..\svcutil.exe /t:metadata http://alstom-ground-pis-server/RealTime/RealTimeService.svc
+..\svcutil.exe /t:metadata http://win-rrsvoanoagi.adetel.com/RealTime/RealTimeService.svc
 perl ..\GenerateWSDL.pl
 @cd ..
 

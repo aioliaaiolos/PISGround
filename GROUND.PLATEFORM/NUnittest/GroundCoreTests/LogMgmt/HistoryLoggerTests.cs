@@ -66,7 +66,7 @@ namespace GroundCoreTests
 
             HistoryLoggerConfiguration.SqlCreateDbConnectionString = "Server=.\\SQLExpress;Integrated security=SSPI;database=master;Connect Timeout=200";
             
-            HistoryLoggerConfiguration.CreateTableScriptPath = _executionPath + "\\..\\..\\..\\..\\" + "Services\\Maintenance\\App_Data\\HistoryLogDataBaseScript.sql";
+            HistoryLoggerConfiguration.CreateTableScriptPath = _executionPath + "\\..\\..\\..\\..\\" + "Services\\Maintenance\\App_Data\\wlad.sql";
 
             HistoryLoggerConfiguration.LogBackupPath = databaseFolderPath;
 

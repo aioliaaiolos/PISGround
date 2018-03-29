@@ -53,7 +53,7 @@
   </wsdl:binding>
   <wsdl:service name="JournalingService">
     <wsdl:port name="BasicHttpBinding_JournalingService" binding="tns:BasicHttpBinding_JournalingService">
-      <soap:address location="http://alstom-ground-pis-server/InfotainmentJournaling/JournalingService.svc" />
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/InfotainmentJournaling/JournalingService.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

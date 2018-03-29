@@ -167,7 +167,7 @@
   </wsdl:binding>
   <wsdl:service name="InstantMessageService">
     <wsdl:port name="BasicHttpBinding_InstantMessage" binding="tns:BasicHttpBinding_InstantMessage">
-      <soap:address location="http://alstom-ground-pis-server/InstantMessage/InstantMessageService.svc" />
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/InstantMessage/InstantMessageService.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

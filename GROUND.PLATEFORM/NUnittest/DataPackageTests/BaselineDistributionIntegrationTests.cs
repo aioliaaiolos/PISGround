@@ -34,7 +34,7 @@ using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLin
 using TaskPhaseEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskPhaseEnum;
 using TaskStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskStateEnum;
 using TaskSubStateEnum = DataPackageTests.T2GServiceInterface.FileTransfer.taskSubStateEnum;
-
+using System.Windows.Forms;
 
 namespace DataPackageTests
 {
@@ -79,6 +79,7 @@ namespace DataPackageTests
         [Test]
         public void DistributeBaselineScenario_Nominal()
         {
+            MessageBox.Show("DistributeBaselineScenario_Nominal()");
             const string FUTURE_VERSION = "1.0.0.0";
             // Common initialization
             CreateT2GServicesStub();
@@ -114,7 +115,7 @@ namespace DataPackageTests
 
             _fileTransferServiceStub.PerformTransferProgression();
 
-            
+            // Probleme
             VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
             while (_fileTransferServiceStub.IsTaskRunning(transferTaskId))
             {

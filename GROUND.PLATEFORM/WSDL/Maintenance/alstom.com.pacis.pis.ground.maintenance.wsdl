@@ -173,7 +173,7 @@
 	</wsdl:binding>
 	<wsdl:service name="MaintenanceService">
 		<wsdl:port name="BasicHttpBinding_IMaintenanceService" binding="tns:BasicHttpBinding_IMaintenanceService">
-			<soap:address location="http://alstom-ground-pis-server/Maintenance/MaintenanceService.svc"/>
+			<soap:address location="http://win-rrsvoanoagi.adetel.com/Maintenance/MaintenanceService.svc"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

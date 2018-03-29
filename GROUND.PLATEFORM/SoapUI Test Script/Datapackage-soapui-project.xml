@@ -1,0 +1,1318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="d1535e9b-c190-4725-8491-02c891fec859" activeEnvironment="Default" name="Datapackage" resourceRoot="" soapui-version="5.4.0" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="182ccea4-c75a-42f6-9fb1-02137fdd5b38" wsaVersion="NONE" name="BasicHttpBinding_DataPackageService" type="wsdl" bindingName="{http://alstom.com/pacis/pis/ground/datapackage/}BasicHttpBinding_DataPackageService" soapVersion="1_1" anonymous="optional" definition="file:/C:/ProjetsGIT/PISGround/GROUND.PLATEFORM/WSDL/DataPackage/alstom.com.pacis.pis.ground.datapackage.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.ground.datapackage.wsdl"><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.ground.datapackage.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="DataPackageService" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/Imports">
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+      <xsd:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/"/>
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.core.data.xsd" namespace="http://alstom.com/pacis/pis/ground/core/data/"/>
+      <xsd:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage1.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="DataPackageService_uploadDataPackages_InputMessage">
+    <wsdl:part name="parameters" element="tns:uploadDataPackages"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_uploadDataPackages_OutputMessage">
+    <wsdl:part name="parameters" element="tns:uploadDataPackagesResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_defineNewBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:defineNewBaseline"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_defineNewBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:defineNewBaselineResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteBaselineDefinition_InputMessage">
+    <wsdl:part name="parameters" element="tns:deleteBaselineDefinition"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteBaselineDefinition_OutputMessage">
+    <wsdl:part name="parameters" element="tns:deleteBaselineDefinitionResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_GetAvailableElementDataList_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementDataList"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_GetAvailableElementDataList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetAvailableElementDataListResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignCurrentBaselineFromElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:unassignCurrentBaselineFromElement"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignCurrentBaselineFromElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:unassignCurrentBaselineFromElementResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignFutureBaselineFromElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:unassignFutureBaselineFromElement"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_unassignFutureBaselineFromElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:unassignFutureBaselineFromElementResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getDataPackagesVersionsList_InputMessage">
+    <wsdl:part name="parameters" element="tns:getDataPackagesVersionsList"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getDataPackagesVersionsList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getDataPackagesVersionsListResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteDataPackage_InputMessage">
+    <wsdl:part name="parameters" element="tns:deleteDataPackage"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_deleteDataPackage_OutputMessage">
+    <wsdl:part name="parameters" element="tns:deleteDataPackageResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_removeBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:removeBaseline"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_removeBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:removeBaselineResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getBaselinesList_InputMessage">
+    <wsdl:part name="parameters" element="tns:getBaselinesList"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getBaselinesList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getBaselinesListResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getAddresseesDataPackagesBaselines_InputMessage">
+    <wsdl:part name="parameters" element="tns:getAddresseesDataPackagesBaselines"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_getAddresseesDataPackagesBaselines_OutputMessage">
+    <wsdl:part name="parameters" element="tns:getAddresseesDataPackagesBaselinesResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignFutureBaselineToElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:assignFutureBaselineToElement"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignFutureBaselineToElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:assignFutureBaselineToElementResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignCurrentBaselineToElement_InputMessage">
+    <wsdl:part name="parameters" element="tns:assignCurrentBaselineToElement"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_assignCurrentBaselineToElement_OutputMessage">
+    <wsdl:part name="parameters" element="tns:assignCurrentBaselineToElementResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesFutureBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesFutureBaseline"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesFutureBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesFutureBaselineResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesArchivedBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesArchivedBaseline"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_forceAddresseesArchivedBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:forceAddresseesArchivedBaselineResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_clearAddreeseesForcingStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:clearAddreeseesForcingStatus"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_clearAddreeseesForcingStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:clearAddreeseesForcingStatusResponse"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_distributeBaseline_InputMessage">
+    <wsdl:part name="parameters" element="tns:distributeBaseline"/>
+  </wsdl:message>
+  <wsdl:message name="DataPackageService_distributeBaseline_OutputMessage">
+    <wsdl:part name="parameters" element="tns:distributeBaselineResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="DataPackageService">
+    <wsdl:operation name="uploadDataPackages">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages" message="tns:DataPackageService_uploadDataPackages_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackagesResponse" message="tns:DataPackageService_uploadDataPackages_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="defineNewBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline" message="tns:DataPackageService_defineNewBaseline_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaselineResponse" message="tns:DataPackageService_defineNewBaseline_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBaselineDefinition">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition" message="tns:DataPackageService_deleteBaselineDefinition_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinitionResponse" message="tns:DataPackageService_deleteBaselineDefinition_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetAvailableElementDataList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList" message="tns:DataPackageService_GetAvailableElementDataList_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataListResponse" message="tns:DataPackageService_GetAvailableElementDataList_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="unassignCurrentBaselineFromElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement" message="tns:DataPackageService_unassignCurrentBaselineFromElement_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElementResponse" message="tns:DataPackageService_unassignCurrentBaselineFromElement_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="unassignFutureBaselineFromElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement" message="tns:DataPackageService_unassignFutureBaselineFromElement_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElementResponse" message="tns:DataPackageService_unassignFutureBaselineFromElement_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="getDataPackagesVersionsList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList" message="tns:DataPackageService_getDataPackagesVersionsList_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsListResponse" message="tns:DataPackageService_getDataPackagesVersionsList_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="deleteDataPackage">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage" message="tns:DataPackageService_deleteDataPackage_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackageResponse" message="tns:DataPackageService_deleteDataPackage_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="removeBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline" message="tns:DataPackageService_removeBaseline_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaselineResponse" message="tns:DataPackageService_removeBaseline_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="getBaselinesList">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList" message="tns:DataPackageService_getBaselinesList_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesListResponse" message="tns:DataPackageService_getBaselinesList_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="getAddresseesDataPackagesBaselines">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines" message="tns:DataPackageService_getAddresseesDataPackagesBaselines_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselinesResponse" message="tns:DataPackageService_getAddresseesDataPackagesBaselines_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="assignFutureBaselineToElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement" message="tns:DataPackageService_assignFutureBaselineToElement_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElementResponse" message="tns:DataPackageService_assignFutureBaselineToElement_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="assignCurrentBaselineToElement">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement" message="tns:DataPackageService_assignCurrentBaselineToElement_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElementResponse" message="tns:DataPackageService_assignCurrentBaselineToElement_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesFutureBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline" message="tns:DataPackageService_forceAddresseesFutureBaseline_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaselineResponse" message="tns:DataPackageService_forceAddresseesFutureBaseline_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesArchivedBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline" message="tns:DataPackageService_forceAddresseesArchivedBaseline_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaselineResponse" message="tns:DataPackageService_forceAddresseesArchivedBaseline_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="clearAddreeseesForcingStatus">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus" message="tns:DataPackageService_clearAddreeseesForcingStatus_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatusResponse" message="tns:DataPackageService_clearAddreeseesForcingStatus_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="distributeBaseline">
+      <wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline" message="tns:DataPackageService_distributeBaseline_InputMessage"/>
+      <wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaselineResponse" message="tns:DataPackageService_distributeBaseline_OutputMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_DataPackageService" type="tns:DataPackageService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="uploadDataPackages">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="defineNewBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBaselineDefinition">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAvailableElementDataList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unassignCurrentBaselineFromElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unassignFutureBaselineFromElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDataPackagesVersionsList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteDataPackage">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="removeBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getBaselinesList">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAddresseesDataPackagesBaselines">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="assignFutureBaselineToElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="assignCurrentBaselineToElement">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesFutureBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="forceAddresseesArchivedBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="clearAddreeseesForcingStatus">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="distributeBaseline">
+      <soap:operation soapAction="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DataPackageService">
+    <wsdl:port name="BasicHttpBinding_DataPackageService" binding="tns:BasicHttpBinding_DataPackageService">
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.ground.datapackage.xsd</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.schema.xsd" namespace="http://alstom.com/pacis/pis/schema/"/>
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage1.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage"/>
+  <xs:element name="uploadDataPackages">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pFilesURLs" nillable="true" type="q1:ArrayOfstring" xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="uploadDataPackagesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="uploadDataPackagesResult" nillable="true" type="q2:DataPackageResult" xmlns:q2="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="DataPackageResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="error_code" type="q3:DataPackageErrorEnum" xmlns:q3="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="reqId" type="ser:guid"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DataPackageResult" nillable="true" type="q4:DataPackageResult" xmlns:q4="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:simpleType name="DataPackageErrorEnum">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ERROR"/>
+      <xs:enumeration value="REQUEST_ACCEPTED"/>
+      <xs:enumeration value="INVALID_SESSION_ID"/>
+      <xs:enumeration value="REMOTEDATASTORE_NOT_ACCESSIBLE"/>
+      <xs:enumeration value="T2G_SERVER_OFFLINE"/>
+      <xs:enumeration value="INVALID_BASELINE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">10</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_MISSION_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">11</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_INFOTAINMENT_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">12</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_LMT_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">13</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PIS_BASE_DATA_PACKAGE_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">14</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ELEMENT_ID_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">20</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_MISSION_ID">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">21</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SERVICE_INFO_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">22</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_EXPIRATION_DATEANDTIME">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">30</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="FILE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">40</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_PATH">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">41</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="FILE_CURRENTLY_DOWNLOADING">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">42</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_TRANSFER_MODE">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">50</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INVALID_TIMEOUT">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">51</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BASELINE_IS_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">61</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SOME_BASELINES_ARE_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">62</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BASELINE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">63</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_IS_USED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">70</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_IS_ASSIGNED">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">71</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_INVALID_VERSION">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">72</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATA_PACKAGE_NOT_FOUND">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">73</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="DataPackageErrorEnum" nillable="true" type="q5:DataPackageErrorEnum" xmlns:q5="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="defineNewBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pBLDef" nillable="true" type="q6:BaselineDefinition" xmlns:q6="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="BaselineDefinition">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BaselineCreationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="BaselineDescription" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="BaselineVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="LMTDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISBaseDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISMissionDataPackageVersion" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BaselineDefinition" nillable="true" type="q7:BaselineDefinition" xmlns:q7="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="defineNewBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="defineNewBaselineResult" nillable="true" type="q8:DataPackageResult" xmlns:q8="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteBaselineDefinition">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pVersion" nillable="true" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteBaselineDefinitionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deleteBaselineDefinitionResult" type="q9:DataPackageErrorEnum" xmlns:q9="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementDataList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementDataListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="GetAvailableElementDataListResult" nillable="true" type="q10:DataPackageResult" xmlns:q10="http://alstom.com/pacis/pis/ground/datapackage/"/>
+        <xs:element minOccurs="0" name="pElementDataList" nillable="true" type="q11:ElementAvailableElementDataList" xmlns:q11="http://alstom.com/pacis/pis/schema/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignCurrentBaselineFromElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignCurrentBaselineFromElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="unassignCurrentBaselineFromElementResult" type="q12:DataPackageErrorEnum" xmlns:q12="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignFutureBaselineFromElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="unassignFutureBaselineFromElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="unassignFutureBaselineFromElementResult" type="q13:DataPackageErrorEnum" xmlns:q13="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getDataPackagesVersionsList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pPackageType" type="q14:DataPackageType" xmlns:q14="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="DataPackageType">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PISBASE"/>
+      <xs:enumeration value="PISMISSION"/>
+      <xs:enumeration value="PISINFOTAINMENT"/>
+      <xs:enumeration value="LMT"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="DataPackageType" nillable="true" type="q15:DataPackageType" xmlns:q15="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="getDataPackagesVersionsListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="getDataPackagesVersionsListResult" type="q16:DataPackageErrorEnum" xmlns:q16="http://alstom.com/pacis/pis/ground/datapackage/"/>
+        <xs:element minOccurs="0" name="pVersionsList" nillable="true" type="q17:DataPackagesVersionsList" xmlns:q17="http://alstom.com/pacis/pis/ground/datapackage"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteDataPackage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pPackageType" type="q18:DataPackageType" xmlns:q18="http://alstom.com/pacis/pis/ground/datapackage/"/>
+        <xs:element minOccurs="0" name="pPackageVersion" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pForceDeleting" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="deleteDataPackageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deleteDataPackageResult" nillable="true" type="q19:DataPackageResult" xmlns:q19="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="removeBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pVersion" nillable="true" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="removeBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="removeBaselineResult" nillable="true" type="q20:DataPackageResult" xmlns:q20="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getBaselinesList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pListType" type="q21:BaselinesListType" xmlns:q21="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="BaselinesListType">
+    <xs:annotation>
+      <xs:appinfo>
+        <ActualType Name="unsignedInt" Namespace="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2003/10/Serialization/"/>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ALL"/>
+      <xs:enumeration value="DEFINED"/>
+      <xs:enumeration value="UNDEFINED"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="BaselinesListType" nillable="true" type="q22:BaselinesListType" xmlns:q22="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="getBaselinesListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="getBaselinesListResult" nillable="true" type="q23:GetBaselineListResult" xmlns:q23="http://alstom.com/pacis/pis/ground/datapackage"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ArrayOfBaselineDefinition">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="BaselineDefinition" nillable="true" type="q24:BaselineDefinition" xmlns:q24="http://alstom.com/pacis/pis/ground/datapackage/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfBaselineDefinition" nillable="true" type="q25:ArrayOfBaselineDefinition" xmlns:q25="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="getAddresseesDataPackagesBaselines">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pTargetAddress" nillable="true" type="q26:TargetAddressType" xmlns:q26="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q27:TargetAddressType" xmlns:q27="http://alstom.com/pacis/pis/schema/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getAddresseesDataPackagesBaselinesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="getAddresseesDataPackagesBaselinesResult" nillable="true" type="q28:GetAdresseesDataPackageBaselinesResult" xmlns:q28="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="GetAdresseesDataPackageBaselinesResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementDesc" nillable="true" type="q29:ArrayOfElementDescription" xmlns:q29="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="error_code" type="q30:DataPackageErrorEnum" xmlns:q30="http://alstom.com/pacis/pis/ground/datapackage/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GetAdresseesDataPackageBaselinesResult" nillable="true" type="q31:GetAdresseesDataPackageBaselinesResult" xmlns:q31="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:complexType name="ArrayOfElementDescription">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ElementDescription" nillable="true" type="q32:ElementDescription" xmlns:q32="http://alstom.com/pacis/pis/ground/datapackage/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfElementDescription" nillable="true" type="q33:ArrayOfElementDescription" xmlns:q33="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:complexType name="ElementDescription">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AssignedCurrentBaseline" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="AssignedCurrentBaselineExpirationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="AssignedFutureBaseline" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="AssignedFutureBaselineActivationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="AssignedFutureBaselineExpirationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="ElementArchivedBaseline" nillable="true" type="q34:ElementBaseline" xmlns:q34="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="ElementArchivedBaselineExpirationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="ElementCurrentBaseline" nillable="true" type="q35:ElementBaseline" xmlns:q35="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="ElementCurrentBaselineExpirationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="ElementFutureBaseline" nillable="true" type="q36:ElementBaseline" xmlns:q36="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="ElementFutureBaselineActivationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="ElementFutureBaselineExpirationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="ElementID" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="UndefinedBaselineLmtVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="UndefinedBaselinePisBaseVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="UndefinedBaselinePisInfotainmentVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="UndefinedBaselinePisMissionVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="isCurrentBaselineForced" type="xs:boolean"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementDescription" nillable="true" type="q37:ElementDescription" xmlns:q37="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:complexType name="ElementBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BaselineDescription" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="BaselineValidity" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="BaselineVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="LMTDataPackageValidity" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="LMTDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISBaseDataPackageValidity" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="PISBaseDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageValidity" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="PISInfotainmentDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="PISMissionDataPackageValidity" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="PISMissionDataPackageVersion" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementBaseline" nillable="true" type="q38:ElementBaseline" xmlns:q38="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="assignFutureBaselineToElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q39:TargetAddressType" xmlns:q39="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pActDate" type="xs:dateTime"/>
+        <xs:element minOccurs="0" name="pExpDate" type="xs:dateTime"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignFutureBaselineToElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="assignFutureBaselineToElementResult" nillable="true" type="q40:DataPackageResult" xmlns:q40="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignCurrentBaselineToElement">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q41:TargetAddressType" xmlns:q41="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pBLVersion" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pExpDate" type="xs:dateTime"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="assignCurrentBaselineToElementResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="assignCurrentBaselineToElementResult" nillable="true" type="q42:DataPackageResult" xmlns:q42="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesFutureBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q43:TargetAddressType" xmlns:q43="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesFutureBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="forceAddresseesFutureBaselineResult" nillable="true" type="q44:DataPackageResult" xmlns:q44="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesArchivedBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q45:TargetAddressType" xmlns:q45="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forceAddresseesArchivedBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="forceAddresseesArchivedBaselineResult" nillable="true" type="q46:DataPackageResult" xmlns:q46="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="clearAddreeseesForcingStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q47:TargetAddressType" xmlns:q47="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pElementId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="pReqTimeout" type="xs:unsignedInt"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="clearAddreeseesForcingStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="clearAddreeseesForcingStatusResult" nillable="true" type="q48:DataPackageResult" xmlns:q48="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="distributeBaseline">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pSessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="pElementAddress" nillable="true" type="q49:TargetAddressType" xmlns:q49="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pTargetAddress" nillable="true" type="q50:TargetAddressType" xmlns:q50="http://alstom.com/pacis/pis/schema/"/>
+        <xs:element minOccurs="0" name="pBLAttributes" nillable="true" type="q51:BaselineDistributionAttributes" xmlns:q51="http://alstom.com/pacis/pis/ground/datapackage/"/>
+        <xs:element minOccurs="0" name="pIncr" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="BaselineDistributionAttributes">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="TransferMode" type="q52:FileTransferMode" xmlns:q52="http://alstom.com/pacis/pis/schema/"/>
+      <xs:element minOccurs="0" name="fileCompression" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="priority" type="xs:byte"/>
+      <xs:element minOccurs="0" name="transferDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="transferExpirationDate" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BaselineDistributionAttributes" nillable="true" type="q53:BaselineDistributionAttributes" xmlns:q53="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:element name="distributeBaselineResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="distributeBaselineResult" nillable="true" type="q54:DataPackageResult" xmlns:q54="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\schemas.microsoft.com.2003.10.Serialization.xsd</con:url><con:content><![CDATA[<xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="anyType" nillable="true" type="xs:anyType"/>
+  <xs:element name="anyURI" nillable="true" type="xs:anyURI"/>
+  <xs:element name="base64Binary" nillable="true" type="xs:base64Binary"/>
+  <xs:element name="boolean" nillable="true" type="xs:boolean"/>
+  <xs:element name="byte" nillable="true" type="xs:byte"/>
+  <xs:element name="dateTime" nillable="true" type="xs:dateTime"/>
+  <xs:element name="decimal" nillable="true" type="xs:decimal"/>
+  <xs:element name="double" nillable="true" type="xs:double"/>
+  <xs:element name="float" nillable="true" type="xs:float"/>
+  <xs:element name="int" nillable="true" type="xs:int"/>
+  <xs:element name="long" nillable="true" type="xs:long"/>
+  <xs:element name="QName" nillable="true" type="xs:QName"/>
+  <xs:element name="short" nillable="true" type="xs:short"/>
+  <xs:element name="string" nillable="true" type="xs:string"/>
+  <xs:element name="unsignedByte" nillable="true" type="xs:unsignedByte"/>
+  <xs:element name="unsignedInt" nillable="true" type="xs:unsignedInt"/>
+  <xs:element name="unsignedLong" nillable="true" type="xs:unsignedLong"/>
+  <xs:element name="unsignedShort" nillable="true" type="xs:unsignedShort"/>
+  <xs:element name="char" nillable="true" type="tns:char"/>
+  <xs:simpleType name="char">
+    <xs:restriction base="xs:int"/>
+  </xs:simpleType>
+  <xs:element name="duration" nillable="true" type="tns:duration"/>
+  <xs:simpleType name="duration">
+    <xs:restriction base="xs:duration">
+      <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?"/>
+      <xs:minInclusive value="-P10675199DT2H48M5.4775808S"/>
+      <xs:maxInclusive value="P10675199DT2H48M5.4775807S"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="guid" nillable="true" type="tns:guid"/>
+  <xs:simpleType name="guid">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="FactoryType" type="xs:QName"/>
+  <xs:attribute name="Id" type="xs:ID"/>
+  <xs:attribute name="Ref" type="xs:IDREF"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="ArrayOfstring">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfstring" nillable="true" type="tns:ArrayOfstring"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.schema.xsd</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/" xmlns:tns="http://alstom.com/pacis/pis/schema/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.core.data.xsd" namespace="http://alstom.com/pacis/pis/ground/core/data/"/>
+  <xs:complexType name="ElementAvailableElementDataList">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="Element{0}List" Namespace="http://alstom.com/pacis/pis/schema/" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="AvailableElementData" Namespace="http://alstom.com/pacis/pis/schema/"/>
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AvailableElementData" nillable="true" type="tns:AvailableElementData"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementAvailableElementDataList" nillable="true" type="tns:ElementAvailableElementDataList"/>
+  <xs:complexType name="AvailableElementData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementNumber" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="LmtPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionCommercialNumber" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionState" type="q1:MissionStateEnum" xmlns:q1="http://alstom.com/pacis/pis/ground/core/data/"/>
+      <xs:element minOccurs="0" name="OnlineStatus" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="PisBaselineData" nillable="true" type="tns:PisBaseline"/>
+      <xs:element minOccurs="0" name="PisBasicPackageVersion" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AvailableElementData" nillable="true" type="tns:AvailableElementData"/>
+  <xs:complexType name="PisBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArchivedValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisMissionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentExpirationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentForcedOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisMissionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureActivationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureExpirationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisMissionOut" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PisBaseline" nillable="true" type="tns:PisBaseline"/>
+  <xs:complexType name="TargetAddressType">
+    <xs:sequence>
+      <xs:element name="Id" nillable="true" type="xs:string"/>
+      <xs:element name="Type" type="tns:AddressTypeEnum"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="TargetAddressType" nillable="true" type="tns:TargetAddressType"/>
+  <xs:simpleType name="AddressTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Element"/>
+      <xs:enumeration value="MissionOperatorCode"/>
+      <xs:enumeration value="MissionCode"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="AddressTypeEnum" nillable="true" type="tns:AddressTypeEnum"/>
+  <xs:simpleType name="FileTransferMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LowBandwidth"/>
+      <xs:enumeration value="HighBandwidth"/>
+      <xs:enumeration value="AnyBandwidth"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="FileTransferMode" nillable="true" type="tns:FileTransferMode"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.ground.core.data.xsd</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/core/data/" xmlns:tns="http://alstom.com/pacis/pis/ground/core/data/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="MissionStateEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MI"/>
+      <xs:enumeration value="ME"/>
+      <xs:enumeration value="NI"/>
+      <xs:enumeration value="MIE"/>
+      <xs:enumeration value="DEG"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="MissionStateEnum" nillable="true" type="tns:MissionStateEnum"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:\C:\ProjetsGIT\PISGround\GROUND.PLATEFORM\WSDL\DataPackage\alstom.com.pacis.pis.ground.datapackage1.xsd</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/datapackage" xmlns:tns="http://alstom.com/pacis/pis/ground/datapackage" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation=".\alstom.com.pacis.pis.ground.datapackage.xsd" namespace="http://alstom.com/pacis/pis/ground/datapackage/"/>
+  <xs:import schemaLocation=".\schemas.microsoft.com.2003.10.Serialization.Arrays.xsd" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+  <xs:complexType name="DataPackagesVersionsList">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="DataPackageType" type="q1:DataPackageType" xmlns:q1="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="VersionsList" nillable="true" type="q2:ArrayOfstring" xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DataPackagesVersionsList" nillable="true" type="tns:DataPackagesVersionsList"/>
+  <xs:complexType name="GetBaselineListResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="baselineDef" nillable="true" type="q3:ArrayOfBaselineDefinition" xmlns:q3="http://alstom.com/pacis/pis/ground/datapackage/"/>
+      <xs:element minOccurs="0" name="error_code" type="q4:DataPackageErrorEnum" xmlns:q4="http://alstom.com/pacis/pis/ground/datapackage/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GetBaselineListResult" nillable="true" type="tns:GetBaselineListResult"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint></con:endpoints><con:operation id="257b29b7-1b1e-4ac4-9bcf-27086f1d93a4" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement" name="assignCurrentBaselineToElement" bindingOperationName="assignCurrentBaselineToElement" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="773757aa-6a0e-48a9-bcbd-523104bad1c8" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:assignCurrentBaselineToElement>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+         <!--Optional:-->\r
+         <dat:pBLVersion>?</dat:pBLVersion>\r
+         <!--Optional:-->\r
+         <dat:pExpDate>?</dat:pExpDate>\r
+      </dat:assignCurrentBaselineToElement>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignCurrentBaselineToElement"/></con:call></con:operation><con:operation id="a5b4aa79-7774-4668-9e0f-f23a2e6b6ee0" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement" name="assignFutureBaselineToElement" bindingOperationName="assignFutureBaselineToElement" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="97bf2df0-69ec-42db-a390-3ede21bd38b3" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:assignFutureBaselineToElement>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+         <!--Optional:-->\r
+         <dat:pBLVersion>?</dat:pBLVersion>\r
+         <!--Optional:-->\r
+         <dat:pActDate>?</dat:pActDate>\r
+         <!--Optional:-->\r
+         <dat:pExpDate>?</dat:pExpDate>\r
+      </dat:assignFutureBaselineToElement>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/assignFutureBaselineToElement"/></con:call></con:operation><con:operation id="e1e749b7-e299-418c-9606-e1f40ed93d4c" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus" name="clearAddreeseesForcingStatus" bindingOperationName="clearAddreeseesForcingStatus" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="cc0ccf3b-e122-45d7-bbad-9749bfea0c5a" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:clearAddreeseesForcingStatus>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+         <!--Optional:-->\r
+         <dat:pReqTimeout>?</dat:pReqTimeout>\r
+      </dat:clearAddreeseesForcingStatus>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/clearAddreeseesForcingStatus"/></con:call></con:operation><con:operation id="816faf98-8343-49b5-bbee-1d8107eecca5" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline" name="defineNewBaseline" bindingOperationName="defineNewBaseline" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="40fda1b4-90d1-45f4-922c-d2c695e22b6a" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:defineNewBaseline>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pBLDef>\r
+            <!--Optional:-->\r
+            <dat:BaselineCreationDate>?</dat:BaselineCreationDate>\r
+            <!--Optional:-->\r
+            <dat:BaselineDescription>?</dat:BaselineDescription>\r
+            <!--Optional:-->\r
+            <dat:BaselineVersion>?</dat:BaselineVersion>\r
+            <!--Optional:-->\r
+            <dat:LMTDataPackageVersion>?</dat:LMTDataPackageVersion>\r
+            <!--Optional:-->\r
+            <dat:PISBaseDataPackageVersion>?</dat:PISBaseDataPackageVersion>\r
+            <!--Optional:-->\r
+            <dat:PISInfotainmentDataPackageVersion>?</dat:PISInfotainmentDataPackageVersion>\r
+            <!--Optional:-->\r
+            <dat:PISMissionDataPackageVersion>?</dat:PISMissionDataPackageVersion>\r
+         </dat:pBLDef>\r
+      </dat:defineNewBaseline>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/defineNewBaseline"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation id="6db3232d-d8d4-47e8-bb12-43dd7a3f23a3" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition" name="deleteBaselineDefinition" bindingOperationName="deleteBaselineDefinition" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="62a6ff50-cf63-4e70-97b6-38a09eb42c6f" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:deleteBaselineDefinition>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pVersion>?</dat:pVersion>\r
+      </dat:deleteBaselineDefinition>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteBaselineDefinition"/></con:call></con:operation><con:operation id="e96b426b-2b7d-44c5-a358-5c6d545e18ef" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage" name="deleteDataPackage" bindingOperationName="deleteDataPackage" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="841d6d82-32b2-442e-9a3b-9d0b1812d3a3" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:deleteDataPackage>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pPackageType>?</dat:pPackageType>\r
+         <!--Optional:-->\r
+         <dat:pPackageVersion>?</dat:pPackageVersion>\r
+         <!--Optional:-->\r
+         <dat:pForceDeleting>?</dat:pForceDeleting>\r
+      </dat:deleteDataPackage>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/deleteDataPackage"/></con:call></con:operation><con:operation id="b5dcae70-9eaa-4825-982c-f8897c722ecd" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline" name="distributeBaseline" bindingOperationName="distributeBaseline" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="f2b712b6-f600-4153-94fb-52ef8b983dd8" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:distributeBaseline>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pTargetAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pTargetAddress>\r
+         <!--Optional:-->\r
+         <dat:pBLAttributes>\r
+            <!--Optional:-->\r
+            <dat:TransferMode>?</dat:TransferMode>\r
+            <!--Optional:-->\r
+            <dat:fileCompression>?</dat:fileCompression>\r
+            <!--Optional:-->\r
+            <dat:priority>?</dat:priority>\r
+            <!--Optional:-->\r
+            <dat:transferDate>?</dat:transferDate>\r
+            <!--Optional:-->\r
+            <dat:transferExpirationDate>?</dat:transferExpirationDate>\r
+         </dat:pBLAttributes>\r
+         <!--Optional:-->\r
+         <dat:pIncr>?</dat:pIncr>\r
+      </dat:distributeBaseline>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/distributeBaseline"/></con:call></con:operation><con:operation id="c8a66219-4074-4262-b208-97b32c11362e" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline" name="forceAddresseesArchivedBaseline" bindingOperationName="forceAddresseesArchivedBaseline" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="23bd2cb9-ff1e-4d9e-9805-78b431fecfd7" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:forceAddresseesArchivedBaseline>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+         <!--Optional:-->\r
+         <dat:pReqTimeout>?</dat:pReqTimeout>\r
+      </dat:forceAddresseesArchivedBaseline>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesArchivedBaseline"/></con:call></con:operation><con:operation id="75d12cf9-2afd-4028-a61d-376993bf84cf" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline" name="forceAddresseesFutureBaseline" bindingOperationName="forceAddresseesFutureBaseline" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="c829f1d4-7c16-4048-a76d-c67653dad13c" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:forceAddresseesFutureBaseline>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+         <!--Optional:-->\r
+         <dat:pReqTimeout>?</dat:pReqTimeout>\r
+      </dat:forceAddresseesFutureBaseline>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/forceAddresseesFutureBaseline"/></con:call></con:operation><con:operation id="ea88b640-9a42-4328-964d-3fc9bc972942" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines" name="getAddresseesDataPackagesBaselines" bindingOperationName="getAddresseesDataPackagesBaselines" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="6bed24bc-55eb-48b3-8270-b8d32435f2c1" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:sch="http://alstom.com/pacis/pis/schema/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:getAddresseesDataPackagesBaselines>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pTargetAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pTargetAddress>\r
+         <!--Optional:-->\r
+         <dat:pElementAddress>\r
+            <sch:Id>?</sch:Id>\r
+            <sch:Type>?</sch:Type>\r
+         </dat:pElementAddress>\r
+      </dat:getAddresseesDataPackagesBaselines>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getAddresseesDataPackagesBaselines"/></con:call></con:operation><con:operation id="434adef7-fdda-45d5-ac9d-49d4f671f7da" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList" name="GetAvailableElementDataList" bindingOperationName="GetAvailableElementDataList" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="065d766d-5899-4f88-b64b-61d55bb5d81b" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:GetAvailableElementDataList>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+      </dat:GetAvailableElementDataList>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/GetAvailableElementDataList"/></con:call></con:operation><con:operation id="c1265226-7c00-4368-a6ac-dff449c66808" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList" name="getBaselinesList" bindingOperationName="getBaselinesList" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="cec89531-24c1-418b-95e8-dda5688106d1" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:getBaselinesList>\r
+         <!--Optional:-->\r
+         <!--<dat:pSessionId>7fa22db2-03ee-404f-bf3c-e8e4fdd6d21c</dat:pSessionId>\r-->
+         <dat:pSessionId>b5d02fef-e87f-4905-a7bf-23be0732c2fe</dat:pSessionId>
+         <!--Optional:-->\r
+         <dat:pListType>ALL</dat:pListType>\r
+      </dat:getBaselinesList>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getBaselinesList"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation id="cce448b9-88f8-4623-86a6-a1eda64d2072" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList" name="getDataPackagesVersionsList" bindingOperationName="getDataPackagesVersionsList" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="73178007-810c-4ebc-95f7-69292d3ab405" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:getDataPackagesVersionsList>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pPackageType>?</dat:pPackageType>\r
+      </dat:getDataPackagesVersionsList>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/getDataPackagesVersionsList"/></con:call></con:operation><con:operation id="1e772feb-b2c4-4421-abb0-fa3263848447" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline" name="removeBaseline" bindingOperationName="removeBaseline" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="df598d53-4f86-4f03-849f-ed69500c5fe4" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:removeBaseline>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pVersion>?</dat:pVersion>\r
+      </dat:removeBaseline>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/removeBaseline"/></con:call></con:operation><con:operation id="9cefcadc-c515-4c91-8dda-71b2d2a34682" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement" name="unassignCurrentBaselineFromElement" bindingOperationName="unassignCurrentBaselineFromElement" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="598d85e2-46e7-4613-a78e-152beefe7570" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:unassignCurrentBaselineFromElement>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+      </dat:unassignCurrentBaselineFromElement>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignCurrentBaselineFromElement"/></con:call></con:operation><con:operation id="25ed3d0a-10a1-420d-b558-c6805795ab57" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement" name="unassignFutureBaselineFromElement" bindingOperationName="unassignFutureBaselineFromElement" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="5ecc2b84-de97-4aa8-a00e-56c6fcf36c18" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:unassignFutureBaselineFromElement>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pElementId>?</dat:pElementId>\r
+      </dat:unassignFutureBaselineFromElement>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/unassignFutureBaselineFromElement"/></con:call></con:operation><con:operation id="3c94c6b1-19dd-48cf-b425-52520925042e" isOneWay="false" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages" name="uploadDataPackages" bindingOperationName="uploadDataPackages" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="dd170a28-8ece-4d8f-9b37-ed06aed4c7f8" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/DataPackage/DataPackageService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://alstom.com/pacis/pis/ground/datapackage/" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <dat:uploadDataPackages>\r
+         <!--Optional:-->\r
+         <dat:pSessionId>?</dat:pSessionId>\r
+         <!--Optional:-->\r
+         <dat:pFilesURLs>\r
+            <!--Zero or more repetitions:-->\r
+            <arr:string>?</arr:string>\r
+         </dat:pFilesURLs>\r
+      </dat:uploadDataPackages>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://alstom.com/pacis/pis/ground/datapackage/DataPackageService/uploadDataPackages"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>

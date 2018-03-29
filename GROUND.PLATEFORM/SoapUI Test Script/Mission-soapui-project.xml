@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="ea9b88c9-5bd6-429d-a0a8-aa8e3011e715" activeEnvironment="Default" name="Mission" resourceRoot="" soapui-version="5.4.0" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="877287ab-e6bd-4349-9cab-32b25d6f9939" wsaVersion="NONE" name="BasicHttpBinding_IMissionService" type="wsdl" bindingName="{http://win-rrsvoanoagi.adetel.com/mission/}BasicHttpBinding_IMissionService" soapVersion="1_1" anonymous="optional" definition="file:/C:/ProjetsGIT/PISGround/GROUND.PLATEFORM/UnitTests/Service%20References/MissionService/MissionService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/C:/ProjetsGIT/PISGround/GROUND.PLATEFORM/UnitTests/Service%20References/MissionService/MissionService.wsdl"><con:part><con:url>file:/C:/ProjetsGIT/PISGround/GROUND.PLATEFORM/UnitTests/Service%20References/MissionService/MissionService.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="MissionService" targetNamespace="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:tns="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://win-rrsvoanoagi.adetel.com/mission/Imports">
+      <xsd:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd0" namespace="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      <xsd:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+      <xsd:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd2" namespace="http://alstom.com/pacis/pis/schema/"/>
+      <xsd:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+      <xsd:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd4" namespace="http://alstom.com/pacis/pis/schema/train/mission/"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IMissionService_RetrieveElementList_InputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveElementList"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_RetrieveElementList_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RetrieveElementListResponse"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeAutomaticMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeAutomaticMission"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeAutomaticMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeAutomaticMissionResponse"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeModifiedMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeModifiedMission"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeModifiedMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeModifiedMissionResponse"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeManualMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeManualMission"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_InitializeManualMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:InitializeManualMissionResponse"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_StopMission_InputMessage">
+    <wsdl:part name="parameters" element="tns:StopMission"/>
+  </wsdl:message>
+  <wsdl:message name="IMissionService_StopMission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:StopMissionResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="IMissionService">
+    <wsdl:operation name="RetrieveElementList">
+      <wsdl:input wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/RetrieveElementList" message="tns:IMissionService_RetrieveElementList_InputMessage"/>
+      <wsdl:output wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/RetrieveElementListResponse" message="tns:IMissionService_RetrieveElementList_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeAutomaticMission">
+      <wsdl:input wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeAutomaticMission" message="tns:IMissionService_InitializeAutomaticMission_InputMessage"/>
+      <wsdl:output wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeAutomaticMissionResponse" message="tns:IMissionService_InitializeAutomaticMission_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeModifiedMission">
+      <wsdl:input wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeModifiedMission" message="tns:IMissionService_InitializeModifiedMission_InputMessage"/>
+      <wsdl:output wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeModifiedMissionResponse" message="tns:IMissionService_InitializeModifiedMission_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeManualMission">
+      <wsdl:input wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeManualMission" message="tns:IMissionService_InitializeManualMission_InputMessage"/>
+      <wsdl:output wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeManualMissionResponse" message="tns:IMissionService_InitializeManualMission_OutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="StopMission">
+      <wsdl:input wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/StopMission" message="tns:IMissionService_StopMission_InputMessage"/>
+      <wsdl:output wsaw:Action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/StopMissionResponse" message="tns:IMissionService_StopMission_OutputMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IMissionService" type="tns:IMissionService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="RetrieveElementList">
+      <soap:operation soapAction="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/RetrieveElementList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeAutomaticMission">
+      <soap:operation soapAction="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeAutomaticMission" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeModifiedMission">
+      <soap:operation soapAction="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeModifiedMission" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InitializeManualMission">
+      <soap:operation soapAction="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeManualMission" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StopMission">
+      <soap:operation soapAction="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/StopMission" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MissionService">
+    <wsdl:port name="BasicHttpBinding_IMissionService" binding="tns:BasicHttpBinding_IMissionService">
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd0</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/">
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd2" namespace="http://alstom.com/pacis/pis/schema/"/>
+  <xs:element name="GetAvailableElementList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetAvailableElementListResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="GetAvailableElementListResult" nillable="true" type="q1:MissionServiceElementListResult" xmlns:q1="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MissionServiceElementListResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementList" nillable="true" type="q2:ElementAvailableElementDataList" xmlns:q2="http://alstom.com/pacis/pis/schema/"/>
+      <xs:element minOccurs="0" name="ResultCode" type="q3:MissionErrorCode" xmlns:q3="http://win-rrsvoanoagi.adetel.com/mission/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissionServiceElementListResult" nillable="true" type="q4:MissionServiceElementListResult" xmlns:q4="http://win-rrsvoanoagi.adetel.com/mission/"/>
+  <xs:simpleType name="MissionErrorCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REQUEST_ACCEPTED"/>
+      <xs:enumeration value="INVALID_SESSION_ID"/>
+      <xs:enumeration value="INVALID_REQUEST_TIMEOUT"/>
+      <xs:enumeration value="PIS_DATASTORE_NOT_ACCESSIBLE"/>
+      <xs:enumeration value="ELEMENT_LIST_NOT_AVAILABLE"/>
+      <xs:enumeration value="INTERNAL_ERROR"/>
+      <xs:enumeration value="T2G_SERVER_OFFLINE"/>
+      <xs:enumeration value="INVALID_TRAIN_NAME"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="MissionErrorCode" nillable="true" type="q5:MissionErrorCode" xmlns:q5="http://win-rrsvoanoagi.adetel.com/mission/"/>
+  <xs:element name="InitializeAutomaticMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="automaticModeRequest" nillable="true" type="q6:AutomaticModeRequest" xmlns:q6="http://alstom.com/pacis/pis/schema/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="InitializeAutomaticMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="InitializeAutomaticMissionResult" nillable="true" type="q7:MissionServiceResult" xmlns:q7="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MissionServiceResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="RequestId" type="ser:guid"/>
+      <xs:element minOccurs="0" name="ResultCode" type="q8:MissionErrorCode" xmlns:q8="http://win-rrsvoanoagi.adetel.com/mission/"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissionServiceResult" nillable="true" type="q9:MissionServiceResult" xmlns:q9="http://win-rrsvoanoagi.adetel.com/mission/"/>
+  <xs:element name="InitializeModifiedMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="modifiedModeRequest" nillable="true" type="q10:ModifiedModeRequest" xmlns:q10="http://alstom.com/pacis/pis/schema/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="InitializeModifiedMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="InitializeModifiedMissionResult" nillable="true" type="q11:MissionServiceResult" xmlns:q11="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="InitializeManualMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="manualModeRequest" nillable="true" type="q12:ManualModeRequest" xmlns:q12="http://alstom.com/pacis/pis/schema/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="InitializeManualMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="InitializeManualMissionResult" nillable="true" type="q13:MissionServiceResult" xmlns:q13="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StopMission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="sessionId" type="ser:guid"/>
+        <xs:element minOccurs="0" name="onBoardValidationFlag" type="xs:boolean"/>
+        <xs:element minOccurs="0" name="elementAlphaNumber" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="missionId" nillable="true" type="xs:string"/>
+        <xs:element minOccurs="0" name="timeOut" type="xs:unsignedInt"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StopMissionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="StopMissionResult" nillable="true" type="q14:MissionServiceResult" xmlns:q14="http://win-rrsvoanoagi.adetel.com/mission/"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd1</con:url><con:content><![CDATA[<xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/">
+  <xs:element name="anyType" nillable="true" type="xs:anyType"/>
+  <xs:element name="anyURI" nillable="true" type="xs:anyURI"/>
+  <xs:element name="base64Binary" nillable="true" type="xs:base64Binary"/>
+  <xs:element name="boolean" nillable="true" type="xs:boolean"/>
+  <xs:element name="byte" nillable="true" type="xs:byte"/>
+  <xs:element name="dateTime" nillable="true" type="xs:dateTime"/>
+  <xs:element name="decimal" nillable="true" type="xs:decimal"/>
+  <xs:element name="double" nillable="true" type="xs:double"/>
+  <xs:element name="float" nillable="true" type="xs:float"/>
+  <xs:element name="int" nillable="true" type="xs:int"/>
+  <xs:element name="long" nillable="true" type="xs:long"/>
+  <xs:element name="QName" nillable="true" type="xs:QName"/>
+  <xs:element name="short" nillable="true" type="xs:short"/>
+  <xs:element name="string" nillable="true" type="xs:string"/>
+  <xs:element name="unsignedByte" nillable="true" type="xs:unsignedByte"/>
+  <xs:element name="unsignedInt" nillable="true" type="xs:unsignedInt"/>
+  <xs:element name="unsignedLong" nillable="true" type="xs:unsignedLong"/>
+  <xs:element name="unsignedShort" nillable="true" type="xs:unsignedShort"/>
+  <xs:element name="char" nillable="true" type="tns:char"/>
+  <xs:simpleType name="char">
+    <xs:restriction base="xs:int"/>
+  </xs:simpleType>
+  <xs:element name="duration" nillable="true" type="tns:duration"/>
+  <xs:simpleType name="duration">
+    <xs:restriction base="xs:duration">
+      <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?"/>
+      <xs:minInclusive value="-P10675199DT2H48M5.4775808S"/>
+      <xs:maxInclusive value="P10675199DT2H48M5.4775807S"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="guid" nillable="true" type="tns:guid"/>
+  <xs:simpleType name="guid">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="FactoryType" type="xs:QName"/>
+  <xs:attribute name="Id" type="xs:ID"/>
+  <xs:attribute name="Ref" type="xs:IDREF"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd2</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://alstom.com/pacis/pis/schema/" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/">
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd3" namespace="http://alstom.com/pacis/pis/ground/core/data/"/>
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd5" namespace="http://alstom.com/pacis/pis/schema/train/mission/"/>
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+  <xs:import schemaLocation="http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+  <xs:complexType name="ElementAvailableElementDataList">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="Element{0}List" Namespace="http://alstom.com/pacis/pis/schema/" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="AvailableElementData" Namespace="http://alstom.com/pacis/pis/schema/"/>
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AvailableElementData" nillable="true" type="tns:AvailableElementData"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ElementAvailableElementDataList" nillable="true" type="tns:ElementAvailableElementDataList"/>
+  <xs:complexType name="AvailableElementData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ElementNumber" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="LmtPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionCommercialNumber" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionState" type="q1:MissionStateEnum" xmlns:q1="http://win-rrsvoanoagi.adetel.com/core/data/"/>
+      <xs:element minOccurs="0" name="OnlineStatus" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="PisBaselineData" nillable="true" type="tns:PisBaseline"/>
+      <xs:element minOccurs="0" name="PisBasicPackageVersion" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AvailableElementData" nillable="true" type="tns:AvailableElementData"/>
+  <xs:complexType name="PisBaseline">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArchivedValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="ArchivedVersionPisMissionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentExpirationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentForcedOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="CurrentVersionPisMissionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureActivationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureExpirationDateOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureValidOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionLmtOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisBaseOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisInfotainmentOut" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="FutureVersionPisMissionOut" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PisBaseline" nillable="true" type="tns:PisBaseline"/>
+  <xs:complexType name="AutomaticModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MissionInitializeCommonRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="StationInsertion" nillable="true" type="q2:StationInsertion" xmlns:q2="http://alstom.com/pacis/pis/schema/train/mission/"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AutomaticModeRequest" nillable="true" type="tns:AutomaticModeRequest"/>
+  <xs:complexType name="MissionInitializeCommonRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CarNumberingOffsetCode" type="xs:unsignedInt"/>
+      <xs:element minOccurs="0" name="ElementAlphaNumber" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="LanguageCodeList" nillable="true" type="q3:ArrayOfstring" xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+      <xs:element minOccurs="0" name="LmtDataPackageVersion" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="MissionOperatorCode" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="OnBoardValidationFlag" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="OnboardServiceCodeList" nillable="true" type="q4:ArrayOfunsignedInt" xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+      <xs:element minOccurs="0" name="RequestTimeout" type="xs:unsignedInt"/>
+      <xs:element minOccurs="0" name="SessionId" type="ser:guid"/>
+      <xs:element minOccurs="0" name="StartDate" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissionInitializeCommonRequest" nillable="true" type="tns:MissionInitializeCommonRequest"/>
+  <xs:complexType name="ModifiedModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ManualModeRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="StationInsertion" nillable="true" type="q5:StationInsertion" xmlns:q5="http://alstom.com/pacis/pis/schema/train/mission/"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ModifiedModeRequest" nillable="true" type="tns:ModifiedModeRequest"/>
+  <xs:complexType name="ManualModeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MissionInitializeCommonRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CommercialNumberList" nillable="true" type="q6:ArrayOfstring" xmlns:q6="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+          <xs:element minOccurs="0" name="MissionTypeCode" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="RegionCode" type="xs:unsignedInt"/>
+          <xs:element minOccurs="0" name="ServiceHourList" nillable="true" type="q7:ArrayOfStationServiceHours" xmlns:q7="http://alstom.com/pacis/pis/schema/train/mission/"/>
+          <xs:element minOccurs="0" name="ServicedStationList" nillable="true" type="q8:ArrayOfStationList" xmlns:q8="http://alstom.com/pacis/pis/schema/train/mission/"/>
+          <xs:element minOccurs="0" name="TrainName" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ManualModeRequest" nillable="true" type="tns:ManualModeRequest"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd3</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/ground/core/data/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://win-rrsvoanoagi.adetel.com/core/data/">
+  <xs:simpleType name="MissionStateEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MI"/>
+      <xs:enumeration value="ME"/>
+      <xs:enumeration value="NI"/>
+      <xs:enumeration value="MIE"/>
+      <xs:enumeration value="DEG"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="MissionStateEnum" nillable="true" type="tns:MissionStateEnum"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd5</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://alstom.com/pacis/pis/schema/train/mission/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://alstom.com/pacis/pis/schema/train/mission/">
+  <xs:complexType name="StationInsertion">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="StationId" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="Type" type="xs:unsignedInt"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationInsertion" nillable="true" type="tns:StationInsertion"/>
+  <xs:complexType name="ArrayOfStationServiceHours">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="StationServiceHours" nillable="true" type="tns:StationServiceHours"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfStationServiceHours" nillable="true" type="tns:ArrayOfStationServiceHours"/>
+  <xs:complexType name="StationServiceHours">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ArrivalTime" nillable="true" type="xs:time"/>
+      <xs:element minOccurs="0" name="DepartureTime" nillable="true" type="xs:time"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationServiceHours" nillable="true" type="tns:StationServiceHours"/>
+  <xs:complexType name="ArrayOfStationList">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="StationList" nillable="true" type="tns:StationList"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfStationList" nillable="true" type="tns:ArrayOfStationList"/>
+  <xs:complexType name="StationList">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Id" nillable="true" type="xs:string"/>
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StationList" nillable="true" type="tns:StationList"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc?xsd=xsd4</con:url><con:content><![CDATA[<xs:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+  <xs:complexType name="ArrayOfstring">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfstring" nillable="true" type="tns:ArrayOfstring"/>
+  <xs:complexType name="ArrayOfunsignedInt">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="unsignedInt" type="xs:unsignedInt"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfunsignedInt" nillable="true" type="tns:ArrayOfunsignedInt"/>
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint></con:endpoints><con:operation id="f05470db-5ff2-459b-b2b4-d1ffb52d20e0" isOneWay="false" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeAutomaticMission" name="InitializeAutomaticMission" bindingOperationName="InitializeAutomaticMission" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="5c568cfd-6a54-490e-a45f-d706f02c53a4" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mis="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:sch="http://alstom.com/pacis/pis/schema/" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:mis1="http://alstom.com/pacis/pis/schema/train/mission/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <mis:InitializeAutomaticMission>\r
+         <!--Optional:-->\r
+         <mis:automaticModeRequest>\r
+            <!--Optional:-->\r
+            <sch:CarNumberingOffsetCode>?</sch:CarNumberingOffsetCode>\r
+            <!--Optional:-->\r
+            <sch:ElementAlphaNumber>?</sch:ElementAlphaNumber>\r
+            <!--Optional:-->\r
+            <sch:LanguageCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:string>?</arr:string>\r
+            </sch:LanguageCodeList>\r
+            <!--Optional:-->\r
+            <sch:LmtDataPackageVersion>?</sch:LmtDataPackageVersion>\r
+            <!--Optional:-->\r
+            <sch:MissionOperatorCode>?</sch:MissionOperatorCode>\r
+            <!--Optional:-->\r
+            <sch:OnBoardValidationFlag>?</sch:OnBoardValidationFlag>\r
+            <!--Optional:-->\r
+            <sch:OnboardServiceCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:unsignedInt>?</arr:unsignedInt>\r
+            </sch:OnboardServiceCodeList>\r
+            <!--Optional:-->\r
+            <sch:RequestTimeout>?</sch:RequestTimeout>\r
+            <!--Optional:-->\r
+            <sch:SessionId>?</sch:SessionId>\r
+            <!--Optional:-->\r
+            <sch:StartDate>?</sch:StartDate>\r
+            <!--Optional:-->\r
+            <sch:StationInsertion>\r
+               <!--Optional:-->\r
+               <mis1:StationId>?</mis1:StationId>\r
+               <!--Optional:-->\r
+               <mis1:Type>?</mis1:Type>\r
+            </sch:StationInsertion>\r
+         </mis:automaticModeRequest>\r
+      </mis:InitializeAutomaticMission>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeAutomaticMission"/></con:call></con:operation><con:operation id="cfd2fbe0-1ba2-48b5-9523-f155e19ddedd" isOneWay="false" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeManualMission" name="InitializeManualMission" bindingOperationName="InitializeManualMission" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="09e9295e-3d43-4f12-a95d-b322d774aec8" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mis="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:sch="http://alstom.com/pacis/pis/schema/" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:mis1="http://alstom.com/pacis/pis/schema/train/mission/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <mis:InitializeManualMission>\r
+         <!--Optional:-->\r
+         <mis:manualModeRequest>\r
+            <!--Optional:-->\r
+            <sch:CarNumberingOffsetCode>?</sch:CarNumberingOffsetCode>\r
+            <!--Optional:-->\r
+            <sch:ElementAlphaNumber>?</sch:ElementAlphaNumber>\r
+            <!--Optional:-->\r
+            <sch:LanguageCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:string>?</arr:string>\r
+            </sch:LanguageCodeList>\r
+            <!--Optional:-->\r
+            <sch:LmtDataPackageVersion>?</sch:LmtDataPackageVersion>\r
+            <!--Optional:-->\r
+            <sch:MissionOperatorCode>?</sch:MissionOperatorCode>\r
+            <!--Optional:-->\r
+            <sch:OnBoardValidationFlag>?</sch:OnBoardValidationFlag>\r
+            <!--Optional:-->\r
+            <sch:OnboardServiceCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:unsignedInt>?</arr:unsignedInt>\r
+            </sch:OnboardServiceCodeList>\r
+            <!--Optional:-->\r
+            <sch:RequestTimeout>?</sch:RequestTimeout>\r
+            <!--Optional:-->\r
+            <sch:SessionId>?</sch:SessionId>\r
+            <!--Optional:-->\r
+            <sch:StartDate>?</sch:StartDate>\r
+            <!--Optional:-->\r
+            <sch:CommercialNumberList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:string>?</arr:string>\r
+            </sch:CommercialNumberList>\r
+            <!--Optional:-->\r
+            <sch:MissionTypeCode>?</sch:MissionTypeCode>\r
+            <!--Optional:-->\r
+            <sch:RegionCode>?</sch:RegionCode>\r
+            <!--Optional:-->\r
+            <sch:ServiceHourList>\r
+               <!--Zero or more repetitions:-->\r
+               <mis1:StationServiceHours>\r
+                  <!--Optional:-->\r
+                  <mis1:ArrivalTime>?</mis1:ArrivalTime>\r
+                  <!--Optional:-->\r
+                  <mis1:DepartureTime>?</mis1:DepartureTime>\r
+               </mis1:StationServiceHours>\r
+            </sch:ServiceHourList>\r
+            <!--Optional:-->\r
+            <sch:ServicedStationList>\r
+               <!--Zero or more repetitions:-->\r
+               <mis1:StationList>\r
+                  <!--Optional:-->\r
+                  <mis1:Id>?</mis1:Id>\r
+                  <!--Optional:-->\r
+                  <mis1:Name>?</mis1:Name>\r
+               </mis1:StationList>\r
+            </sch:ServicedStationList>\r
+            <!--Optional:-->\r
+            <sch:TrainName>?</sch:TrainName>\r
+         </mis:manualModeRequest>\r
+      </mis:InitializeManualMission>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeManualMission"/></con:call></con:operation><con:operation id="1891cbc8-d798-4482-84fb-3c35f3f2cdfb" isOneWay="false" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeModifiedMission" name="InitializeModifiedMission" bindingOperationName="InitializeModifiedMission" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="fb270aae-b46d-4541-82ec-470bf4e7b8b8" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mis="http://win-rrsvoanoagi.adetel.com/mission/" xmlns:sch="http://alstom.com/pacis/pis/schema/" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:mis1="http://alstom.com/pacis/pis/schema/train/mission/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <mis:InitializeModifiedMission>\r
+         <!--Optional:-->\r
+         <mis:modifiedModeRequest>\r
+            <!--Optional:-->\r
+            <sch:CarNumberingOffsetCode>?</sch:CarNumberingOffsetCode>\r
+            <!--Optional:-->\r
+            <sch:ElementAlphaNumber>?</sch:ElementAlphaNumber>\r
+            <!--Optional:-->\r
+            <sch:LanguageCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:string>?</arr:string>\r
+            </sch:LanguageCodeList>\r
+            <!--Optional:-->\r
+            <sch:LmtDataPackageVersion>?</sch:LmtDataPackageVersion>\r
+            <!--Optional:-->\r
+            <sch:MissionOperatorCode>?</sch:MissionOperatorCode>\r
+            <!--Optional:-->\r
+            <sch:OnBoardValidationFlag>?</sch:OnBoardValidationFlag>\r
+            <!--Optional:-->\r
+            <sch:OnboardServiceCodeList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:unsignedInt>?</arr:unsignedInt>\r
+            </sch:OnboardServiceCodeList>\r
+            <!--Optional:-->\r
+            <sch:RequestTimeout>?</sch:RequestTimeout>\r
+            <!--Optional:-->\r
+            <sch:SessionId>?</sch:SessionId>\r
+            <!--Optional:-->\r
+            <sch:StartDate>?</sch:StartDate>\r
+            <!--Optional:-->\r
+            <sch:CommercialNumberList>\r
+               <!--Zero or more repetitions:-->\r
+               <arr:string>?</arr:string>\r
+            </sch:CommercialNumberList>\r
+            <!--Optional:-->\r
+            <sch:MissionTypeCode>?</sch:MissionTypeCode>\r
+            <!--Optional:-->\r
+            <sch:RegionCode>?</sch:RegionCode>\r
+            <!--Optional:-->\r
+            <sch:ServiceHourList>\r
+               <!--Zero or more repetitions:-->\r
+               <mis1:StationServiceHours>\r
+                  <!--Optional:-->\r
+                  <mis1:ArrivalTime>?</mis1:ArrivalTime>\r
+                  <!--Optional:-->\r
+                  <mis1:DepartureTime>?</mis1:DepartureTime>\r
+               </mis1:StationServiceHours>\r
+            </sch:ServiceHourList>\r
+            <!--Optional:-->\r
+            <sch:ServicedStationList>\r
+               <!--Zero or more repetitions:-->\r
+               <mis1:StationList>\r
+                  <!--Optional:-->\r
+                  <mis1:Id>?</mis1:Id>\r
+                  <!--Optional:-->\r
+                  <mis1:Name>?</mis1:Name>\r
+               </mis1:StationList>\r
+            </sch:ServicedStationList>\r
+            <!--Optional:-->\r
+            <sch:TrainName>?</sch:TrainName>\r
+            <!--Optional:-->\r
+            <sch:StationInsertion>\r
+               <!--Optional:-->\r
+               <mis1:StationId>?</mis1:StationId>\r
+               <!--Optional:-->\r
+               <mis1:Type>?</mis1:Type>\r
+            </sch:StationInsertion>\r
+         </mis:modifiedModeRequest>\r
+      </mis:InitializeModifiedMission>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/InitializeModifiedMission"/></con:call></con:operation><con:operation id="438735a0-a86a-4815-8c80-f08fc50a3e15" isOneWay="false" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/RetrieveElementList" name="RetrieveElementList" bindingOperationName="RetrieveElementList" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="2a673911-c127-4176-b8f8-2e86a2e9c849" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mis="http://win-rrsvoanoagi.adetel.com/mission/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <mis:RetrieveElementList/>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/RetrieveElementList"/></con:call></con:operation><con:operation id="69c99990-8e91-49da-99e0-78d58fae3619" isOneWay="false" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/StopMission" name="StopMission" bindingOperationName="StopMission" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="726b5e26-fcee-4d64-9ec1-9835f35da617" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://win-rrsvoanoagi.adetel.com/Mission/MissionService.svc</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mis="http://win-rrsvoanoagi.adetel.com/mission/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <mis:StopMission>\r
+         <!--Optional:-->\r
+         <mis:sessionId>?</mis:sessionId>\r
+         <!--Optional:-->\r
+         <mis:onBoardValidationFlag>?</mis:onBoardValidationFlag>\r
+         <!--Optional:-->\r
+         <mis:elementAlphaNumber>?</mis:elementAlphaNumber>\r
+         <!--Optional:-->\r
+         <mis:missionId>?</mis:missionId>\r
+         <!--Optional:-->\r
+         <mis:timeOut>?</mis:timeOut>\r
+      </mis:StopMission>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://win-rrsvoanoagi.adetel.com/mission/IMissionService/StopMission"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>

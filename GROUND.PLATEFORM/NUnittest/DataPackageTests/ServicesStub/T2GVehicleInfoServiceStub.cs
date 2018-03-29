@@ -758,8 +758,11 @@ namespace DataPackageTests.ServicesStub
                 throw FaultExceptionFactory.CreateOnlyOnChangeNotificationSupportedFault();
             }
 
-
-            int messageIndex = Array.IndexOf(SupportedMessages, request.Body.messageSubscriptionList[0].messageId);
+            string[] messageId_FR = new string[3];
+            messageId_FR[0] = "PIS.BASELINE";
+            messageId_FR[0] = "PIS.MISSION";
+            messageId_FR[0] = "PIS.VERSION";
+            int messageIndex = Array.IndexOf(SupportedMessages, messageId_FR[0]);
             if (messageIndex < 0)
             {
                 throw FaultExceptionFactory.CreateInvalidMessageIdentifierFault();

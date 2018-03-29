@@ -89,7 +89,7 @@
   </wsdl:binding>
   <wsdl:service name="SessionService">
     <wsdl:port name="BasicHttpBinding_ISessionService" binding="tns:BasicHttpBinding_ISessionService">
-      <soap:address location="http://alstom-ground-pis-server/Session/SessionService.svc" />
+      <soap:address location="http://win-rrsvoanoagi.adetel.com/Session/SessionService.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

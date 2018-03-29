@@ -18,6 +18,7 @@ using System.Globalization;
 using PIS.Ground.GroundCore.AppGround;
 using DataPackageTests.ServicesStub;
 using PIS.Ground.DataPackage;
+using System.Windows.Forms;
 
 namespace DataPackageTests
 {
