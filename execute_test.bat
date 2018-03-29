@@ -67,7 +67,7 @@ TYPE NUL > "%~dp0executeTestLog.txt"
 	echo Execute unit tests
 	echo Execution start at !date! !time:~0,2!:!time:~3,2!:!time:~6,2!
 
-	call "%~dp0GROUND.PLATEFORM\util\UnitTest_GROUND2.bat" || SET EXIT_CODE=6
+	call "%~dp0GROUND.PLATEFORM\util\UnitTest_GROUND.bat" || SET EXIT_CODE=6
 	echo Execution Ends at !date! !time:~0,2!:!time:~3,2!:!time:~6,2! 
 )
 	
