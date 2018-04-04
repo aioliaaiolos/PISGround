@@ -749,7 +749,6 @@ namespace DataPackageTests.ServicesStub
                 throw FaultExceptionFactory.CreateOnlySubscriptionToAllSystemIsSupportedFault();
             }
 
-
             if (request.Body.messageSubscriptionList.Count != 1)
             {
                 throw FaultExceptionFactory.CreateInvalidSubscriptionCountFault();
@@ -759,11 +758,8 @@ namespace DataPackageTests.ServicesStub
                 throw FaultExceptionFactory.CreateOnlyOnChangeNotificationSupportedFault();
             }
 
-            string[] messageId_FR = new string[3];
-            messageId_FR[0] = "PIS.BASELINE";
-            messageId_FR[0] = "PIS.MISSION";
-            messageId_FR[0] = "PIS.VERSION";
-            int messageIndex = Array.IndexOf(SupportedMessages, messageId_FR[0]);
+
+            int messageIndex = Array.IndexOf(SupportedMessages, request.Body.messageSubscriptionList[0].messageId);
             if (messageIndex < 0)
             {
                 throw FaultExceptionFactory.CreateInvalidMessageIdentifierFault();
