@@ -199,16 +199,7 @@ namespace PIS.Ground.Core.SqlServerAccess
 				PrepareCommand(cmd, connection, (SqlTransaction)null, commandType, commandText, commandParameters);
 
 				////finally, execute the command.
-                int retval = 0;
-                try
-                {
-                    retval = cmd.ExecuteNonQuery();
-                }
-                catch (SqlException e)
-                {
-                    string msg = e.Message;
-                    msg = msg;
-                }
+				int retval = cmd.ExecuteNonQuery();
 
 				//// detach the SqlParameters from the command object, so they can be used again.
 				cmd.Parameters.Clear();

@@ -318,11 +318,8 @@ namespace PIS.Ground.Core.LogMgmt
                             SqlHelper.ExecuteNonQuery(HistoryLoggerConfiguration.SqlConnectionString, System.Data.CommandType.Text, line);
                         }
                     }
-                    LogManager.InsertDatabaseVersion(LogManager.GetDatabaseVersionFromFile());
 
-                    // test
-                    bool ret = tests();
-                    ret = ret;
+                    LogManager.InsertDatabaseVersion(LogManager.GetDatabaseVersionFromFile());
                 }
                 else
                 {
@@ -362,50 +359,6 @@ namespace PIS.Ground.Core.LogMgmt
             {
                 LogManager.WriteLog(TraceType.ERROR, ex.Message, "PIS.Ground.Core.LogMgmt.HistoryLogger.Initialize", ex, EventIdEnum.HistoryLog);
             }
-        }
-
-        public static bool tests()
-        {
-            return testWlad("sp_wlad") && testWlad("sp_wlad2");
-        }
-
-        public static bool testWlad(string procedureName)
-        {
-            bool ret = true;
-            List<Object> parameters = new List<Object>();
-            DataSet response = SqlHelper.ExecuteDataSet(HistoryLoggerConfiguration.SqlConnectionString, procedureName, parameters);
-            ResultCodeEnum error = ResultCodeEnum.RequestAccepted;
-            if (response != null && response.Tables.Count > 0 && response.Tables[0] != null)
-            {
-                if (response.Tables[0].Rows.Count <= HistoryLoggerConfiguration.MaximumLogMessageSize)
-                {
-                    if (response != null && response.Tables.Count > 0)
-                    {
-                        if (response.Tables[0] != null)
-                        {
-                            //dictionaryResponse = new Dictionary<string, TrainBaselineStatusData>();
-
-                            foreach (DataRow rowContext in response.Tables[0].Rows)
-                            {
-                                string result = "";
-                                for (int i = 0; i < rowContext.ItemArray.GetLength(0); i++)
-                                {
-                                    object name = rowContext.ItemArray.GetValue(i);
-                                    result += name + " ";
-                                }
-                                result = result;
-                            }
-                        }
-                    }
-                    //Dictionary<string, TrainBaselineStatusData> dictionaryResponse;
-                    //error = GenerateStatusResponse(response, out dictionaryResponse);
-                }
-                else
-                {
-                    ret = false;
-                }               
-            }
-            return ret;
         }
 
         /// <summary>
@@ -1282,8 +1235,6 @@ namespace PIS.Ground.Core.LogMgmt
             {
                 List<object> parameters = new List<object>();
                 parameters.Add(null);
-                // Remplacement de SpGetTrainBaselineStatus par sp_wlad
-                //string sp_wlad = "sp_wlad";
                 using (DataSet logResponseDS = SqlHelper.ExecuteDataSet(HistoryLoggerConfiguration.SqlConnectionString, SpGetTrainBaselineStatus, parameters))
                 {
                     error = ResultCodeEnum.RequestAccepted;

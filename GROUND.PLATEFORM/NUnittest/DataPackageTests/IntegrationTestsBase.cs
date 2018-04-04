@@ -32,7 +32,6 @@ using PIS.Ground.DataPackage;
 using PIS.Ground.DataPackage.RemoteDataStoreFactory;
 using PIS.Ground.DataPackage.RequestMgt;
 using PIS.Ground.GroundCore.AppGround;
-using System.Windows.Forms;
 using CommLinkEnum = DataPackageTests.T2GServiceInterface.Identification.commLinkEnum;
 
 namespace DataPackageTests
@@ -490,8 +489,6 @@ namespace DataPackageTests
 
                 if (File.Exists(_databaseFilePath))
                 {
-                    bool test = false;
-                    if(!test) {
                         string cmdDropDB =
                             "IF EXISTS( select name from sys.databases where NAME= '" + _databaseName + "')" +
                             " BEGIN DROP DATABASE [" + _databaseName + "] END";
@@ -499,7 +496,6 @@ namespace DataPackageTests
                         SqlHelper.ExecuteNonQuery(HistoryLoggerConfiguration.SqlCreateDbConnectionString, System.Data.CommandType.Text, cmdDropDB);
                         File.Delete(_databaseFilePath);
                     }
-                }
 
                 if (File.Exists(_databaseLogPath))
                 {
@@ -666,12 +662,12 @@ namespace DataPackageTests
                 }
                 catch
                 {
-                    if (++count > 4)
+                    if (++count > 8)
                     {
                         throw;
                     }
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(250);
                 }
             } while (!isOk);
         }
