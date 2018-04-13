@@ -25,6 +25,8 @@ namespace PIS.Ground.Core.T2G.WebServices.Notification
     [ToolboxItem(false)]
     public class NotificationService : PIS.Ground.Core.T2G.WebServices.Notification.INotificationBinding
     {
+        bool test = false;
+        bool test2 = true;
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class.
         /// </summary>
@@ -183,21 +185,32 @@ namespace PIS.Ground.Core.T2G.WebServices.Notification
                 " ps=" + prioritySpecified.ToString() + Environment.NewLine +
                 " lt=" + linkType.ToString() + Environment.NewLine +
                 " lts=" + linkTypeSpecified.ToString() + Environment.NewLine;
-
-            invoker.BeginInvoke(
-                new onFileTransferNotificationArgs
+            if (!test)
+            {
+                onFileTransferNotificationArgs args = new onFileTransferNotificationArgs
+                    {
+                        taskId = taskId,
+                        taskState = taskState,
+                        taskPhase = taskPhase,
+                        activeFileTransferCount = activeFileTransferCount,
+                        errorCount = errorCount,
+                        acquisitionCompletionPercent = acquisitionCompletionPercent,
+                        transferCompletionPercent = transferCompletionPercent,
+                        distributionCompletionPercent = distributionCompletionPercent
+                    };
+               
+                if (test2)
                 {
-                    taskId = taskId,
-                    taskState = taskState,
-                    taskPhase = taskPhase,
-                    activeFileTransferCount = activeFileTransferCount,
-                    errorCount = errorCount,
-                    acquisitionCompletionPercent = acquisitionCompletionPercent,
-                    transferCompletionPercent = transferCompletionPercent,
-                    distributionCompletionPercent = distributionCompletionPercent
-                },
-                invoker.EndInvoke,
-                null);
+                    onFileTransferNotificationAsync(args);
+                }
+                else
+                {
+                    invoker.BeginInvoke(
+                        args,
+                        invoker.EndInvoke,
+                        null);
+                }
+            }
         }
 
         /// <summary>Arguments for on file transfer notification.</summary>

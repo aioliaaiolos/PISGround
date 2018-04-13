@@ -126,8 +126,16 @@ namespace PIS.Ground.Core.Data
         [DataMember]
         public BaselineProgressStatusEnum ProgressStatus
         {
-            get { return _progressStatus; }
-            set { _progressStatus = value; }
+            get 
+            { 
+                return _progressStatus; 
+            }
+
+            set 
+            { 
+                _progressStatus = value;
+                Console.Out.WriteLine("       progressStatus: {0}", _progressStatus);
+            }
         }
 
         [DataMember]
