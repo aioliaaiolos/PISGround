@@ -62,6 +62,12 @@
 	<wsdl:message name="IMaintenanceService_GetFleetBaselineStatus_OutputMessage">
 		<wsdl:part name="parameters" element="tns:GetFleetBaselineStatusResponse"/>
 	</wsdl:message>
+	<wsdl:message name="IMaintenanceService_GetFleetBaselineStatus_v2_InputMessage">
+		<wsdl:part name="parameters" element="tns:GetFleetBaselineStatus_v2"/>
+	</wsdl:message>
+	<wsdl:message name="IMaintenanceService_GetFleetBaselineStatus_v2_OutputMessage">
+		<wsdl:part name="parameters" element="tns:GetFleetBaselineStatus_v2Response"/>
+	</wsdl:message>
 	<wsdl:portType name="IMaintenanceService">
 		<wsdl:operation name="GetAvailableElementList">
 			<wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetAvailableElementList" message="tns:IMaintenanceService_GetAvailableElementList_InputMessage"/>
@@ -94,6 +100,10 @@
 		<wsdl:operation name="GetFleetBaselineStatus">
 			<wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatus" message="tns:IMaintenanceService_GetFleetBaselineStatus_InputMessage"/>
 			<wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatusResponse" message="tns:IMaintenanceService_GetFleetBaselineStatus_OutputMessage"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetFleetBaselineStatus_v2">
+			<wsdl:input wsaw:Action="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatus_v2" message="tns:IMaintenanceService_GetFleetBaselineStatus_v2_InputMessage"/>
+			<wsdl:output wsaw:Action="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatus_v2Response" message="tns:IMaintenanceService_GetFleetBaselineStatus_v2_OutputMessage"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="BasicHttpBinding_IMaintenanceService" type="tns:IMaintenanceService">
@@ -163,6 +173,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="GetFleetBaselineStatus">
 			<soap:operation soapAction="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatus" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetFleetBaselineStatus_v2">
+			<soap:operation soapAction="http://alstom.com/pacis/pis/ground/maintenance/IMaintenanceService/GetFleetBaselineStatus_v2" style="document"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

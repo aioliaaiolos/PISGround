@@ -140,4 +140,19 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+	<xs:element name="GetFleetBaselineStatus_v2">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element xmlns:q26="http://schemas.microsoft.com/2003/10/Serialization/" minOccurs="0" name="sessionId" type="q26:guid"/>
+				<xs:element minOccurs="0" name="version" type="xs:int"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="GetFleetBaselineStatus_v2Response">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" name="GetFleetBaselineStatus_v2Result" nillable="true" type="tns:MaintenanceTrainBaselineStatusListOutput"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
 </xs:schema>
