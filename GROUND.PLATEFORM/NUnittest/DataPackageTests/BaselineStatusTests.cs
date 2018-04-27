@@ -1863,6 +1863,7 @@ namespace DataPackageTests
                     "968",
                     true,
                     BaselineProgressStatusEnum.UNKNOWN,
+                    BaselineProgressStatusStateEnum.NONE,
                     "5.6.7.8",
                     "6.7.8.9",
                     "5.13.0.6"),

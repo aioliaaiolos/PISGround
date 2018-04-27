@@ -133,18 +133,22 @@ namespace GroundCoreTests
             Guid id1 = Guid.NewGuid();
             ResultCodeEnum error;
             error = HistoryLogger.UpdateTrainBaselineStatus("1", id1, 1, "TRAIN1", false, BaselineProgressStatusEnum.DEPLOYED, 
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "1.1.1.1", "1.1.1.2", "1.1.1.3");
             Assert.AreEqual(ResultCodeEnum.RequestAccepted, error);
             Guid id2 = Guid.NewGuid();
-            error = HistoryLogger.UpdateTrainBaselineStatus("2", id2, 2, "TRAIN2", false, BaselineProgressStatusEnum.TRANSFER_COMPLETED, 
+            error = HistoryLogger.UpdateTrainBaselineStatus("2", id2, 2, "TRAIN2", false, BaselineProgressStatusEnum.TRANSFER_COMPLETED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "2.1.1.1", "2.1.1.2", "2.1.1.3");
 			Assert.AreEqual(ResultCodeEnum.RequestAccepted, error);
             Guid id3 = Guid.NewGuid();
-            error = HistoryLogger.UpdateTrainBaselineStatus("3", id3, 3, "TRAIN3", false, BaselineProgressStatusEnum.TRANSFER_PAUSED, 
+            error = HistoryLogger.UpdateTrainBaselineStatus("3", id3, 3, "TRAIN3", false, BaselineProgressStatusEnum.TRANSFER_PAUSED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "3.1.1.1", "3.1.1.2", "3.1.1.3");
 			Assert.AreEqual(ResultCodeEnum.RequestAccepted, error);
             Guid id4 = Guid.NewGuid();
-            error = HistoryLogger.UpdateTrainBaselineStatus("4", id4, 4, "TRAIN4", false, BaselineProgressStatusEnum.UPDATED, 
+            error = HistoryLogger.UpdateTrainBaselineStatus("4", id4, 4, "TRAIN4", false, BaselineProgressStatusEnum.UPDATED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "4.1.1.1", "4.1.1.2", "4.1.1.3");
 			Assert.AreEqual(ResultCodeEnum.RequestAccepted, error);
 
@@ -194,18 +198,22 @@ namespace GroundCoreTests
             // Test UpdateTrainBaselineStatus - Update
             id1 = Guid.NewGuid();
             error = HistoryLogger.UpdateTrainBaselineStatus("1", id1, 5, "TRAIN1-1", true, BaselineProgressStatusEnum.TRANSFER_COMPLETED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "11.1.1.1", "11.1.1.2", "11.1.1.3");
             Assert.AreEqual(error, ResultCodeEnum.RequestAccepted);
             id2 = Guid.NewGuid();
             error = HistoryLogger.UpdateTrainBaselineStatus("2", id2, 6, "TRAIN2-2", true, BaselineProgressStatusEnum.DEPLOYED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "22.1.1.1", "22.1.1.2", "22.1.1.3");
             Assert.AreEqual(error, ResultCodeEnum.RequestAccepted);
             id3 = Guid.NewGuid();
             error = HistoryLogger.UpdateTrainBaselineStatus("3", id3, 7, "TRAIN3-3", true, BaselineProgressStatusEnum.TRANSFER_PLANNED,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "33.1.1.1", "33.1.1.2", "33.1.1.3");
             Assert.AreEqual(error, ResultCodeEnum.RequestAccepted);
             id4 = Guid.NewGuid();
             error = HistoryLogger.UpdateTrainBaselineStatus("4", id4, 8, "TRAIN4-4", true, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS,
+                                                            BaselineProgressStatusStateEnum.NONE,
                                                             "44.1.1.1", "44.1.1.2", "44.1.1.3");
             Assert.AreEqual(error, ResultCodeEnum.RequestAccepted);
 

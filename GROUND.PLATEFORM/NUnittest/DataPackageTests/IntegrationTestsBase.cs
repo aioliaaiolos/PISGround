@@ -688,7 +688,7 @@ namespace DataPackageTests
         /// <param name="data">The train baseline status information to write into database.</param>
         protected void UpdateHistoryLog(TrainBaselineStatusData data)
         {
-            HistoryLogger.UpdateTrainBaselineStatus(data.TrainId, data.RequestId, data.TaskId, data.TrainNumber, data.OnlineStatus, data.ProgressStatus, data.CurrentBaselineVersion, data.FutureBaselineVersion, data.PisOnBoardVersion);
+            HistoryLogger.UpdateTrainBaselineStatus(data.TrainId, data.RequestId, data.TaskId, data.TrainNumber, data.OnlineStatus, data.ProgressStatus, data.ProgressStatusState, data.CurrentBaselineVersion, data.FutureBaselineVersion, data.PisOnBoardVersion);
         }
 
         protected void WaitTrainBaselineStatusesEquals(Dictionary<string, TrainBaselineStatusData> expectedStatuses, string message)

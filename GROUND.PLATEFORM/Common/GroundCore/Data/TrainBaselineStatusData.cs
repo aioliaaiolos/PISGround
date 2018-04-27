@@ -34,6 +34,7 @@ namespace PIS.Ground.Core.Data
         private string _trainNumber;
         private bool _onlineStatus;
         private BaselineProgressStatusEnum _progressStatus;
+        private BaselineProgressStatusStateEnum _progressStatusState;
         private string _currentBaselineVersion;
         private string _futureBaselineVersion;
         private string _pisOnBoardVersion;
@@ -135,6 +136,20 @@ namespace PIS.Ground.Core.Data
             { 
                 _progressStatus = value;
                 Console.Out.WriteLine("       progressStatus: {0}", _progressStatus);
+            }
+        }
+
+        [DataMember]
+        public BaselineProgressStatusStateEnum ProgressStatusState
+        {
+            get 
+            { 
+                return _progressStatusState; 
+            }
+
+            set 
+            { 
+                _progressStatusState = value;
             }
         }
 

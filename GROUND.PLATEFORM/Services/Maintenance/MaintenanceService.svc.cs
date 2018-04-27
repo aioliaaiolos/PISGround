@@ -318,6 +318,121 @@ namespace PIS.Ground.Maintenance
 			}
 		}
 
+        /// <summary>
+        /// Get old status from new status and sub-status (state)
+        /// <param name="newStatus"> New status </param>
+        /// <param name="state"> Sub status </param>
+        /// </summary>
+        private BaselineProgressStatusEnum GetOldStatusFromNew(BaselineProgressStatusEnum newStatus, BaselineProgressStatusStateEnum state)
+        {
+            BaselineProgressStatusEnum oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+
+            switch (newStatus)
+            {
+                case BaselineProgressStatusEnum.DEPLOYMENT:
+                    switch (state)
+                    {
+                        case BaselineProgressStatusStateEnum.PLANNED:
+                        case BaselineProgressStatusStateEnum.IN_PROGRESS:
+                        case BaselineProgressStatusStateEnum.COMPLETED:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                            break;
+
+                        case BaselineProgressStatusStateEnum.TIMEOUT_EXPIRED:
+                        case BaselineProgressStatusStateEnum.PACKAGING_ERROR:
+                        case BaselineProgressStatusStateEnum.NO_DISK_SPACE:
+                        case BaselineProgressStatusStateEnum.NO_WRITE_PERMISSION:
+                        case BaselineProgressStatusStateEnum.COMPRESSION_ERROR:
+                        case BaselineProgressStatusStateEnum.OTHER_ERROR:
+                        case BaselineProgressStatusStateEnum.GROUND_BASELINE_MISMATCH:
+                            oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            break;
+                    }
+                    break;
+                case BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY:
+                    switch (state)
+                    {
+                        case BaselineProgressStatusStateEnum.IN_PROGRESS:
+                        case BaselineProgressStatusStateEnum.COMPLETED:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                            break;
+                        case BaselineProgressStatusStateEnum.AUTHENTIFICATION_ERROR:
+                        case BaselineProgressStatusStateEnum.COMMUNICATION_ERROR:
+                        case BaselineProgressStatusStateEnum.TRANSFER_REFUSED_BY_SERVER:
+                        case BaselineProgressStatusStateEnum.FTP_ERROR:
+                        case BaselineProgressStatusStateEnum.TIMEOUT_EXPIRED:
+                        case BaselineProgressStatusStateEnum.OTHER_ERROR:
+                            oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            break;
+                    }
+
+                    break;
+                case BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_EMBEDDED:
+                    switch (state)
+                    {
+                        case BaselineProgressStatusStateEnum.TRANSFER_PLANNED:
+                        case BaselineProgressStatusStateEnum.TRANSFER_CREATION_IN_PROGRESS:
+                        case BaselineProgressStatusStateEnum.TRANSFER_WAITING_FOR_SCHEDULING:
+                        case BaselineProgressStatusStateEnum.TRANSFER_WAITING_FOR_COMMUNICATION:
+                        case BaselineProgressStatusStateEnum.TRANSFER_WAITING_FOR_LINK:
+                        case BaselineProgressStatusStateEnum.TRANSFER_IN_PROGRESS:
+                        case BaselineProgressStatusStateEnum.TRANSFER_WAITING_FOR_DISK_SPACE_ON_SERVER:
+                        case BaselineProgressStatusStateEnum.TRANSFER_WAITING_FOR_DISK_SPACE_ON_TRAIN:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
+                            break;
+                        case BaselineProgressStatusStateEnum.TRANSFER_PAUSED:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_PAUSED;
+                            break;
+                        case BaselineProgressStatusStateEnum.TIMEOUT_EXPIRED:
+                        case BaselineProgressStatusStateEnum.TRANSFER_START_ERROR:
+                        case BaselineProgressStatusStateEnum.TRANSFER_TIME_OUT:
+                        case BaselineProgressStatusStateEnum.TRANSFER_CANCELLED:
+                        case BaselineProgressStatusStateEnum.DELIVERY_ERROR:
+                        case BaselineProgressStatusStateEnum.T2G_ERROR:
+                        case BaselineProgressStatusStateEnum.OTHER_ERROR:
+                            oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            break;
+                        case BaselineProgressStatusStateEnum.TRANSFER_COMPLETED:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                            break;
+                    }
+                    break;
+                case BaselineProgressStatusEnum.BASELINE_ONBOARD_DISTRIBUTION:
+                    switch (state)
+                    {
+                        case BaselineProgressStatusStateEnum.IN_PROGRESS:
+                        case BaselineProgressStatusStateEnum.DISTRIBUTION_WAITING_FOR_COMMUNICATION:
+                            oldStatus = BaselineProgressStatusEnum.TRANSFER_COMPLETED;
+                            break;
+                        case BaselineProgressStatusStateEnum.COMPLETED:
+                            oldStatus = BaselineProgressStatusEnum.DEPLOYED;
+                            break;
+
+                        case BaselineProgressStatusStateEnum.DISTRIBUTION_ERROR:
+                            oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            break;
+                    }
+                    break;
+                case BaselineProgressStatusEnum.BASELINE_ONBOARD_ACTIVATION:
+                    switch (state)
+                    {
+                        case BaselineProgressStatusStateEnum.PLANNED:
+                        case BaselineProgressStatusStateEnum.ACTIVATION_WAITING_FOR_COMMUNICATION:
+                            oldStatus = BaselineProgressStatusEnum.DEPLOYED;
+                            break;
+                        case BaselineProgressStatusStateEnum.ACTIVATED:
+                            oldStatus = BaselineProgressStatusEnum.UPDATED;
+                            break;
+                        case BaselineProgressStatusStateEnum.ACTIVATION_ERROR:
+                        case BaselineProgressStatusStateEnum.BASELINE_MISMATCH:
+                            oldStatus = BaselineProgressStatusEnum.UNKNOWN;
+                            break;
+                    }
+                    break;
+            }
+            return oldStatus;
+        }
+
 		/// <summary>
 		///
 		/// </summary>
@@ -578,28 +693,41 @@ namespace PIS.Ground.Maintenance
 			return GetFleetBaselineStatus(sessionId);
 		}
 
+        
+        public MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId)
+        {
+            return GetFleetBaselineStatus(sessionId, 0);
+        }
+       
+
 		/// <summary>
 		/// Get the statuses of the baselines current and future for the train fleet.
 		/// NOTE: Replaces GetTrainBaselineStatus().
 		/// </summary>
 		/// <param name="sessionId">Input session id.</param>
 		/// <returns>Baseline Status response.</returns>
-		public MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId)
+		public MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId, int version)
 		{
 			MaintenanceTrainBaselineStatusListResponse result = new MaintenanceTrainBaselineStatusListResponse();
 			if (_sessionManager.IsSessionValid(sessionId))
 			{
-				Dictionary<string, TrainBaselineStatusData> dictionaryResponse = null;
-				result.ResultCode = LogManager.GetTrainBaselineStatus(out dictionaryResponse);
-
-				if (dictionaryResponse != null && dictionaryResponse.Count > 0)
-				{
-					result.TrainBaselineStatusList = new TrainBaselineStatusList<TrainBaselineStatusData>();
-					foreach (TrainBaselineStatusData trainBaselineStatusData in dictionaryResponse.Values)
-					{
-						result.TrainBaselineStatusList.Add(trainBaselineStatusData);
-					}
-				}
+                Dictionary<string, TrainBaselineStatusData> dictionaryResponse = null;
+                result.ResultCode = LogManager.GetTrainBaselineStatus(out dictionaryResponse);               
+                if (version > 0)
+                {
+                    foreach (TrainBaselineStatusData baseline in dictionaryResponse.Values)
+                    {
+                        baseline.ProgressStatus = GetOldStatusFromNew(baseline.ProgressStatus, baseline.ProgressStatusState);
+                    }
+                }
+                if (dictionaryResponse != null && dictionaryResponse.Count > 0)
+                {
+                    result.TrainBaselineStatusList = new TrainBaselineStatusList<TrainBaselineStatusData>();
+                    foreach (TrainBaselineStatusData trainBaselineStatusData in dictionaryResponse.Values)
+                    {
+                        result.TrainBaselineStatusList.Add(trainBaselineStatusData);
+                    }
+                }
 			}
 			else
 			{

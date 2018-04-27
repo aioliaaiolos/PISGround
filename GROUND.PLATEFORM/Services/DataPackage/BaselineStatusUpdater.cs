@@ -1296,7 +1296,7 @@ namespace PIS.Ground.DataPackage
 
 				ResultCodeEnum resultCode = _logManager.UpdateTrainBaselineStatus(
 					trainId, progressInfo.RequestId, progressInfo.TaskId, progressInfo.TrainNumber,
-					progressInfo.OnlineStatus, progressInfo.ProgressStatus,
+					progressInfo.OnlineStatus, progressInfo.ProgressStatus, progressInfo.ProgressStatusState,
 					progressInfo.CurrentBaselineVersion, progressInfo.FutureBaselineVersion,
 					progressInfo.PisOnBoardVersion);
 

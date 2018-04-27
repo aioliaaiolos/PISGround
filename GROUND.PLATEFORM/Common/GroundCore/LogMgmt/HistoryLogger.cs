@@ -1136,6 +1136,7 @@ namespace PIS.Ground.Core.LogMgmt
         /// <returns>Error code if any.</returns>
         public static ResultCodeEnum UpdateTrainBaselineStatus(string trainId, Guid requestId, int taskId, string trainNumber,
                                                                bool onlineStatus, BaselineProgressStatusEnum progressStatus,
+                                                               BaselineProgressStatusStateEnum progressStatusState,
                                                                string currentBaselineVersion, string futureBaselineVersion,
                                                                string pisOnBoardVersion)
         {
@@ -1159,6 +1160,7 @@ namespace PIS.Ground.Core.LogMgmt
                     parameters.Add(trainNumber ?? string.Empty);
                     parameters.Add(Convert.ToInt32(onlineStatus));
                     parameters.Add((int)progressStatus);
+                    parameters.Add((int)progressStatusState);
                     parameters.Add(currentBaselineVersion ?? string.Empty);
                     parameters.Add(futureBaselineVersion ?? string.Empty);
                     parameters.Add(pisOnBoardVersion??string.Empty);
@@ -1351,6 +1353,10 @@ namespace PIS.Ground.Core.LogMgmt
                             if (rowContext["BaselineProgressStatus"] != null)
                             {
                                 lData.ProgressStatus = (BaselineProgressStatusEnum)rowContext["BaselineProgressStatus"];
+                            }
+                            if (rowContext["BaselineProgressStatusState"] != null)
+                            {
+                                lData.ProgressStatusState = (BaselineProgressStatusStateEnum)rowContext["BaselineProgressStatusState"];
                             }
                             if (rowContext["CurrentBaselineVersion"] != null)
                             {

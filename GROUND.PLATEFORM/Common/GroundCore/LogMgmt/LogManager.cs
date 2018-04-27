@@ -364,6 +364,7 @@ namespace PIS.Ground.Core.LogMgmt
         /// <returns>Error code if any.</returns>
 		public static ResultCodeEnum UpdateTrainBaselineStatus(string trainId, Guid requestId, int taskId, string trainNumber,
 															   bool onlineStatus, BaselineProgressStatusEnum progressStatus,
+                                                               BaselineProgressStatusStateEnum progressStatusState,
 															   string currentBaselineVersion, string futureBaselineVersion,
 															   string pisOnBoardVersion)
 		{
@@ -373,7 +374,7 @@ namespace PIS.Ground.Core.LogMgmt
 			{
 				resultCode = HistoryLogger.UpdateTrainBaselineStatus(
 					trainId, requestId, taskId, trainNumber,
-					onlineStatus, progressStatus,
+					onlineStatus, progressStatus, progressStatusState,
 					currentBaselineVersion, futureBaselineVersion,
 					pisOnBoardVersion);
 			}
@@ -602,9 +603,9 @@ namespace PIS.Ground.Core.LogMgmt
             return LogManager.GetTrainBaselineStatus(out dictionaryResponse);
         }
 
-        ResultCodeEnum ILogManager.UpdateTrainBaselineStatus(string trainId, Guid requestId, int taskId, string trainNumber, bool onlineStatus, BaselineProgressStatusEnum progressStatus, string currentBaselineVersion, string futureBaselineVersion, string pisOnBoardVersion)
+        ResultCodeEnum ILogManager.UpdateTrainBaselineStatus(string trainId, Guid requestId, int taskId, string trainNumber, bool onlineStatus, BaselineProgressStatusEnum progressStatus, BaselineProgressStatusStateEnum progressStatusState, string currentBaselineVersion, string futureBaselineVersion, string pisOnBoardVersion)
         {
-            return LogManager.UpdateTrainBaselineStatus(trainId, requestId, taskId, trainNumber, onlineStatus, progressStatus, currentBaselineVersion, futureBaselineVersion, pisOnBoardVersion);
+            return LogManager.UpdateTrainBaselineStatus(trainId, requestId, taskId, trainNumber, onlineStatus, progressStatus, progressStatusState, currentBaselineVersion, futureBaselineVersion, pisOnBoardVersion);
         }
 
         ResultCodeEnum ILogManager.CleanTrainBaselineStatus(string trainId)

@@ -84,6 +84,9 @@ namespace PIS.Ground.Maintenance
         /// <returns>The fleet Baseline Status response.</returns>
         [OperationContract]
         MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId);
+
+        [OperationContract(Name = "GetFleetBaselineStatus_v2")]
+        MaintenanceTrainBaselineStatusListResponse GetFleetBaselineStatus(Guid sessionId, int version);
     }
 
     /// <summary>

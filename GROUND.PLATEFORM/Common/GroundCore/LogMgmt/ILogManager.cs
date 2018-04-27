@@ -174,6 +174,7 @@ namespace PIS.Ground.Core.LogMgmt
         /// <returns>Error code if any.</returns>
         ResultCodeEnum UpdateTrainBaselineStatus(string trainId, Guid requestId, int taskId, string trainNumber,
                                                                bool onlineStatus, BaselineProgressStatusEnum progressStatus,
+                                                               BaselineProgressStatusStateEnum progressStatusState,
                                                                string currentBaselineVersion, string futureBaselineVersion,
                                                                string pisOnBoardVersion);
 
