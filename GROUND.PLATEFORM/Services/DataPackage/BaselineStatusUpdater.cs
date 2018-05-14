@@ -1044,7 +1044,7 @@ namespace PIS.Ground.DataPackage
 								if ((notification.CurrentTaskPhase == TaskPhase.Transfer && notification.TransferCompletionPercent > 0) ||
 									notification.CurrentTaskPhase == TaskPhase.Distribution)
 								{
-									if (UpdateBaselineProgressStatus(ref lProgress, BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS))
+                                    if (UpdateBaselineProgressStatus(ref lProgress, BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_EMBEDDED))
 									{
 										lStatus.ProgressStatus = lProgress;
 										lStatus.FutureBaselineVersion = baselineProgressInfo.AssignedFutureBaseline;
@@ -1052,7 +1052,7 @@ namespace PIS.Ground.DataPackage
 								}
 								else
 								{
-									if (UpdateBaselineProgressStatus(ref lProgress, BaselineProgressStatusEnum.TRANSFER_PLANNED))
+                                    if (UpdateBaselineProgressStatus(ref lProgress, BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY))
 									{
 										lStatus.ProgressStatus = lProgress;
 										lStatus.FutureBaselineVersion = baselineProgressInfo.AssignedFutureBaseline;
@@ -1214,7 +1214,7 @@ namespace PIS.Ground.DataPackage
 
 				lNewValidState = newState;
 			}
-			else if (newState == BaselineProgressStatusEnum.TRANSFER_PLANNED &&
+            else if (newState == BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY &&
 				currentState == BaselineProgressStatusEnum.TRANSFER_PAUSED)
 			{
 				/// On the other hand, both pause and planned states can alternate

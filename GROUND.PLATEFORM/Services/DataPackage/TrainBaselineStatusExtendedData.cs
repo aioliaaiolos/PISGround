@@ -247,7 +247,7 @@ namespace PIS.Ground.DataPackage
                             case BaselineProgressStatusEnum.TRANSFER_COMPLETED:
                             case BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS:
                             case BaselineProgressStatusEnum.TRANSFER_PAUSED:
-                            case BaselineProgressStatusEnum.TRANSFER_PLANNED:
+                            case BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY:
 
                                 // Expect that request id is set when we are in these statuses and we expect a future version
                                 if (Status.RequestId == Guid.Empty || !IsValidVersion(lEffectiveFutureVersion))

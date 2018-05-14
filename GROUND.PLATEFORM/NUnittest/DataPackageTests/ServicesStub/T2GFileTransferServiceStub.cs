@@ -315,13 +315,13 @@ namespace DataPackageTests.ServicesStub
                         {
                             case T2GServiceInterface.FileTransfer.taskPhaseEnum.creationPhase:
                             case T2GServiceInterface.FileTransfer.taskPhaseEnum.acquisitionPhase:
-                                progress = BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                                progress = BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY;
                                 break;
                             case T2GServiceInterface.FileTransfer.taskPhaseEnum.distributionPhase:
                                 progress = BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS;
                                 break;
                             case T2GServiceInterface.FileTransfer.taskPhaseEnum.transferPhase:
-                                progress = transferCompletionPercent != 0 ? BaselineProgressStatusEnum.TRANSFER_IN_PROGRESS : BaselineProgressStatusEnum.TRANSFER_PLANNED;
+                                progress = transferCompletionPercent != 0 ? BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY : BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY;
                                 break;
                         }
                         break;

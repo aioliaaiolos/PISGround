@@ -603,7 +603,7 @@ namespace PIS.Ground.Core.Data
         /// <summary>An enum constant representing the unknown state.</summary>
         [EnumMember(Value = "UNKNOWN")]
         [Description("Unknown")]
-        UNKNOWN = 6,
+        UNKNOWN = 12,
 
 
 		/// <summary>An enum constant representing the deployment state.</summary>
@@ -614,12 +614,12 @@ namespace PIS.Ground.Core.Data
 		/// <summary>An enum constant representing the baseline Transfer to T2G FTP repository state.</summary>
         [EnumMember(Value = "BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY")]
         [Description("BaselineTransferToT2GFtpRepository")]
-        BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY = 8,
+        BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY = 9,
 
         /// <summary>An enum constant representing the baseline transfer to T2G embedded state.</summary>
         [EnumMember(Value = "BASELINE_TRANSFER_TO_T2G_EMBEDDED")]
         [Description("BaselineTransferToT2GEmbedded")]
-        BASELINE_TRANSFER_TO_T2G_EMBEDDED = 9,
+        BASELINE_TRANSFER_TO_T2G_EMBEDDED = 8,
 
         /// <summary>An enum constant representing the baseline onboard distribution state.</summary>
         [EnumMember(Value = "BASELINE_ONBOARD_DISTRIBUTION")]

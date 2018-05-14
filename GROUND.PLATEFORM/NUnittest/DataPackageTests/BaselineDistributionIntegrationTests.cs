@@ -115,7 +115,7 @@ namespace DataPackageTests
             _fileTransferServiceStub.PerformTransferProgression();
 
             // Probleme
-            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.TRANSFER_PLANNED);
+            VerifyTrainBaselineStatusInHistoryLog(TRAIN_NAME_1, true, DEFAULT_BASELINE, FUTURE_VERSION, result.reqId, transferTaskId, BaselineProgressStatusEnum.BASELINE_TRANSFER_TO_T2G_FTP_REPOSITORY);
             while (_fileTransferServiceStub.IsTaskRunning(transferTaskId))
             {
                 _fileTransferServiceStub.PerformTransferProgression();
